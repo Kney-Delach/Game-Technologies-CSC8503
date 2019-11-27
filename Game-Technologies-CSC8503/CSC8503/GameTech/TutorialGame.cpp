@@ -240,7 +240,7 @@ bool TutorialGame::SelectObject() {
 		}
 	}
 	if (inSelectionMode) {
-		renderer->DrawString("Press Q to change to camera mode!", Vector2(10, 0));
+		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
 
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
@@ -272,7 +272,7 @@ bool TutorialGame::SelectObject() {
 		}
 	}
 	else {
-		renderer->DrawString("Press Q to change to select mode!", Vector2(10, 0));
+		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));
 	}
 	return false;
 }
