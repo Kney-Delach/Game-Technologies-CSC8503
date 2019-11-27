@@ -25,7 +25,7 @@ This repo contains a series of physics, networking and AI exercises completed fo
 
 |**Name**|**Description**|**Version**|
 |:------:|:-------------:|:---------:|
-|[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires infinitely thin lines from a particular point in the world to see which objects collide with it.|![dev][version-1.0.0]|
+|[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires infinitely thin lines from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
 
 <a name="references"></a>
 ## References 
