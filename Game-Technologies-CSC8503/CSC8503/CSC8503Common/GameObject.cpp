@@ -5,6 +5,7 @@ using namespace NCL::CSC8503;
 
 GameObject::GameObject(string objectName)	{
 	name			= objectName;
+	layer.SetLayerID(0);
 	isActive		= true;
 	boundingVolume	= nullptr;
 	physicsObject	= nullptr;

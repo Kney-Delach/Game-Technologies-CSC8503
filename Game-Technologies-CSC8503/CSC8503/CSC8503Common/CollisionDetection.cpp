@@ -38,7 +38,7 @@ bool CollisionDetection::RayPlaneIntersection(const Ray&r, const Plane&p, RayCol
 // 27/11/19
 // returns the correct sub-type ray intersection function call
 bool CollisionDetection::RayIntersection(const Ray& r, GameObject& object, RayCollision& collision)
-{
+{	
 	const Transform& transform = object.GetConstTransform();
 	const CollisionVolume* volume = object.GetBoundingVolume();
 

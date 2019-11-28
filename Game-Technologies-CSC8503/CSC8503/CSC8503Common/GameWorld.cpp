@@ -5,6 +5,8 @@
 #include "../../Common/Camera.h"
 #include <algorithm>
 
+#include "WorldMacros.h"
+
 using namespace NCL;
 using namespace NCL::CSC8503;
 
@@ -15,6 +17,17 @@ GameWorld::GameWorld()	{
 
 	shuffleConstraints	= false;
 	shuffleObjects		= false;
+
+	// initially, layer 0 can interact with layer 0, layer 1 can interact with layer 1
+	std::vector<Layer> layerConfig0;
+	const Layer layer0;
+	layerConfig0.emplace_back(layer0);
+	std::vector<Layer> layerConfig1;
+	Layer layer1;
+	layer1.SetLayerID(1);
+	layerConfig0.emplace_back(layer1);
+	worldLayers.emplace_back(layerConfig0);
+	worldLayers.emplace_back(layerConfig1);
 }
 
 GameWorld::~GameWorld()	{
@@ -88,28 +101,46 @@ void GameWorld::UpdateQuadTree() {
 bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObject) const {
 	//The simplest raycast just goes through each object and sees if there's a collision
 	RayCollision collision;
-
-	for (auto& i : gameObjects) {
-		if (!i->GetBoundingVolume()) { //objects might not be collideable etc...
+	for (auto& i : gameObjects) 
+	{
+		if (!i->GetBoundingVolume())  // objects must have a bounding volume to be collidable
 			continue;
+		
+		const unsigned layerID = i->GetLayer().GetConstLayerID();
+		bool found = false;
+		for(unsigned i = 0; i < worldLayers[layerID].size(); i++)  // 28.11.19 - if object is on a layer that can't be raycasted against, then continue... (raycast layer is 0)
+		{
+			if (worldLayers[layerID][i].GetConstLayerID() == RAYCAST_LAYER_ID)
+			{
+				found = true;
+				break;
+			}
 		}
+		if (!found)
+			continue;
+		
 		RayCollision thisCollision;
-		if (CollisionDetection::RayIntersection(r, *i, thisCollision)) {
+		if (CollisionDetection::RayIntersection(r, *i, thisCollision)) 
+		{
 				
-			if (!closestObject) {	
+			if (!closestObject) 
+			{
 				closestCollision		= collision;
 				closestCollision.node = i;
 				return true;
 			}
-			else {
-				if (thisCollision.rayDistance < collision.rayDistance) {
+			else 
+			{
+				if (thisCollision.rayDistance < collision.rayDistance) 
+				{
 					thisCollision.node = i;
 					collision = thisCollision;
 				}
 			}
 		}
 	}
-	if (collision.node) {
+	if (collision.node) 
+	{
 		closestCollision		= collision;
 		closestCollision.node	= collision.node;
 		return true;
@@ -135,4 +166,17 @@ void GameWorld::GetConstraintIterators(
 	std::vector<Constraint*>::const_iterator& last) const {
 	first	= constraints.begin();
 	last	= constraints.end();
+}
+
+unsigned GameWorld::UpdateWorldLayers(unsigned layerIndex, const std::vector<Layer>& newConfig)
+{
+	if (!(worldLayers.size() > layerIndex)) 
+	{
+		// layer index doesn't exist yet, create it at the next available index
+		worldLayers.emplace_back(newConfig);
+		return (worldLayers.size() - 1);
+	}
+	worldLayers[layerIndex].clear();
+	worldLayers[layerIndex] = newConfig;
+	return layerIndex; 
 }

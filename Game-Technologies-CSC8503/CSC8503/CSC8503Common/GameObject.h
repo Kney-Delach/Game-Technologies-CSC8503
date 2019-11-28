@@ -6,7 +6,10 @@
 #include "RenderObject.h"
 #include "NetworkObject.h"
 
+#include "Layer.h"
+
 #include <vector>
+
 
 using std::vector;
 
@@ -37,6 +40,18 @@ namespace NCL {
 
 			Transform& GetTransform() {
 				return transform;
+			}
+
+			// 28.11.2019
+			const Layer& GetConstLayer() const
+			{
+				return layer;
+			}
+
+			// 28.11.19
+			Layer& GetLayer()
+			{
+				return layer;
 			}
 
 			RenderObject* GetRenderObject() const {
@@ -77,7 +92,8 @@ namespace NCL {
 
 		protected:
 			Transform			transform;
-
+			Layer				layer; // 28.11.2019 - collision layer references
+			
 			CollisionVolume*	boundingVolume;
 			PhysicsObject*		physicsObject;
 			RenderObject*		renderObject;
@@ -87,6 +103,8 @@ namespace NCL {
 			string	name;
 
 			Vector3 broadphaseAABB;
+
+
 		};
 	}
 }

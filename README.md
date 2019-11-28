@@ -23,20 +23,22 @@ This repo contains a series of physics, networking and AI exercises completed fo
 [version-1.0.5]:https://img.shields.io/badge/Ver.-1.0.5-ff69b4
 [version-dev]:https://img.shields.io/badge/Ver.-dev-important
 
-|**Name**|**Description**|**Version**|
-|:------:|:-------------:|:---------:|
-|[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires infinitely thin lines from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
-
-<a name="references"></a>
-## References 
+|**Category**|**Feature**|**Description**|**Version**|
+|:------:|:------:|:-------------:|:---------:|
+| Physics |[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires infinitely thin lines from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
 ### Physics 
 --------------------------
 <a name="raycasting"></a>
 #### Raycasting 
-- Newcastle University Raycasting [Tutorial](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf).
-- [Mouse Picking](http://bookofhook.com/mousepick.pdf) using raycasting, contains a complete derivation of the inverse of the projection matrix as a tool towards mouse picking.
+- The implementation in this repo began as an exercise through Newcastle University Raycasting [Tutorial](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf).
+- [Mouse Picking](http://bookofhook.com/mousepick.pdf) using raycasting contains a complete derivation of the inverse of the projection matrix as a tool towards mouse picking.
+- **Layers** are implemented as to allow for selective layer collision mechanisms.
+
+The following image contains a snapshot of raycasting being used to highlight mouse selected gameobjects and those around them, with the cube object layer objects ignoring the sphere layer during raycasting:
+<a name="raycasting-example"></a>
+<p align="center"><img width=100% src="Resources/Images/Screenshots/Physics/raycasting.png?raw=true"></p>
 
 <a name="networking"></a>
 ### Networking 
