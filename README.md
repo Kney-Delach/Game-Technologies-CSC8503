@@ -2,7 +2,7 @@
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
 ![build-date](https://img.shields.io/badge/Build%20Date-28.11.19-brightgreen)
-![branch-features](https://img.shields.io/badge/Features-2-informational)
+![branch-features](https://img.shields.io/badge/Features-3-informational)
 
 ## About
 This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
