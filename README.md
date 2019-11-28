@@ -1,8 +1,8 @@
 <a name="csc8503"></a>
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
-![build-date](https://img.shields.io/badge/Build%20Date-27.11.19-brightgreen)
-![branch-features](https://img.shields.io/badge/Features-1-informational)
+![build-date](https://img.shields.io/badge/Build%20Date-28.11.19-brightgreen)
+![branch-features](https://img.shields.io/badge/Features-2-informational)
 
 ## About
 This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
@@ -25,7 +25,8 @@ This repo contains a series of physics, networking and AI exercises completed fo
 
 |**Category**|**Feature**|**Description**|**Version**|
 |:------:|:------:|:-------------:|:---------:|
-| Physics |[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires infinitely thin lines from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
+| Physics |[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires **infinitely thin lines** from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
+| Physics |[Linear Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf)|Uses a **semi-implicit Euler integrator** to simulate rigid body dynamics.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
 ### Physics 
@@ -40,6 +41,12 @@ The following image contains a snapshot of raycasting being used to highlight mo
 <a name="raycasting-example"></a>
 <p align="center"><img width=100% src="Resources/Images/Screenshots/Physics/raycasting.png?raw=true"></p>
 
+<a name="linear-motion"></a>
+#### Linear Motion
+- The implementation in this repo bagan as an exercise through Newcastle University Linear Motion [Tutorial](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf).
+
+The following gif contains an example of movement using additive forces on selectable objects:
+[![Linear Motion Image](https://i.gyazo.com/1464ba7e4fd20b9d4dfc83fc2c1ff4fe.gif)](https://gyazo.com/1464ba7e4fd20b9d4dfc83fc2c1ff4fe)
 <a name="networking"></a>
 ### Networking 
 --------------------------
