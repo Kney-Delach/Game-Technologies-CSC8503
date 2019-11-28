@@ -265,7 +265,19 @@ void PhysicsSystem::IntegrateAccel(float dt)
 			accel += gravity;
 		
 		linearVelocity += accel * dt; // integrate acceleration
-		object->SetLinearVelocity(linearVelocity);		}
+		object->SetLinearVelocity(linearVelocity);
+
+		// 28.11.2019 - Angular Motion
+		// Angular calculation torque calculation
+		Vector3 torque = object->GetTorque();
+		Vector3 angularVelocity = object->GetAngularVelocity();
+		
+		object->UpdateInertiaTensor(); // update tensor vs orientation
+		
+		Vector3 angularAcceleration = object->GetInertiaTensor()* torque;
+		
+		angularVelocity += angularAcceleration * dt; // integration 
+		object->SetAngularVelocity(angularVelocity);	}
 }
 
 /*
@@ -277,8 +289,8 @@ the world, looking for collisions.
 // 28.11.2019
 void PhysicsSystem::IntegrateVelocity(float dt)
 {
-	std::vector < GameObject* >::const_iterator first;
-	std::vector < GameObject* >::const_iterator last;
+	std::vector<GameObject*>::const_iterator first;
+	std::vector<GameObject*>::const_iterator last;
 	
 	gameWorld.GetObjectIterators(first, last);
 
@@ -298,7 +310,20 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		transform.SetLocalPosition(position);
 
 		linearVel = linearVel * frameDamping; // Linear Damping
-		object->SetLinearVelocity(linearVel);	}
+		object->SetLinearVelocity(linearVel);
+
+		// 28.11.2019 - Angular Motion
+		// Angular calculation orientation 
+		Quaternion orientation = transform.GetLocalOrientation();
+		Vector3 angularVelocity = object->GetAngularVelocity();
+		
+		orientation = orientation + Quaternion(angularVelocity * dt * 0.5f, 0.0f) * orientation; // integration
+		orientation.Normalise();
+		
+		transform.SetLocalOrientation(orientation);
+		
+		angularVelocity = angularVelocity * frameDamping; // Damp the angular velocity (simulate resistance) 
+		object->SetAngularVelocity(angularVelocity);	}
 }
 
 /*
