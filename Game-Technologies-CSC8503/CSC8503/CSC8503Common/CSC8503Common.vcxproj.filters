@@ -19,6 +19,9 @@
     <Filter Include="Other">
       <UniqueIdentifier>{7d85adc6-7681-4657-8953-c5696f06c66d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{d8842344-7498-423c-9262-23c30d353008}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionDetection.h">
@@ -122,6 +125,12 @@
     </ClInclude>
     <ClInclude Include="Debug.h">
       <Filter>Other</Filter>
+    </ClInclude>
+    <ClInclude Include="Layer.h">
+      <Filter>Other</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldMacros.h">
+      <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

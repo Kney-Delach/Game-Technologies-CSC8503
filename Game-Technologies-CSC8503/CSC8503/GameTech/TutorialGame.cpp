@@ -1,3 +1,17 @@
+/***************************************************************************
+* Filename		: TutorialGame.h
+* Name			: Ori Lazar
+* Date			: 28/11/2019
+* Description	: Central point for running the tutorial game.
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #include "TutorialGame.h"
 #include "../CSC8503Common/GameWorld.h"
 #include "../../Plugins/OpenGLRendering/OGLMesh.h"
@@ -227,10 +241,13 @@ manipulated later. Pressing Q will let you toggle between this behaviour and ins
 letting you move the camera around.
 
 */
-bool TutorialGame::SelectObject() {
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R)) {
+bool TutorialGame::SelectObject()
+{
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R)) 
+	{
 		inSelectionMode = !inSelectionMode;
-		if (inSelectionMode) {
+		if (inSelectionMode) 
+		{
 			Window::GetWindow()->ShowOSPointer(true);
 			Window::GetWindow()->LockMouseToWindow(false);
 		}
@@ -239,41 +256,79 @@ bool TutorialGame::SelectObject() {
 			Window::GetWindow()->LockMouseToWindow(true);
 		}
 	}
-	if (inSelectionMode) {
-		renderer->DrawString("Press Q to change to camera mode!", Vector2(10, 0));
+	if (inSelectionMode) 
+	{
+		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
 
-		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
-			if (selectionObject) {	//set colour to deselected;
+		if (selectionObjectFront)
+			GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
+		if (SelectionObjectBack)
+			GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
+		
+		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) 
+		{
+			if (selectionObject) 
+			{	//set colour to deselected;
 				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 				selectionObject = nullptr;
+				if(selectionObjectFront)
+				{
+					selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+					selectionObjectFront = nullptr;
+				}
+				if (SelectionObjectBack) 
+				{
+					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+					SelectionObjectBack = nullptr;
+				}
 			}
 
 			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
 
 			RayCollision closestCollision;
-			if (world->Raycast(ray, closestCollision, true)) {
+			if (world->Raycast(ray, closestCollision, true))  // object has been selected 
+			{
 				selectionObject = (GameObject*)closestCollision.node;
 				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+
+				// getting object IN-FRONT of selected object
+				Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0,0,1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
+				RayCollision closestObjectCollision;
+				if(world->Raycast(objectForwardRay, closestObjectCollision, true)) 
+				{
+					selectionObjectFront = (GameObject*)closestObjectCollision.node;
+					selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
+					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), selectionObjectFront->GetConstTransform().GetWorldPosition(), Vector4(0, 0, 1, 1)); // draws a blue line between the two objects
+				}
+
+				// getting object BEHIND selected object
+
+				Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
+				RayCollision closestBehindCollision;
+				if (world->Raycast(objectDownRay, closestBehindCollision, true))
+				{
+					SelectionObjectBack = (GameObject*)closestBehindCollision.node;
+					SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));					
+					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), SelectionObjectBack->GetConstTransform().GetWorldPosition(), Vector4(1, 0, 0, 1)); // draws a red line between the two objects
+				}			
 				return true;
 			}
-			else {
-				return false;
-			}
+			else 
+				return false;			
 		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {
-			if (selectionObject) {
-				if (lockedObject == selectionObject) {
-					lockedObject = nullptr;
-				}
-				else {
-					lockedObject = selectionObject;
-				}
+		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) 
+		{
+			if (selectionObject) 
+			{
+				if (lockedObject == selectionObject) 
+					lockedObject = nullptr;				
+				else 
+					lockedObject = selectionObject;				
 			}
 		}
 	}
-	else {
-		renderer->DrawString("Press Q to change to select mode!", Vector2(10, 0));
-	}
+	else 	
+		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));	
 	return false;
 }
 
@@ -333,6 +388,8 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	floor->GetPhysicsObject()->SetInverseMass(0);
 	floor->GetPhysicsObject()->InitCubeInertia();
 
+	floor->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	
 	world->AddGameObject(floor);
 
 	return floor;
@@ -359,6 +416,8 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 
 	sphere->GetPhysicsObject()->SetInverseMass(inverseMass);
 	sphere->GetPhysicsObject()->InitSphereInertia();
+
+	sphere->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
 
 	world->AddGameObject(sphere);
 

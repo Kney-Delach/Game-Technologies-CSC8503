@@ -137,6 +137,7 @@
     <ClInclude Include="BoundingOOBB.h" />
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="BoundingVolume.h" />
+    <ClInclude Include="Layer.h" />
     <ClInclude Include="NavigationGrid.h" />
     <ClInclude Include="NavigationMap.h" />
     <ClInclude Include="NavigationMesh.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="StateTransition.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="WorldMacros.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoundingAABB.cpp" />

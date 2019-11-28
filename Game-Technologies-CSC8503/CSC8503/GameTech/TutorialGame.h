@@ -57,6 +57,8 @@ namespace NCL {
 			float		forceMagnitude;
 
 			GameObject* selectionObject = nullptr;
+			GameObject* selectionObjectFront = nullptr;
+			GameObject* SelectionObjectBack = nullptr;
 
 			OGLMesh*	cubeMesh	= nullptr;
 			OGLMesh*	sphereMesh	= nullptr;
