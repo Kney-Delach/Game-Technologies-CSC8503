@@ -43,8 +43,10 @@ The following image contains a snapshot of raycasting being used to highlight mo
 
 <a name="linear-motion"></a>
 #### Linear Motion
-- The implementation in this rep bagan as an exercise through Newcastle University Linear Motion [Tutorial](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf).
+- The implementation in this repo bagan as an exercise through Newcastle University Linear Motion [Tutorial](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf).
 
+The following gif contains an example of movement using additive forces on selectable objects:
+[![Linear Motion Image](https://i.gyazo.com/1464ba7e4fd20b9d4dfc83fc2c1ff4fe.gif)](https://gyazo.com/1464ba7e4fd20b9d4dfc83fc2c1ff4fe)
 <a name="networking"></a>
 ### Networking 
 --------------------------

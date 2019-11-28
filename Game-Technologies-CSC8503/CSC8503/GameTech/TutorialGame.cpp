@@ -85,20 +85,18 @@ TutorialGame::~TutorialGame()
 
 void TutorialGame::UpdateGame(float dt)
 {
-	if (!inSelectionMode) 
-	{
-		world->GetMainCamera()->UpdateCamera(dt);
-	}
-	if (lockedObject != nullptr) 
-	{
-		LockedCameraMovement();
-	}
+	if (!inSelectionMode) 	
+		world->GetMainCamera()->UpdateCamera(dt);	
+	else	
+		MoveSelectedObject();
+	
+	if (lockedObject != nullptr) 	
+		LockedCameraMovement();	
 
 	UpdateKeys();
 
 	if (useGravity) 	
-		Debug::Print("(G)ravity on", Vector2(10, 40));
-	
+		Debug::Print("(G)ravity on", Vector2(10, 40));	
 	else 	
 		Debug::Print("(G)ravity off", Vector2(10, 40));
 
@@ -107,7 +105,6 @@ void TutorialGame::UpdateGame(float dt)
 	//physics->SetGlobalDamping(physics->GetConstGlobalDamping() + 1.f);
 
 	SelectObject();
-	MoveSelectedObject();
 
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
@@ -159,13 +156,14 @@ void TutorialGame::UpdateKeys()
 		world->ShuffleObjects(false);
 	}
 
-	if (lockedObject) 
+	if (lockedObject)
 	{
-		LockedObjectMovement();
-	}
-	else {
+		LockedObjectMovement(); //todo: figure out why this is needed....
 		DebugObjectMovement();
 	}
+	else 
+		DebugObjectMovement();
+	
 }
 
 void TutorialGame::LockedObjectMovement()
@@ -198,8 +196,10 @@ void TutorialGame::LockedObjectMovement()
 	}
 }
 
-void  TutorialGame::LockedCameraMovement() {
-	if (lockedObject != nullptr) {
+void  TutorialGame::LockedCameraMovement()
+{
+	if (lockedObject != nullptr) 
+	{
 		Vector3 objPos = lockedObject->GetTransform().GetWorldPosition();
 		Vector3 camPos = objPos + lockedOffset;
 
@@ -216,42 +216,12 @@ void  TutorialGame::LockedCameraMovement() {
 	}
 }
 
-
-void TutorialGame::DebugObjectMovement() {
-//If we've selected an object, we can manipulate it with some key presses
-	if (inSelectionMode && selectionObject) {
-		//Twist the selected object!
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM8)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -10, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM5)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
-		}
+// move selected gameobjects with keyboard presses
+void TutorialGame::DebugObjectMovement()
+{
+	if (inSelectionMode && selectionObject) 
+	{
+		GameObjectMovement();
 	}
 }
 
@@ -282,10 +252,41 @@ bool TutorialGame::SelectObject()
 	{
 		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
 
-		if (selectionObjectFront)
-			GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
-		if (SelectionObjectBack)
-			GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
+		if(selectionObject)
+		{
+			if (selectionObjectFront)
+			{
+				selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				selectionObjectFront = nullptr;
+			}
+			if (SelectionObjectBack)
+			{
+				SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				SelectionObjectBack = nullptr;
+			}
+			
+			// getting object IN-FRONT of selected object
+			Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
+			RayCollision closestObjectCollision;
+			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
+			{
+				selectionObjectFront = (GameObject*)closestObjectCollision.node;
+				selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
+				GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
+			}
+
+			// getting object BEHIND selected object
+			Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
+			RayCollision closestBehindCollision;
+			if (world->Raycast(objectDownRay, closestBehindCollision, true))
+			{
+				SelectionObjectBack = (GameObject*)closestBehindCollision.node;
+				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
+				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
+			}
+
+		}
+
 		
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) 
 		{
@@ -312,27 +313,6 @@ bool TutorialGame::SelectObject()
 			{
 				selectionObject = (GameObject*)closestCollision.node;
 				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
-
-				// getting object IN-FRONT of selected object
-				Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0,0,1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
-				RayCollision closestObjectCollision;
-				if(world->Raycast(objectForwardRay, closestObjectCollision, true)) 
-				{
-					selectionObjectFront = (GameObject*)closestObjectCollision.node;
-					selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
-					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), selectionObjectFront->GetConstTransform().GetWorldPosition(), Vector4(0, 0, 1, 1)); // draws a blue line between the two objects
-				}
-
-				// getting object BEHIND selected object
-
-				Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
-				RayCollision closestBehindCollision;
-				if (world->Raycast(objectDownRay, closestBehindCollision, true))
-				{
-					SelectionObjectBack = (GameObject*)closestBehindCollision.node;
-					SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));					
-					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), SelectionObjectBack->GetConstTransform().GetWorldPosition(), Vector4(1, 0, 0, 1)); // draws a red line between the two objects
-				}			
 				return true;
 			}
 			else 
@@ -375,9 +355,44 @@ void TutorialGame::MoveSelectedObject()
 				selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude);			
 		}	
 	}
+
+	//todo: abstract the following object controller to its own class
+	//GameObjectMovement();
 }
 
-void TutorialGame::InitCamera() {
+void TutorialGame::GameObjectMovement()
+{
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q)) // up
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 10, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(-10, 0, 0));
+	}
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(10, 0, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
+	}
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
+	}
+}
+
+void TutorialGame::InitCamera()
+{
 	world->GetMainCamera()->SetNearPlane(0.5f);
 	world->GetMainCamera()->SetFarPlane(500.0f);
 	world->GetMainCamera()->SetPitch(-15.0f);
@@ -386,7 +401,8 @@ void TutorialGame::InitCamera() {
 	lockedObject = nullptr;
 }
 
-void TutorialGame::InitWorld() {
+void TutorialGame::InitWorld()
+{
 	world->ClearAndErase();
 	physics->Clear();
 
@@ -407,7 +423,8 @@ void TutorialGame::InitWorld() {
 A single function to add a large immoveable cube to the bottom of our world
 
 */
-GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
+GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
+{
 	GameObject* floor = new GameObject();
 
 	Vector3 floorSize = Vector3(100, 2, 100);
@@ -436,7 +453,8 @@ rigid body representation. This and the cube function will let you build a lot o
 physics worlds. You'll probably need another function for the creation of OBB cubes too.
 
 */
-GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
+GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass)
+{
 	GameObject* sphere = new GameObject();
 
 	Vector3 sphereSize = Vector3(radius, radius, radius);
@@ -458,7 +476,8 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	return sphere;
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
+GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+{
 	GameObject* cube = new GameObject();
 
 	AABBVolume* volume = new AABBVolume(dimensions);
@@ -528,7 +547,8 @@ GameObject* TutorialGame::AddParkKeeperToWorld(const Vector3& position)
 	return keeper;
 }
 
-GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position) {
+GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
+{
 	float meshSize = 4.0f;
 	float inverseMass = 0.5f;
 
@@ -564,7 +584,8 @@ GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position) {
 	return character;
 }
 
-GameObject* TutorialGame::AddAppleToWorld(const Vector3& position) {
+GameObject* TutorialGame::AddAppleToWorld(const Vector3& position)
+{
 	GameObject* apple = new GameObject();
 
 	SphereVolume* volume = new SphereVolume(0.7f);
@@ -583,7 +604,8 @@ GameObject* TutorialGame::AddAppleToWorld(const Vector3& position) {
 	return apple;
 }
 
-void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {
+void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius)
+{
 	for (int x = 0; x < numCols; ++x) {
 		for (int z = 0; z < numRows; ++z) {
 			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
@@ -593,7 +615,8 @@ void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacin
 	AddFloorToWorld(Vector3(0, -2, 0));
 }
 
-void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing) {
+void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
+{
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(1, 1, 1);
 
@@ -612,7 +635,8 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 	AddFloorToWorld(Vector3(0, -2, 0));
 }
 
-void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims) {
+void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims)
+{
 	for (int x = 1; x < numCols+1; ++x) {
 		for (int z = 1; z < numRows+1; ++z) {
 			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
@@ -622,7 +646,8 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 	AddFloorToWorld(Vector3(0, -2, 0));
 }
 
-void TutorialGame::BridgeConstraintTest() {
+void TutorialGame::BridgeConstraintTest()
+{
 	Vector3 cubeSize = Vector3(8, 8, 8);
 
 	float	invCubeMass = 5;
@@ -649,7 +674,8 @@ void TutorialGame::BridgeConstraintTest() {
 	world->AddConstraint(constraint);
 }
 
-void TutorialGame::SimpleGJKTest() {
+void TutorialGame::SimpleGJKTest()
+{
 	Vector3 dimensions		= Vector3(5, 5, 5);
 	Vector3 floorDimensions = Vector3(100, 2, 100);
 

@@ -45,10 +45,12 @@ This time, we've added some extra functionality to the window class - we can
 hide or show the 
 
 */
-int main() {
+int main()
+{
 	Window*w = Window::CreateGameWindow("CSC8503 Game technology!", 1920, 1080);
 
-	if (!w->HasInitialised()) {
+	if (!w->HasInitialised()) 
+	{
 		return -1;
 	}	
 
@@ -61,17 +63,20 @@ int main() {
 
 	TutorialGame* g = new TutorialGame();
 
-	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) {
+	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) 
+	{
 		float dt = w->GetTimer()->GetTimeDeltaSeconds();
 
 		if (dt > 1.0f) {
 			std::cout << "Skipping large time delta" << std::endl;
 			continue; //must have hit a breakpoint or something to have a 1 second frame time!
 		}
-		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::PRIOR)) {
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::PRIOR)) 
+		{
 			w->ShowConsole(true);
 		}
-		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::NEXT)) {
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::NEXT)) 
+		{
 			w->ShowConsole(false);
 		}
 
@@ -80,6 +85,7 @@ int main() {
 		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
 
 		g->UpdateGame(dt);
+
 	}
 	Window::DestroyGameWindow();
 }
