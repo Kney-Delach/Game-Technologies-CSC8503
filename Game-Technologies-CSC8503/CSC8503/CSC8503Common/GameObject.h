@@ -1,3 +1,17 @@
+/***************************************************************************
+* Filename		: GameObject.h
+* Name			: Ori Lazar
+* Date			: 28/11/2019
+* Description	: Contains the declarations of the gameobjects.
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #pragma once
 #include "Transform.h"
 #include "CollisionVolume.h"
@@ -7,17 +21,22 @@
 #include "NetworkObject.h"
 
 #include "Layer.h"
+#include "Ray.h"
 
 #include <vector>
 
 
+
 using std::vector;
 
-namespace NCL {
-	namespace CSC8503 {
+namespace NCL
+{
+	namespace CSC8503
+	{
 		class NetworkObject;
 
-		class GameObject	{
+		class GameObject
+		{
 		public:
 			GameObject(string name = "");
 			~GameObject();
@@ -52,6 +71,11 @@ namespace NCL {
 			Layer& GetLayer()
 			{
 				return layer;
+			}
+
+			Ray BuildRayFromDirection(const Vector3& direction) const
+			{ 
+				return Ray(transform.GetWorldPosition(), transform.GetWorldOrientation() * direction); 
 			}
 
 			RenderObject* GetRenderObject() const {
@@ -89,7 +113,14 @@ namespace NCL {
 			bool GetBroadphaseAABB(Vector3&outsize) const;
 
 			void UpdateBroadphaseAABB();
+		
+			// 28.11.2019 
+			// used to display debug information and selection of the object 
+			void DrawDebug(const Vector4& color);
 
+			// 28.11.2019 
+			static void DrawLineBetweenObjects(const GameObject* from, const GameObject* to);
+				
 		protected:
 			Transform			transform;
 			Layer				layer; // 28.11.2019 - collision layer references

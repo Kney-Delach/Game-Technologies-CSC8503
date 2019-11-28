@@ -1,3 +1,17 @@
+/***************************************************************************
+* Filename		: TutorialGame.h
+* Name			: Ori Lazar
+* Date			: 28/11/2019
+* Description	: Central point for running the tutorial game.
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #include "TutorialGame.h"
 #include "../CSC8503Common/GameWorld.h"
 #include "../../Plugins/OpenGLRendering/OGLMesh.h"
@@ -246,10 +260,10 @@ bool TutorialGame::SelectObject()
 	{
 		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
 
-		if(selectionObjectFront)
-			Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), selectionObjectFront->GetConstTransform().GetWorldPosition(), Vector4(0, 0, 1, 1));
+		if (selectionObjectFront)
+			GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
 		if (SelectionObjectBack)
-			Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), SelectionObjectBack->GetConstTransform().GetWorldPosition(), Vector4(1, 0, 0, 1));
+			GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
 		
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) 
 		{
@@ -257,12 +271,12 @@ bool TutorialGame::SelectObject()
 			{	//set colour to deselected;
 				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 				selectionObject = nullptr;
-				if(selectionObjectFront) // if previously selected an object infront of the current one 
+				if(selectionObjectFront)
 				{
 					selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 					selectionObjectFront = nullptr;
 				}
-				if (SelectionObjectBack) // if previously selected an object behind the current one 
+				if (SelectionObjectBack) 
 				{
 					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 					SelectionObjectBack = nullptr;
@@ -277,17 +291,14 @@ bool TutorialGame::SelectObject()
 				selectionObject = (GameObject*)closestCollision.node;
 				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 
-				//todo: Implement custom functions for these to ease repeatability
 				// getting object IN-FRONT of selected object
-				Ray objectForwardRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
+				Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0,0,1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
 				RayCollision closestObjectCollision;
 				if(world->Raycast(objectForwardRay, closestObjectCollision, true)) 
 				{
 					selectionObjectFront = (GameObject*)closestObjectCollision.node;
-					selectionObjectFront->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1)); // set object in front of selected to blue
-
-					// draws a blue line between the two objects
-					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), selectionObjectFront->GetConstTransform().GetWorldPosition(), Vector4(0, 0, 1, 1));
+					selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
+					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), selectionObjectFront->GetConstTransform().GetWorldPosition(), Vector4(0, 0, 1, 1)); // draws a blue line between the two objects
 				}
 
 				// getting object BEHIND selected object
@@ -297,32 +308,27 @@ bool TutorialGame::SelectObject()
 				if (world->Raycast(objectDownRay, closestBehindCollision, true))
 				{
 					SelectionObjectBack = (GameObject*)closestBehindCollision.node;
-					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1)); // set object behind selected to red
-
-					// draws a red line between the two objects
-					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), SelectionObjectBack->GetConstTransform().GetWorldPosition(), Vector4(1, 0, 0, 1));
+					SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));					
+					Debug::DrawLine(selectionObject->GetConstTransform().GetWorldPosition(), SelectionObjectBack->GetConstTransform().GetWorldPosition(), Vector4(1, 0, 0, 1)); // draws a red line between the two objects
 				}			
 				return true;
 			}
 			else 
+				return false;			
+		}
+		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) 
+		{
+			if (selectionObject) 
 			{
-				return false;
-			}
-		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) {
-			if (selectionObject) {
-				if (lockedObject == selectionObject) {
-					lockedObject = nullptr;
-				}
-				else {
-					lockedObject = selectionObject;
-				}
+				if (lockedObject == selectionObject) 
+					lockedObject = nullptr;				
+				else 
+					lockedObject = selectionObject;				
 			}
 		}
 	}
-	else {
-		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));
-	}
+	else 	
+		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));	
 	return false;
 }
 
