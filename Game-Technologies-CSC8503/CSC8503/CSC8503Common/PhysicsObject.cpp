@@ -51,35 +51,42 @@ void PhysicsObject::AddForce(const Vector3& addedForce)
 	force += addedForce; // objects may have multiple forces applied per frame
 }
 
+////////////////////////////////////////////////////
+// 28.11.2019 - Angular Motion /////////////////////
+////////////////////////////////////////////////////
+
+void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3& position)
+{
+	Vector3 localPos = position - transform->GetWorldPosition(); // calculates position relative to object's center of mass.
+
+	force += addedForce;
+	torque += Vector3::Cross(localPos, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
+}
 
 ////////////////////////////////////////////////////
 /// TBD ////////////////////////////////////////////
 ////////////////////////////////////////////////////
-void PhysicsObject::ApplyAngularImpulse(const Vector3& force) {
-	if (force.Length() > 0) {
+void PhysicsObject::ApplyAngularImpulse(const Vector3& force)
+{
+	if (force.Length() > 0) 
+	{
 		bool a = true;
 	}
 	angularVelocity += inverseInteriaTensor * force;
 }
 
-void PhysicsObject::ApplyLinearImpulse(const Vector3& force) {
+void PhysicsObject::ApplyLinearImpulse(const Vector3& force)
+{
 	linearVelocity += force * inverseMass;
 }
 
-
-
-void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3& position) {
-	Vector3 localPos = position - transform->GetWorldPosition();
-
-	force  += addedForce;
-	torque += Vector3::Cross(localPos, addedForce);
-}
-
-void PhysicsObject::AddTorque(const Vector3& addedTorque) {
+void PhysicsObject::AddTorque(const Vector3& addedTorque)
+{
 	torque += addedTorque;
 }
 
-void PhysicsObject::InitCubeInertia() {
+void PhysicsObject::InitCubeInertia()
+{
 	Vector3 dimensions	= transform->GetLocalScale();
 
 	Vector3 fullWidth = dimensions * 2;
@@ -91,14 +98,23 @@ void PhysicsObject::InitCubeInertia() {
 	inverseInertia.z = (12.0f * inverseMass) / (dimsSqr.x + dimsSqr.y);
 }
 
-void PhysicsObject::InitSphereInertia() {
-	float radius	= transform->GetLocalScale().GetMaxElement();
-	float i			= 2.5f * inverseMass / (radius*radius);
-
-	inverseInertia	= Vector3(i, i, i);
+void PhysicsObject::InitSphereInertia(bool isHollow)
+{
+	float radius = transform->GetLocalScale().GetMaxElement();
+	float i = 0;
+	if(isHollow)
+	{
+		i = 1.5f * inverseMass / (radius * radius);
+	}
+	else
+	{
+		i = 2.5f * inverseMass / (radius * radius);
+	}
+	inverseInertia = Vector3(i, i, i);
 }
 
-void PhysicsObject::UpdateInertiaTensor() {
+void PhysicsObject::UpdateInertiaTensor()
+{
 	Quaternion q = transform->GetWorldOrientation();
 	
 	Matrix3 invOrientation	= Matrix3(q.Conjugate());

@@ -2,7 +2,7 @@
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
 ![build-date](https://img.shields.io/badge/Build%20Date-28.11.19-brightgreen)
-![branch-features](https://img.shields.io/badge/Features-2-informational)
+![branch-features](https://img.shields.io/badge/Features-3-informational)
 
 ## About
 This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
@@ -27,6 +27,7 @@ This repo contains a series of physics, networking and AI exercises completed fo
 |:------:|:------:|:-------------:|:---------:|
 | Physics |[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires **infinitely thin lines** from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
 | Physics |[Linear Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf)|Uses a **semi-implicit Euler integrator** to simulate rigid body dynamics.|![dev][version-1.0.0]|
+| Physics |[Angular Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/3angularmotion/Physics%20-%20Rotation.pdf)|Simulates angular movement dynamics using **moments of inertia**.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
 ### Physics 
@@ -47,6 +48,14 @@ The following image contains a snapshot of raycasting being used to highlight mo
 
 The following gif contains an example of movement using additive forces on selectable objects:
 [![Linear Motion Image](https://i.gyazo.com/1464ba7e4fd20b9d4dfc83fc2c1ff4fe.gif)](https://gyazo.com/1464ba7e4fd20b9d4dfc83fc2c1ff4fe)
+
+#### Angular Motion
+- The implementation in this repo bagan as an exercise through Newcastle University Angular Motion [Tutorial](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/3angularmotion/Physics%20-%20Rotation.pdf).
+- [This](https://en.wikipedia.org/wiki/List_of_moments_of_inertia) is a list of moments of inertia, and was used to implement hollow spheres.
+
+The following gif contains an example of angular movement using point specific additive forces on selectable objects:
+[![Angular Motion](https://i.gyazo.com/70361ca93fc59f5d89219e1c99dc0352.gif)](https://gyazo.com/70361ca93fc59f5d89219e1c99dc0352)
+
 <a name="networking"></a>
 ### Networking 
 --------------------------

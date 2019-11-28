@@ -87,12 +87,13 @@ void TutorialGame::UpdateGame(float dt)
 {
 	if (!inSelectionMode) 	
 		world->GetMainCamera()->UpdateCamera(dt);	
-	else	
+	else
 		MoveSelectedObject();
 	
-	if (lockedObject != nullptr) 	
-		LockedCameraMovement();	
 
+	if (lockedObject != nullptr)
+		LockedCameraMovement();
+	
 	UpdateKeys();
 
 	if (useGravity) 	
@@ -158,7 +159,7 @@ void TutorialGame::UpdateKeys()
 
 	if (lockedObject)
 	{
-		LockedObjectMovement(); //todo: figure out why this is needed....
+		LockedObjectMovement();
 		DebugObjectMovement();
 	}
 	else 
@@ -179,19 +180,23 @@ void TutorialGame::LockedObjectMovement()
 
 	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) 
+	{
 		selectionObject->GetPhysicsObject()->AddForce(-rightAxis);
 	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) 
+	{
 		selectionObject->GetPhysicsObject()->AddForce(rightAxis);
 	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) 
+	{
 		selectionObject->GetPhysicsObject()->AddForce(fwdAxis);
 	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) 
+	{
 		selectionObject->GetPhysicsObject()->AddForce(-fwdAxis);
 	}
 }
@@ -352,8 +357,11 @@ void TutorialGame::MoveSelectedObject()
 		if(world->Raycast(ray, closestCollision, true)) 
 		{
 			if (closestCollision.node == selectionObject)
-				selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude);			
-		}	
+				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
+				//selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude); // linear motion 
+		}
+		
+
 	}
 
 	//todo: abstract the following object controller to its own class
@@ -453,7 +461,7 @@ rigid body representation. This and the cube function will let you build a lot o
 physics worlds. You'll probably need another function for the creation of OBB cubes too.
 
 */
-GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass)
+GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass)
 {
 	GameObject* sphere = new GameObject();
 
@@ -467,9 +475,19 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	sphere->SetPhysicsObject(new PhysicsObject(&sphere->GetTransform(), sphere->GetBoundingVolume()));
 
 	sphere->GetPhysicsObject()->SetInverseMass(inverseMass);
-	sphere->GetPhysicsObject()->InitSphereInertia();
+	
+	if(isHollow)
+	{
+		sphere->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
+		sphere->GetPhysicsObject()->InitSphereInertia(true);
+	}
+	else
+	{
+		sphere->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+		sphere->GetPhysicsObject()->InitSphereInertia(false);
+	}
 
-	sphere->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 
 	world->AddGameObject(sphere);
 
@@ -493,6 +511,8 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
+	cube->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	
 	world->AddGameObject(cube);
 
 	return cube;
@@ -618,17 +638,21 @@ void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacin
 void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
 {
 	float sphereRadius = 1.0f;
-	Vector3 cubeDims = Vector3(1, 1, 1);
+	Vector3 cubeDims = Vector3(4, 4, 2);
 
-	for (int x = 0; x < numCols; ++x) {
-		for (int z = 0; z < numRows; ++z) {
-			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
+	for (int x = 0; x < numCols; ++x) 
+	{
+		for (int z = 0; z < numRows; ++z) 
+		{
+			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f + z * 3.f, 3.f * z * rowSpacing);
 
-			if (rand() % 2) {
-				AddCubeToWorld(position, cubeDims);
+			if (x % 2) 
+			{
+				AddSphereToWorld(position, sphereRadius, true);
 			}
-			else {
-				AddSphereToWorld(position, sphereRadius);
+			else 
+			{
+				AddSphereToWorld(position, sphereRadius, false);
 			}
 		}
 	}

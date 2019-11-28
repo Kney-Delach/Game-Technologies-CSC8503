@@ -46,13 +46,15 @@ namespace NCL
 			Vector3 GetLinearVelocity() const { return linearVelocity; }
 			void SetLinearVelocity(const Vector3& v) { linearVelocity = v; }
 
+			// 28.11.2019 - angular motion 
+			void AddForceAtPosition(const Vector3& force, const Vector3& position);
+
 			// tbd....
 			void ApplyAngularImpulse(const Vector3& force);
 			void ApplyLinearImpulse(const Vector3& force);			
-			void AddForceAtPosition(const Vector3& force, const Vector3& position);
 			void AddTorque(const Vector3& torque);
 			void InitCubeInertia();
-			void InitSphereInertia();
+			void InitSphereInertia(bool isHollow = false);
 			void UpdateInertiaTensor();
 		protected:
 			const CollisionVolume* volume;
