@@ -24,7 +24,8 @@
 using namespace NCL;
 using namespace CSC8503;
 
-TutorialGame::TutorialGame()	{
+TutorialGame::TutorialGame()
+{
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
 	physics		= new PhysicsSystem(*world);
@@ -45,8 +46,10 @@ and the same texture and shader. There's no need to ever load in anything else
 for this module, even in the coursework, but you can add it if you like!
 
 */
-void TutorialGame::InitialiseAssets() {
-	auto loadFunc = [](const string& name, OGLMesh** into) {
+void TutorialGame::InitialiseAssets()
+{
+	auto loadFunc = [](const string& name, OGLMesh** into)
+	{
 		*into = new OGLMesh(name);
 		(*into)->SetPrimitiveType(GeometryPrimitive::Triangles);
 		(*into)->UploadToGPU();
@@ -67,7 +70,8 @@ void TutorialGame::InitialiseAssets() {
 	InitWorld();
 }
 
-TutorialGame::~TutorialGame()	{
+TutorialGame::~TutorialGame()
+{
 	delete cubeMesh;
 	delete sphereMesh;
 	delete gooseMesh;
@@ -79,22 +83,28 @@ TutorialGame::~TutorialGame()	{
 	delete world;
 }
 
-void TutorialGame::UpdateGame(float dt) {
-	if (!inSelectionMode) {
+void TutorialGame::UpdateGame(float dt)
+{
+	if (!inSelectionMode) 
+	{
 		world->GetMainCamera()->UpdateCamera(dt);
 	}
-	if (lockedObject != nullptr) {
+	if (lockedObject != nullptr) 
+	{
 		LockedCameraMovement();
 	}
 
 	UpdateKeys();
 
-	if (useGravity) {
+	if (useGravity) 	
 		Debug::Print("(G)ravity on", Vector2(10, 40));
-	}
-	else {
+	
+	else 	
 		Debug::Print("(G)ravity off", Vector2(10, 40));
-	}
+
+	//todo: integrate imgui with this engine...
+	//physics->SetGravity(physics->GetConstGravity() + Vector3(0,1.f,0));
+	//physics->SetGlobalDamping(physics->GetConstGlobalDamping() + 1.f);
 
 	SelectObject();
 	MoveSelectedObject();
@@ -107,17 +117,21 @@ void TutorialGame::UpdateGame(float dt) {
 	renderer->Render();
 }
 
-void TutorialGame::UpdateKeys() {
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F1)) {
+void TutorialGame::UpdateKeys()
+{
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F1)) 
+	{
 		InitWorld(); //We can reset the simulation at any time with F1
 		selectionObject = nullptr;
 	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F2)) {
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F2)) 
+	{
 		InitCamera(); //F2 will reset the camera to a specific default place
 	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::G)) {
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::G)) 
+	{
 		useGravity = !useGravity; //Toggle gravity!
 		physics->UseGravity(useGravity);
 	}
@@ -125,21 +139,28 @@ void TutorialGame::UpdateKeys() {
 	//bias in the calculations - the same objects might keep 'winning' the constraint
 	//allowing the other one to stretch too much etc. Shuffling the order so that it
 	//is random every frame can help reduce such bias.
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F9)) {
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F9)) 
+	{
 		world->ShuffleConstraints(true);
 	}
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F10)) {
+	
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F10)) 
+	{
 		world->ShuffleConstraints(false);
 	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) {
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) 
+	{
 		world->ShuffleObjects(true);
 	}
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F8)) {
+	
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F8)) 
+	{
 		world->ShuffleObjects(false);
 	}
 
-	if (lockedObject) {
+	if (lockedObject) 
+	{
 		LockedObjectMovement();
 	}
 	else {
@@ -147,7 +168,8 @@ void TutorialGame::UpdateKeys() {
 	}
 }
 
-void TutorialGame::LockedObjectMovement() {
+void TutorialGame::LockedObjectMovement()
+{
 	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
 	Matrix4 camWorld	= view.Inverse();
 
@@ -332,15 +354,27 @@ bool TutorialGame::SelectObject()
 	return false;
 }
 
-/*
-If an object has been clicked, it can be pushed with the right mouse button, by an amount
-determined by the scroll wheel. In the first tutorial this won't do anything, as we haven't
-added linear motion into our physics system. After the second tutorial, objects will move in a straight
-line - after the third, they'll be able to twist under torque aswell.
-*/
+//todo: Add keys to modify position of selected object using forces
+// 28.11.2019 - linear motion
+// If an object has been clicked, it can be pushed with the right mouse button, by an amount determined by the scroll wheel.
+void TutorialGame::MoveSelectedObject()
+{
+	renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
+	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+	
+	if (!selectionObject) // No object has been selected!
+		return;		
 
-void TutorialGame::MoveSelectedObject() {
-
+	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) 
+	{
+		Ray ray = CollisionDetection::BuildRayFromMouse(* world->GetMainCamera());	
+		RayCollision closestCollision;
+		if(world->Raycast(ray, closestCollision, true)) 
+		{
+			if (closestCollision.node == selectionObject)
+				selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude);			
+		}	
+	}
 }
 
 void TutorialGame::InitCamera() {

@@ -1,10 +1,26 @@
+/***************************************************************************
+* Filename		: PhysicsObject.cpp
+* Name			: Ori Lazar
+* Date			: 28/11/2019
+* Description	: 
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #include "PhysicsObject.h"
 #include "PhysicsSystem.h"
 #include "../CSC8503Common/Transform.h"
+
 using namespace NCL;
 using namespace CSC8503;
 
-PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* parentVolume)	{
+PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* parentVolume)
+{
 	transform	= parentTransform;
 	volume		= parentVolume;
 
@@ -13,10 +29,32 @@ PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* 
 	friction	= 0.8f;
 }
 
-PhysicsObject::~PhysicsObject()	{
+PhysicsObject::~PhysicsObject()
+{
 
 }
 
+////////////////////////////////////////////////////
+// 28.11.2019 - linear motion //////////////////////
+////////////////////////////////////////////////////
+
+// at the end of each frame, reset forces so that they aren't applied multiple times next frame
+void PhysicsObject::ClearForces()
+{
+	force = Vector3();
+	torque = Vector3();
+}
+
+// param v3 represents a direction and an amount of Newtons of force to apply in that direction.
+void PhysicsObject::AddForce(const Vector3& addedForce)
+{
+	force += addedForce; // objects may have multiple forces applied per frame
+}
+
+
+////////////////////////////////////////////////////
+/// TBD ////////////////////////////////////////////
+////////////////////////////////////////////////////
 void PhysicsObject::ApplyAngularImpulse(const Vector3& force) {
 	if (force.Length() > 0) {
 		bool a = true;
@@ -28,9 +66,7 @@ void PhysicsObject::ApplyLinearImpulse(const Vector3& force) {
 	linearVelocity += force * inverseMass;
 }
 
-void PhysicsObject::AddForce(const Vector3& addedForce) {
-	force += addedForce;
-}
+
 
 void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3& position) {
 	Vector3 localPos = position - transform->GetWorldPosition();
@@ -41,11 +77,6 @@ void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3&
 
 void PhysicsObject::AddTorque(const Vector3& addedTorque) {
 	torque += addedTorque;
-}
-
-void PhysicsObject::ClearForces() {
-	force				= Vector3();
-	torque				= Vector3();
 }
 
 void PhysicsObject::InitCubeInertia() {
