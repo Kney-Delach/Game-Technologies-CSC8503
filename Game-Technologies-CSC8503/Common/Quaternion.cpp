@@ -185,21 +185,16 @@ Quaternion Quaternion::EulerAnglesToQuaternion(float roll, float yaw, float pitc
 	return q;
 };
 
-Quaternion Quaternion::AxisAngleToQuaterion(const Vector3& vector, float degrees) {
+Quaternion Quaternion::AxisAngleToQuaterion(const Vector3& vector, float degrees)
+{
 	float theta		= (float)Maths::DegreesToRadians(degrees);
 	float result	= (float)sin(theta / 2.0f);
 
 	return Quaternion((float)(vector.x * result), (float)(vector.y * result), (float)(vector.z * result), (float)cos(theta / 2.0f));
 }
 
-
-Vector3		Quaternion::operator *(const Vector3 &a)	const {
-	Vector3 uv, uuv;
-	Vector3 qvec(x, y, z);
-	uv = -Vector3::Cross(a, qvec);
-	uuv = -Vector3::Cross(qvec, uv);
-	uv *= (2.0f * w);
-	uuv *= 2.0f;
-
-	return a + (uv + uuv);
+Vector3 Quaternion::operator *(const Vector3& a) const
+{
+	const Quaternion newVec = *this * Quaternion(a.x, a.y, a.z, 0.0f) * Conjugate();
+	return Vector3(newVec.x, newVec.y, newVec.z);
 }

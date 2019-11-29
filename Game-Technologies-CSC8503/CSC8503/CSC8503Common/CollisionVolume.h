@@ -15,6 +15,7 @@
 #pragma once
 namespace NCL
 {
+	// volume type used for bitwise operations in collision detection (as power of two)
 	enum class VolumeType
 	{
 		AABB	= 1,
@@ -28,12 +29,8 @@ namespace NCL
 	class CollisionVolume
 	{
 	public:
-		CollisionVolume()
-		{
-			type = VolumeType::Invalid;
-		}
-		~CollisionVolume() {}
-
+		CollisionVolume() : type(VolumeType::Invalid) {}
+		~CollisionVolume() = default;
 		VolumeType type;
 	};
 }

@@ -248,7 +248,8 @@ bool TutorialGame::SelectObject()
 			Window::GetWindow()->ShowOSPointer(true);
 			Window::GetWindow()->LockMouseToWindow(false);
 		}
-		else {
+		else 
+		{
 			Window::GetWindow()->ShowOSPointer(false);
 			Window::GetWindow()->LockMouseToWindow(true);
 		}
@@ -289,7 +290,6 @@ bool TutorialGame::SelectObject()
 				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
 				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
 			}
-
 		}
 
 		

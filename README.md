@@ -28,6 +28,7 @@ This repo contains a series of physics, networking and AI exercises completed fo
 | Physics |[Raycasting](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/1raycasting/Physics%20-%20Raycasting.pdf)|Fires **infinitely thin lines** from a point in the world to see which objects collide with it.|![dev][version-1.0.0]|
 | Physics |[Linear Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf)|Uses a **semi-implicit Euler integrator** to simulate rigid body dynamics.|![dev][version-1.0.0]|
 | Physics |[Angular Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/3angularmotion/Physics%20-%20Rotation.pdf)|Simulates angular movement dynamics using **moments of inertia**.|![dev][version-1.0.0]|
+| Physics |[Collision Detection]()|**Sphere** and **AABB** detection capabilities, with a plan to eventually implement OBB, capsule and swept volume collisions.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
 ### Physics 
@@ -55,6 +56,9 @@ The following gif contains an example of movement using additive forces on selec
 
 The following gif contains an example of angular movement using point specific additive forces on selectable objects:
 [![Angular Motion](https://i.gyazo.com/70361ca93fc59f5d89219e1c99dc0352.gif)](https://gyazo.com/70361ca93fc59f5d89219e1c99dc0352)
+
+#### Collision Detection 
+- The implementation in this repo began as an exercise through the following tutorials: [1]() and [2]().
 
 <a name="networking"></a>
 ### Networking 
