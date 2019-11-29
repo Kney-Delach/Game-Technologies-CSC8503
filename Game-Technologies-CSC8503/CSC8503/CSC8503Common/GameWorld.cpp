@@ -98,7 +98,8 @@ void GameWorld::UpdateQuadTree() {
 	//}
 }
 
-bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObject) const {
+bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObject) const
+{
 	//The simplest raycast just goes through each object and sees if there's a collision
 	RayCollision collision;
 	for (auto& i : gameObjects) 
@@ -129,14 +130,13 @@ bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObje
 				closestCollision.node = i;
 				return true;
 			}
-			else 
+
+			if (thisCollision.rayDistance < collision.rayDistance) 
 			{
-				if (thisCollision.rayDistance < collision.rayDistance) 
-				{
-					thisCollision.node = i;
-					collision = thisCollision;
-				}
+				thisCollision.node = i;
+				collision = thisCollision;
 			}
+			
 		}
 	}
 	if (collision.node) 

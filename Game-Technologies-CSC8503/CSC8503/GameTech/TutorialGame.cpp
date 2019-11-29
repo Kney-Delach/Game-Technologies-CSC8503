@@ -358,7 +358,6 @@ void TutorialGame::MoveSelectedObject()
 		{
 			if (closestCollision.node == selectionObject)
 				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
-				//selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude); // linear motion 
 		}
 		
 
@@ -511,7 +510,7 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
-	cube->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 	
 	world->AddGameObject(cube);
 
@@ -637,22 +636,26 @@ void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacin
 
 void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
 {
-	float sphereRadius = 1.0f;
-	Vector3 cubeDims = Vector3(4, 4, 2);
+	const float sphereRadius = 1.f;
+	const Vector3 cubeDims = Vector3(1,1,1);
 
 	for (int x = 0; x < numCols; ++x) 
 	{
 		for (int z = 0; z < numRows; ++z) 
 		{
-			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f + z * 3.f, 3.f * z * rowSpacing);
+			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
 
-			if (x % 2) 
+			//AddCubeToWorld(position, cubeDims); // rendering only cubes, as issue with sphere objects
+			//AddSphereToWorld(position, sphereRadius, false);
+
+			if (x % 2)
 			{
-				AddSphereToWorld(position, sphereRadius, true);
+				AddCubeToWorld(position, cubeDims);
+				//AddSphereToWorld(position, sphereRadius, true);
 			}
 			else 
 			{
-				AddSphereToWorld(position, sphereRadius, false);
+				AddSphereToWorld(position, sphereRadius, true);
 			}
 		}
 	}

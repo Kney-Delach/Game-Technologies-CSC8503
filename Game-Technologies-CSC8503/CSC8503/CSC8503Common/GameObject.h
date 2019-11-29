@@ -24,7 +24,7 @@
 #include "Ray.h"
 
 #include <vector>
-
+#include "SphereVolume.h"
 
 
 using std::vector;
@@ -74,7 +74,7 @@ namespace NCL
 			}
 
 			Ray BuildRayFromDirection(const Vector3& direction) const
-			{ 
+			{
 				return Ray(transform.GetWorldPosition(), transform.GetWorldOrientation() * direction); 
 			}
 

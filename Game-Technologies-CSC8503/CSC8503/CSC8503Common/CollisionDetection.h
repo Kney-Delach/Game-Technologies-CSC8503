@@ -61,7 +61,7 @@ namespace NCL
 
 			// Advanced collision detection / resolution
 			// This gets used as a quick hashing function to identify unique pairs of colliding objects in lists.
-			bool operator < (const CollisionInfo& other) const
+			bool operator <(const CollisionInfo& other) const
 			{
 				size_t otherHash = (size_t)other.a + ((size_t)other.b << 8);
 				size_t thisHash  = (size_t)a + ((size_t)b << 8);
@@ -92,11 +92,11 @@ namespace NCL
 		static bool ObjectIntersection(GameObject* a, GameObject* b, CollisionInfo& collisionInfo);
 		static bool SphereIntersection(const SphereVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
 		static bool AABBSphereIntersection(const AABBVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
-
-		
-		static bool RayPlaneIntersection(const Ray&r, const Plane&p, RayCollision& collisions);
 		static bool	AABBTest(const Vector3& posA, const Vector3& posB, const Vector3& halfSizeA, const Vector3& halfSizeB);
 		static bool AABBIntersection(const AABBVolume& volumeA, const Transform& worldTransformA, const AABBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
+
+		// tbd...
+		static bool RayPlaneIntersection(const Ray&r, const Plane&p, RayCollision& collisions);
 		static bool OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
 
 		// Helper functions to project screen positions to world positions (used by raycasting!)
