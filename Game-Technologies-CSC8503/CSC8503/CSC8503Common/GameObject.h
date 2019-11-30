@@ -24,7 +24,7 @@
 #include "Ray.h"
 
 #include <vector>
-
+#include "SphereVolume.h"
 
 
 using std::vector;
@@ -74,7 +74,7 @@ namespace NCL
 			}
 
 			Ray BuildRayFromDirection(const Vector3& direction) const
-			{ 
+			{
 				return Ray(transform.GetWorldPosition(), transform.GetWorldOrientation() * direction); 
 			}
 
@@ -102,12 +102,14 @@ namespace NCL
 				return name;
 			}
 
-			virtual void OnCollisionBegin(GameObject* otherObject) {
-				//std::cout << "OnCollisionBegin event occured!\n";
+			virtual void OnCollisionBegin(GameObject* otherObject)
+			{
+				std::cout << "OnCollisionBegin event occured!\n";
 			}
 
-			virtual void OnCollisionEnd(GameObject* otherObject) {
-				//std::cout << "OnCollisionEnd event occured!\n";
+			virtual void OnCollisionEnd(GameObject* otherObject)
+			{
+				std::cout << "OnCollisionEnd event occured!\n";
 			}
 
 			bool GetBroadphaseAABB(Vector3&outsize) const;
@@ -118,9 +120,12 @@ namespace NCL
 			// used to display debug information and selection of the object 
 			void DrawDebug(const Vector4& color);
 
+			// 30.11.2019
+			void DrawDebugVolume(const Vector4& color = Vector4(0,1,0,1));
+
+		public:
 			// 28.11.2019 
 			static void DrawLineBetweenObjects(const GameObject* from, const GameObject* to);
-				
 		protected:
 			Transform			transform;
 			Layer				layer; // 28.11.2019 - collision layer references

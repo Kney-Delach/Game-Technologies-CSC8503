@@ -30,12 +30,10 @@
 
 using namespace NCL;
 
-bool CollisionDetection::RayPlaneIntersection(const Ray&r, const Plane&p, RayCollision& collisions)
-{
-	return false;
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 27/11/19 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// 27/11/19
 // returns the correct sub-type ray intersection function call
 bool CollisionDetection::RayIntersection(const Ray& r, GameObject& object, RayCollision& collision)
 {	
@@ -53,7 +51,6 @@ bool CollisionDetection::RayIntersection(const Ray& r, GameObject& object, RayCo
 		default:					return false;
 	}}
 
-// 27/11/19
 // Uses reduced plane case that only checks the 3 closest planes rather than all 6 planes that make up the box.
 // check direction of ray, if going left we check only right side of box, if up check bottom, if going forward, check back side of box.
 // note: box is axis-aligned.
@@ -93,7 +90,6 @@ bool CollisionDetection::RayBoxIntersection(const Ray& r, const Vector3& boxPos,
 	return true;
 }
 
-// 27/11/19
 // pass through function to RayBoxIntersection function above, as is axis aligned
 bool CollisionDetection::RayAABBIntersection(const Ray&r, const Transform& worldTransform, const AABBVolume& volume, RayCollision& collision)
 {
@@ -102,7 +98,6 @@ bool CollisionDetection::RayAABBIntersection(const Ray&r, const Transform& world
 	return RayBoxIntersection(r, boxPos, boxSize, collision);
 }
 
-// 27/11/19
 // 1. transofrm ray os that it is in local space of box
 //      - to bring ray into local space of box, subtract box's position and transform newly formed relative position by the inverse of the box's orientation, formed
 //        using conjugate of its orientation quaternion, along with the ray's direction, this returns the temporary ray defined within the frame of reference of the OBB (AABB at its own origin, i.e, the box sits at its own origin position).
@@ -126,16 +121,24 @@ bool CollisionDetection::RayOBBIntersection(const Ray&r, const Transform& worldT
 	return collided;
 }
 
-// 27/11/19
 // ray intersection with spheres
 bool CollisionDetection::RaySphereIntersection(const Ray&r, const Transform& worldTransform, const SphereVolume& volume, RayCollision& collision)
 {
 	Vector3 spherePos = worldTransform.GetWorldPosition();				// world position of sphere
-	float sphereRadius = volume.GetRadius();							// radius of sphere
+	float sphereRadius = volume.GetRadius();							// radius of sphere	
+
+		//So that the sphere does not see itself as it's target
+	if ((spherePos - r.GetPosition()).Length() < volume.GetRadius())	
+		return false;
 	
-	Vector3 dir = (spherePos - r.GetPosition());						// Get the direction between the ray origin and the sphere origin
+	Vector3 dir = spherePos - r.GetPosition();							// Get the direction between the ray origin and the sphere origin
+	
 	float sphereProj = Vector3::Dot(dir, r.GetDirection());			// Project the sphere ’s origin onto the ray direction vector
-	Vector3 point = r.GetPosition() + (r.GetDirection() * sphereProj);	// Get closest point on ray line to sphere 
+
+	if (sphereProj < 0)
+		return false;
+	
+	Vector3 point = r.GetPosition() + r.GetDirection() * sphereProj;	// Get closest point on ray line to sphere 
 	
 	float sphereDist = (point - spherePos).Length();					// Distance from the point to the sphere
 	
@@ -144,49 +147,172 @@ bool CollisionDetection::RaySphereIntersection(const Ray&r, const Transform& wor
 
 	// determine collision point (COLLIDING)
 	// move collision point back along the direction vector so that it touches the surface of the sphere, rather than being inside of it.
-	float sNorm = sphereDist / sphereRadius;
-	sNorm = cos(DegreesToRadians(sNorm * 90.0f));
+	float offset = sqrt(sphereRadius * sphereRadius - sphereDist * sphereDist);
 	
-	collision.rayDistance = sphereProj - sphereRadius * sNorm;
+	collision.rayDistance = sphereProj - offset;
 	collision.collidedAt = r.GetPosition() + r.GetDirection() * collision.rayDistance;
 	
 	return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 29/11/19 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// determines which collision detection function to use between two gameobjects.
+//todo: implement this in an optimized manner -> virtual functions, dispatch functions, function pointers....
 bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, CollisionInfo& collisionInfo)
 {
+	const CollisionVolume * volA = a->GetBoundingVolume();
+	const CollisionVolume * volB = b->GetBoundingVolume();
+	
+	if (!volA || !volB) // collidable shapes must have a bounding volume
+		return false;	
+	
+	collisionInfo.a = a;
+	collisionInfo.b = b;
+	
+	const Transform & transformA = a->GetConstTransform();
+	const Transform & transformB = b->GetConstTransform();
+
+	// perform bitwise OR operator to determine ordering
+	const VolumeType pairType = (VolumeType)((int)volA->type | (int)volB->type);
+
+	// objects of the same type
+	if (pairType == VolumeType::AABB) 
+		return AABBIntersection((AABBVolume&)*volA, transformA,(AABBVolume&)*volB, transformB, collisionInfo);
+		
+	if (pairType == VolumeType::Sphere) 
+		return SphereIntersection((SphereVolume&)*volA, transformA,(SphereVolume&)*volB, transformB, collisionInfo);
+	// objects not the same type (can perform bit shifting above to differentiate between these cases)
+	if (volA->type == VolumeType::AABB && volB->type == VolumeType::Sphere)
+		return AABBSphereIntersection((AABBVolume&)*volA, transformA, (SphereVolume&)*volB, transformB, collisionInfo);
+	
+	if (volA->type == VolumeType::Sphere && volB->type == VolumeType::AABB) 
+	{
+		// flip collision info ordering as AABBSphereIntersection expects AABB volume object first.
+		collisionInfo.a = b;
+		collisionInfo.b = a;
+		return AABBSphereIntersection((AABBVolume&)*volB, transformB, (SphereVolume&)*volA, transformA, collisionInfo);
+	}
 	return false;
 }
 
+// Sphere - Sphere collision
+bool CollisionDetection::SphereIntersection(const SphereVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+{
+	const float radii = volumeA.GetRadius() + volumeB.GetRadius(); // total radius
+	const Vector3 delta = worldTransformB.GetWorldPosition() - worldTransformA.GetWorldPosition(); // position A - position B
+	const float deltaLength = delta.Length(); // length of distance	
+	if (deltaLength < radii)  // if length of distance between spheres is smaller than total radius, then spheres are colliding
+	{
+		const float penetration = radii - deltaLength;
+		const Vector3 normal = delta.Normalised(); // normalized vector between the two spheres
+		const Vector3 localA = normal * volumeA.GetRadius();
+		const Vector3 localB = -normal * volumeB.GetRadius();		
+		collisionInfo.AddContactPoint(localA, localB, normal, penetration);
+		return true;
+	}	
+	return false;
+}
+
+// AABB - Sphere Collision
+bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+{
+	// find closest point on the box to the sphere's location
+	const Vector3 boxSize = volumeA.GetHalfDimensions();
+	const Vector3 delta = worldTransformB.GetWorldPosition() - worldTransformA.GetWorldPosition();
+	const Vector3 closestPointOnBox = Maths::Clamp(delta, -boxSize, boxSize); // clamp relative position of the sphere, to limit it to the box's size.
+	const Vector3 localPoint = delta - closestPointOnBox; // determines how far away the sphere is from the closest point on the box (subtract this point from the sphere's relative position)
+	const float distance = localPoint.Length();	
+	if(distance < volumeB.GetRadius()) // if point lies at a distance less than the sphere's radius, then objects are colliding.
+	{
+		const Vector3 localA = Vector3();
+		const Vector3 collisionNormal = localPoint.Normalised();
+		const Vector3 localB = -collisionNormal * volumeB.GetRadius(); // collision point for sphere will lie radius units backwards along the collision normal
+		const float penetration = volumeB.GetRadius() - distance;
+		collisionInfo.AddContactPoint(localA, localB, collisionNormal, penetration);
+		return true;
+	}	
+	return false; // not colliding 
+}
+
+// AABB - AABB Collision
+// if distance between object's on each axis is less than sumn of box sizes on that axis, only if true for ALL AXIS then objects are intersecting.
 bool CollisionDetection::AABBTest(const Vector3& posA, const Vector3& posB, const Vector3& halfSizeA, const Vector3& halfSizeB)
 {
+	const Vector3 delta = posB - posA; // distance between each axis
+	const Vector3 totalSize = halfSizeA + halfSizeB; // sum of total box sizes
+	if (abs(delta.x) < totalSize.x && abs(delta.y) < totalSize.y && abs(delta.z) < totalSize.z)  // are distances less than box sizes
+		return true;	
 	return false;
 }
 
-//AABB/AABB Collisions
-bool CollisionDetection::AABBIntersection(const AABBVolume& volumeA, const Transform& worldTransformA,
-	const AABBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+// AABB - AABB intersections
+bool CollisionDetection::AABBIntersection(const AABBVolume& volumeA, const Transform& worldTransformA, const AABBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
 {
-	return false;
+	// box positions
+	Vector3 boxAPos = worldTransformA.GetWorldPosition();
+	Vector3 boxBPos = worldTransformB.GetWorldPosition();
+
+	// box sizes
+	Vector3 boxASize = volumeA.GetHalfDimensions();
+	Vector3 boxBSize = volumeB.GetHalfDimensions();
+
+	bool overlap = AABBTest(boxAPos, boxBPos, boxASize, boxBSize); // test if boxes are overlapping using AABB test function
+
+	if (overlap) 
+	{
+	 	static const Vector3 faces[6] = 
+		{
+	 		Vector3(-1, 0, 0), Vector3(1, 0, 0),
+			Vector3(0, -1, 0), Vector3(0, 1, 0),
+			Vector3(0, 0, -1), Vector3(0, 0, 1),
+		};
+
+		// minimum and maximum positions for each axis of each box
+		 Vector3 maxA = boxAPos + boxASize;
+		 Vector3 minA = boxAPos - boxASize;
+		 Vector3 maxB = boxBPos + boxBSize;
+		 Vector3 minB = boxBPos - boxBSize;
+
+		 // from box's world position (above), determine the minimum and maximum position for each axis by either adding or subtracting the box's size.
+		 // max extent of object B - minimum of object A = amount of overlap on each axis 
+		 // (how far into box A on each axis does box B's max position extend)
+		float distances[6] =
+		 {
+			 (maxB.x - minA.x), // distance of box ’b’ to ’left ’ of ’a ’.
+			 (maxA.x - minB.x), // distance of box ’b’ to ’right ’ of ’a ’.
+			 (maxB.y - minA.y), // distance of box ’b’ to ’bottom ’ of ’a ’.
+			 (maxA.y - minB.y), // distance of box ’b’ to ’top ’ of ’a ’.
+			 (maxB.z - minA.z), // distance of box ’b’ to ’far ’ of ’a ’.
+			 (maxA.z - minB.z)  // distance of box ’b’ to ’near ’ of ’a ’.
+		 };
+	 	
+		 float penetration = FLT_MAX;
+		 Vector3 bestAxis;
+
+		 // compute axis of minimum penetration
+		 for (int i = 0; i < 6; i++)
+		 {
+			 if (distances[i] < penetration) 
+			 {
+				 penetration = distances[i];
+				 bestAxis = faces[i];
+			 }
+		 }
+		 collisionInfo.AddContactPoint(Vector3(), Vector3(),bestAxis, penetration); // relative collision points to origin (tbd....)
+		 return true; // colliding
+	}
+	return false; // not colliding
 }
 
-//Sphere / Sphere Collision
-bool CollisionDetection::SphereIntersection(const SphereVolume& volumeA, const Transform& worldTransformA,
-	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
-{
-	return false;
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TBD... ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//AABB - Sphere Collision
-bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const Transform& worldTransformA,
-	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
-{
-	return false;
-}
 
-bool CollisionDetection::OBBIntersection(
-	const OBBVolume& volumeA, const Transform& worldTransformA,
-	const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
 {
 	return false;
 }
@@ -198,33 +324,22 @@ Matrix4 GenerateInverseView(const Camera &c)
 	float pitch = c.GetPitch();
 	float yaw	= c.GetYaw();
 	Vector3 position = c.GetPosition();
-
-	Matrix4 iview =
-		Matrix4::Translation(position) *
-		Matrix4::Rotation(-yaw, Vector3(0, -1, 0)) *
-		Matrix4::Rotation(-pitch, Vector3(-1, 0, 0));
-
+	Matrix4 iview = Matrix4::Translation(position) * Matrix4::Rotation(-yaw, Vector3(0, -1, 0)) * Matrix4::Rotation(-pitch, Vector3(-1, 0, 0));
 	return iview;
 }
 
 Matrix4 GenerateInverseProjection(float aspect, float nearPlane, float farPlane, float fov)
 {
 	float negDepth = nearPlane - farPlane;
-
 	float invNegDepth = negDepth / (2 * (farPlane * nearPlane));
-
 	Matrix4 m;
-
 	float h = 1.0f / tan(fov*PI_OVER_360);
-
 	m.array[0] = aspect / h;
 	m.array[5] = tan(fov*PI_OVER_360);
 	m.array[10] = 0.0f;
-
 	m.array[11] = invNegDepth;//// +PI_OVER_360;
 	m.array[14] = -1.0f;
 	m.array[15] = (0.5f / nearPlane) + (0.5f / farPlane);
-
 	//Matrix4 temp = projection.Inverse();
 	//return temp;
 	return m;
@@ -233,7 +348,7 @@ Matrix4 GenerateInverseProjection(float aspect, float nearPlane, float farPlane,
 Vector3 CollisionDetection::Unproject(const Vector3& screenPos, const Camera& cam)
 {
 	Vector2 screenSize = Window::GetWindow()->GetScreenSize();
-
+	
 	float aspect	= screenSize.x / screenSize.y;
 	float fov		= cam.GetFieldOfVision();
 	float nearPlane = cam.GetNearPlane();
@@ -391,4 +506,9 @@ Vector3	CollisionDetection::UnprojectScreenPosition(Vector3 position, float aspe
 	//our transformed w coordinate is now the 'inverse' perspective divide, so
 	//we can reconstruct the final world space by dividing x,y,and z by w.
 	return Vector3(transformed.x / transformed.w, transformed.y / transformed.w, transformed.z / transformed.w);
+}
+
+bool CollisionDetection::RayPlaneIntersection(const Ray& r, const Plane& p, RayCollision& collisions)
+{
+	return false;
 }

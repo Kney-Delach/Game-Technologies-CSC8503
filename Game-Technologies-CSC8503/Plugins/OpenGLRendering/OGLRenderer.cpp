@@ -16,6 +16,7 @@ https://research.ncl.ac.uk/game/
 
 #include "../../Common/Vector2.h"
 #include "../../Common/Vector3.h"
+#include "../../Common/matrix4.h"
 
 #include "../../Common/MeshGeometry.h"
 
@@ -68,11 +69,14 @@ OGLRenderer::OGLRenderer(Window& w) : RendererBase(w)	{
 	}
 
 	forceValidDebugState = false;
+
+	circleMesh = new OGLMesh("sphere.msh");
 }
 
 OGLRenderer::~OGLRenderer()	{
 	delete font;
 	delete debugShader;
+	delete circleMesh;
 
 #ifdef _WIN32
 	DestroyWithWin32();
@@ -205,8 +209,17 @@ void OGLRenderer::DrawLine(const Vector3& start, const Vector3& end, const Vecto
 	debugLines.emplace_back(l);
 }
 
+void OGLRenderer::DrawCircle(const Vector3& position, float radius, const Vector4& colour)
+{
+	DebugCircle c;
+	c.position = position;
+	c.colour = colour;
+	c.radius = radius;
+	debugCircles.emplace_back(c);
+}
+
 void OGLRenderer::DrawDebugData() {
-	if (debugStrings.empty() && debugLines.empty()) {
+	if (debugStrings.empty() && debugLines.empty() && debugCircles.empty()) {
 		return; //don't mess with OGL state if there's no point!
 	}
 	BindShader(debugShader);
@@ -224,7 +237,9 @@ void OGLRenderer::DrawDebugData() {
 	SetupDebugMatrix(debugShader);
 	glUniform1i(switchLocation, 1);
 	DrawDebugLines();
-
+	glUniform1i(switchLocation, -1);
+	DrawDebugCircles();
+	
 	if (forceValidDebugState) {
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
@@ -281,6 +296,30 @@ void OGLRenderer::DrawDebugLines() {
 	DrawBoundMesh();
 
 	debugLines.clear();
+}
+
+void OGLRenderer::DrawDebugCircles()
+{
+	circleMesh->SetPrimitiveType(GeometryPrimitive::Lines);
+	circleMesh->UploadToGPU();
+	BindMesh(&(*circleMesh));
+	
+	BindTextureToShader(nullptr, "mainTex", 0);
+
+	const int positionLocation = glGetUniformLocation(debugShader->GetProgramID(), "inPosition");
+	const int colorLocation = glGetUniformLocation(debugShader->GetProgramID(), "inColor");
+	
+	for (DebugCircle& c : debugCircles)
+	{
+		Matrix4 modelMatrix = Matrix4();
+		modelMatrix.SetPositionVector(c.position);
+		modelMatrix.SetDiagonal(Vector3(c.radius, c.radius, c.radius));
+		glUniformMatrix4fv(positionLocation, 1, false, (float*)&modelMatrix);
+		glUniform4fv(colorLocation,1, (float*)&c.colour);
+		DrawBoundMesh();
+	}
+
+	debugCircles.clear();
 }
 
 #ifdef _WIN32

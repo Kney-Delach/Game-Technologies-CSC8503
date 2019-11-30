@@ -209,5 +209,8 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Other</Filter>
     </ClCompile>
+    <ClCompile Include="SphereVolume.cpp">
+      <Filter>CollisionDetection</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

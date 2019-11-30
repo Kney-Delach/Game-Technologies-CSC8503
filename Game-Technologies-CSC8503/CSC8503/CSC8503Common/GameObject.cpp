@@ -69,6 +69,14 @@ void GameObject::DrawDebug(const Vector4& color)
 {
 	renderObject->SetColour(color);
 }
+
+void GameObject::DrawDebugVolume(const Vector4& color)
+{
+	if (boundingVolume) 
+		boundingVolume->DrawDebug(transform.GetWorldPosition(), color);	
+}
+
+
 //28.11.2019 
 // draws a line between two gameobjects, with the color of the object line is going to 
 void GameObject::DrawLineBetweenObjects(const GameObject* from, const GameObject* to)

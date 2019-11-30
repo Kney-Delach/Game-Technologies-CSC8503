@@ -111,6 +111,11 @@ void TutorialGame::UpdateGame(float dt)
 	renderer->Update(dt);
 	physics->Update(dt);
 
+	//todo: implement the following function
+	//if (drawBoundingVolumes)
+	//	world->DrawBoundingVolumes();
+	if(selectionObject) selectionObject->DrawDebugVolume(); // draw bounding volumes in world should look something like this for each gameobject
+
 	Debug::FlushRenderables();
 	renderer->Render();
 }
@@ -248,7 +253,8 @@ bool TutorialGame::SelectObject()
 			Window::GetWindow()->ShowOSPointer(true);
 			Window::GetWindow()->LockMouseToWindow(false);
 		}
-		else {
+		else 
+		{
 			Window::GetWindow()->ShowOSPointer(false);
 			Window::GetWindow()->LockMouseToWindow(true);
 		}
@@ -289,7 +295,7 @@ bool TutorialGame::SelectObject()
 				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
 				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
 			}
-
+			
 		}
 
 		
@@ -358,7 +364,6 @@ void TutorialGame::MoveSelectedObject()
 		{
 			if (closestCollision.node == selectionObject)
 				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
-				//selectionObject->GetPhysicsObject()->AddForce(ray.GetDirection() * forceMagnitude); // linear motion 
 		}
 		
 
@@ -415,11 +420,11 @@ void TutorialGame::InitWorld()
 	physics->Clear();
 
 	InitMixedGridWorld(10, 10, 3.5f, 3.5f);
-	AddGooseToWorld(Vector3(30, 2, 0));
-	AddAppleToWorld(Vector3(35, 2, 0));
+	AddGooseToWorld(Vector3(30, -10, 0));
+	AddAppleToWorld(Vector3(35, -10, 0));
 
-	AddParkKeeperToWorld(Vector3(40, 2, 0));
-	AddCharacterToWorld(Vector3(45, 2, 0));
+	AddParkKeeperToWorld(Vector3(-40, 10, 0));
+	AddCharacterToWorld(Vector3(-45, 10, 0));
 
 	AddFloorToWorld(Vector3(0, -2, 0));
 }
@@ -433,7 +438,7 @@ A single function to add a large immoveable cube to the bottom of our world
 */
 GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
 {
-	GameObject* floor = new GameObject();
+	GameObject* floor = new GameObject("Ground");
 
 	Vector3 floorSize = Vector3(100, 2, 100);
 	AABBVolume* volume = new AABBVolume(floorSize);
@@ -463,7 +468,7 @@ physics worlds. You'll probably need another function for the creation of OBB cu
 */
 GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass)
 {
-	GameObject* sphere = new GameObject();
+	GameObject* sphere = new GameObject("Sphere");
 
 	Vector3 sphereSize = Vector3(radius, radius, radius);
 	SphereVolume* volume = new SphereVolume(radius);
@@ -496,7 +501,7 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
 {
-	GameObject* cube = new GameObject();
+	GameObject* cube = new GameObject("Cube");
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 
@@ -511,7 +516,7 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
-	cube->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 	
 	world->AddGameObject(cube);
 
@@ -523,7 +528,7 @@ GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 	float size			= 1.0f;
 	float inverseMass	= 1.0f;
 
-	GameObject* goose = new GameObject();
+	GameObject* goose = new GameObject("Goose");
 
 
 	SphereVolume* volume = new SphereVolume(size);
@@ -548,7 +553,7 @@ GameObject* TutorialGame::AddParkKeeperToWorld(const Vector3& position)
 	float meshSize = 4.0f;
 	float inverseMass = 0.5f;
 
-	GameObject* keeper = new GameObject();
+	GameObject* keeper = new GameObject("Park Keeper");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3, 0.9f, 0.3) * meshSize);
 	keeper->SetBoundingVolume((CollisionVolume*)volume);
@@ -582,7 +587,7 @@ GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
 		minVal.y = min(minVal.y, i.y);
 	}
 
-	GameObject* character = new GameObject();
+	GameObject* character = new GameObject("Character");
 
 	float r = rand() / (float)RAND_MAX;
 
@@ -606,7 +611,7 @@ GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
 
 GameObject* TutorialGame::AddAppleToWorld(const Vector3& position)
 {
-	GameObject* apple = new GameObject();
+	GameObject* apple = new GameObject("Apple");
 
 	SphereVolume* volume = new SphereVolume(0.7f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
@@ -632,31 +637,35 @@ void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacin
 			AddSphereToWorld(position, radius, 1.0f);
 		}
 	}
-	AddFloorToWorld(Vector3(0, -2, 0));
+	//AddFloorToWorld(Vector3(0, -2, 0));
 }
 
 void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
 {
-	float sphereRadius = 1.0f;
-	Vector3 cubeDims = Vector3(4, 4, 2);
+	const float sphereRadius = 1.f;
+	const Vector3 cubeDims = Vector3(1,1,1);
 
 	for (int x = 0; x < numCols; ++x) 
 	{
 		for (int z = 0; z < numRows; ++z) 
 		{
-			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f + z * 3.f, 3.f * z * rowSpacing);
+			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
 
-			if (x % 2) 
+			//AddCubeToWorld(position, cubeDims); // rendering only cubes, as issue with sphere objects
+			//AddSphereToWorld(position, sphereRadius, false);
+
+			if (x % 2)
 			{
-				AddSphereToWorld(position, sphereRadius, true);
+				AddCubeToWorld(position, cubeDims);
+				//AddSphereToWorld(position, sphereRadius, true);
 			}
 			else 
 			{
-				AddSphereToWorld(position, sphereRadius, false);
+				AddSphereToWorld(position, sphereRadius, true);
 			}
 		}
 	}
-	AddFloorToWorld(Vector3(0, -2, 0));
+	//AddFloorToWorld(Vector3(0, -2, 0));
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims)
@@ -667,7 +676,7 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 			AddCubeToWorld(position, cubeDims, 1.0f);
 		}
 	}
-	AddFloorToWorld(Vector3(0, -2, 0));
+	//AddFloorToWorld(Vector3(0, -2, 0));
 }
 
 void TutorialGame::BridgeConstraintTest()

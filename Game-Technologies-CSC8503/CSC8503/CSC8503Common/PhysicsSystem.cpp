@@ -65,7 +65,7 @@ This is the core of the physics engine update
 
 */
 void PhysicsSystem::Update(float dt)
-	{
+{
 	GameTimer testTimer;
 	testTimer.GetTimeDeltaSeconds();
 
@@ -138,17 +138,47 @@ void PhysicsSystem::Update(float dt)
 	//std::cout << "Physics time taken: " << time << std::endl;
 }
 
-/*
-Later on we're going to need to keep track of collisions
-across multiple frames, so we store them in a set.
 
-The first time they are added, we tell the objects they are colliding.
-The frame they are to be removed, we tell them they're no longer colliding.
+// 30.11.2019
+// ------------------------------------------------------------------------------
+// NOTE: This function iterates over every gameobject TWICE!
+// Step thorugh every pair of objects once (the inner for loop offset ensures this),
+// and determine whether they collide,
+// and if so, add them to the collision set for later processing.
+// The set will guarantee that a particular pair will only be added once,
+// so objects colliding for multiple frames won't flood the set with duplicates.
+void PhysicsSystem::BasicCollisionDetection()
+{
+	std::vector<GameObject*>::const_iterator first;
+	std::vector<GameObject*>::const_iterator last;
+	gameWorld.GetObjectIterators(first, last);
 
-From this simple mechanism, we we build up gameplay interactions inside the
-OnCollisionBegin / OnCollisionEnd functions (removing health when hit by a 
-rocket launcher, gaining a point when the player hits the gold coin, and so on).
-*/
+	for (auto i = first; i != last; ++i)
+	{
+		if ((*i)->GetPhysicsObject() == nullptr)
+			continue;
+
+		for (auto j = i + 1; j != last; ++j)
+		{
+			if ((*j)->GetPhysicsObject() == nullptr)
+				continue;
+
+			CollisionDetection::CollisionInfo info;
+			if (CollisionDetection::ObjectIntersection(*i, *j, info)) // returns true if collision has taken place 
+			{
+				std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
+				info.framesLeft = numCollisionFrames;
+				allCollisions.insert(info);
+			}
+		}	}
+}
+
+// 30.11.2019
+// ------------------------------------------------------------------------------
+// used to keep track of collisions across multiple frames
+// first time added -> colliding
+// frame removed -> no longer colliding
+// used to build up gameplay interactions inside (OnCollisionBegin | OnCollisionEnd)
 void PhysicsSystem::UpdateCollisionList()
 {
 	for (std::set<CollisionDetection::CollisionInfo>::iterator i = allCollisions.begin(); i != allCollisions.end(); )
@@ -182,20 +212,6 @@ void PhysicsSystem::UpdateObjectAABBs()
 	{	
 		(*i)->UpdateBroadphaseAABB();
 	}
-}
-
-/*
-
-This is how we'll be doing collision detection in tutorial 4.
-We step thorugh every pair of objects once (the inner for loop offset 
-ensures this), and determine whether they collide, and if so, add them
-to the collision set for later processing. The set will guarantee that
-a particular pair will only be added once, so objects colliding for
-multiple frames won't flood the set with duplicates.
-*/
-void PhysicsSystem::BasicCollisionDetection()
-{
-
 }
 
 /*
@@ -323,7 +339,7 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		transform.SetLocalOrientation(orientation);
 		
 		angularVelocity = angularVelocity * frameDamping; // Damp the angular velocity (simulate resistance) 
-		object->SetAngularVelocity(angularVelocity);	}
+		object->SetAngularVelocity(angularVelocity);	}
 }
 
 /*

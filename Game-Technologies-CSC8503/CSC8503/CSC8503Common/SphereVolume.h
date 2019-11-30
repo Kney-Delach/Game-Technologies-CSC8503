@@ -14,6 +14,7 @@
 ***************************************************************************/
 #pragma once
 #include "CollisionVolume.h"
+//#include "Debug.h"
 
 namespace NCL
 {
@@ -31,6 +32,8 @@ namespace NCL
 		{
 			return radius;
 		}
+		virtual void DrawDebug(const NCL::Maths::Vector3& position, const NCL::Maths::Vector4& colour = NCL::Maths::Vector4(0, 1, 0, 1)) override;
+
 	protected:
 		float	radius; // radius of the sphere
 	};
