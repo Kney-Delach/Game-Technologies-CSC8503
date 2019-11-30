@@ -59,7 +59,10 @@ The following gif contains an example of angular movement using point specific a
 
 #### Collision Detection 
 - The implementation in this repo began as an exercise throughthe following tutorials: [1](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/4collisiondetection/Physics%20-%20Collision%20Detection.pdf) and [2](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/5collisionresponse/Physics%20-%20Collision%20Response.pdf).
-
+- **Terminology**:
+  - **Coefficient of Restitution**: The ratio of an object's velocity before and after a collision.
+  - **Perfectly Elastic**: Combinations of restitution coefficients of 2 materials = **1**
+  - **Inelastic**: Combinations of restitution coefficients of 2 materials = **0**
 <a name="networking"></a>
 ### Networking 
 --------------------------
