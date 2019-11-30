@@ -102,12 +102,14 @@ namespace NCL
 				return name;
 			}
 
-			virtual void OnCollisionBegin(GameObject* otherObject) {
-				//std::cout << "OnCollisionBegin event occured!\n";
+			virtual void OnCollisionBegin(GameObject* otherObject)
+			{
+				std::cout << "OnCollisionBegin event occured!\n";
 			}
 
-			virtual void OnCollisionEnd(GameObject* otherObject) {
-				//std::cout << "OnCollisionEnd event occured!\n";
+			virtual void OnCollisionEnd(GameObject* otherObject)
+			{
+				std::cout << "OnCollisionEnd event occured!\n";
 			}
 
 			bool GetBroadphaseAABB(Vector3&outsize) const;

@@ -270,13 +270,16 @@ bool CollisionDetection::AABBIntersection(const AABBVolume& volumeA, const Trans
 			Vector3(0, 0, -1), Vector3(0, 0, 1),
 		};
 
+		// minimum and maximum positions for each axis of each box
 		 Vector3 maxA = boxAPos + boxASize;
 		 Vector3 minA = boxAPos - boxASize;
 		 Vector3 maxB = boxBPos + boxBSize;
 		 Vector3 minB = boxBPos - boxBSize;
 
 		 // from box's world position (above), determine the minimum and maximum position for each axis by either adding or subtracting the box's size.
-		 float distances[6] =
+		 // max extent of object B - minimum of object A = amount of overlap on each axis 
+		 // (how far into box A on each axis does box B's max position extend)
+		float distances[6] =
 		 {
 			 (maxB.x - minA.x), // distance of box ’b’ to ’left ’ of ’a ’.
 			 (maxA.x - minB.x), // distance of box ’b’ to ’right ’ of ’a ’.
@@ -298,8 +301,7 @@ bool CollisionDetection::AABBIntersection(const AABBVolume& volumeA, const Trans
 				 bestAxis = faces[i];
 			 }
 		 }
-		 collisionInfo.AddContactPoint(Vector3(), Vector3(),
-		 bestAxis, penetration);
+		 collisionInfo.AddContactPoint(Vector3(), Vector3(),bestAxis, penetration); // relative collision points to origin (tbd....)
 		 return true; // colliding
 	}
 	return false; // not colliding
