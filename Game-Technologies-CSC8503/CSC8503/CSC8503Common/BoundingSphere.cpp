@@ -1,5 +1,7 @@
 #include "BoundingSphere.h"
 
+#include "Debug.h"
+
 using namespace NCL;
 
 BoundingSphere::BoundingSphere(float newRadius)
@@ -10,4 +12,9 @@ BoundingSphere::BoundingSphere(float newRadius)
 
 BoundingSphere::~BoundingSphere()
 {
+}
+
+void BoundingSphere::DrawDebug(const Vector3& position, const Vector4& colour)
+{
+	Debug::DrawCircle(position, radius, colour);
 }

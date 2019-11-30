@@ -56,6 +56,7 @@ namespace NCL {
 
 			void DrawString(const std::string& text, const Vector2&pos, const Vector4& colour = Vector4(0.75f, 0.75f, 0.75f,1));
 			void DrawLine(const Vector3& start, const Vector3& end, const Vector4& colour);
+			void DrawCircle(const Vector3& position, float radius, const Vector4& colour = Vector4(0.75f, 0.75f, 0.75f, 1));
 
 			virtual void SetupDebugMatrix(OGLShader*s) {
 
@@ -69,6 +70,10 @@ namespace NCL {
 			void DrawDebugData();
 			void DrawDebugStrings();
 			void DrawDebugLines();
+
+			// 30.11.2019 - Ori Lazar
+			
+			void DrawDebugCircles();
 
 			void BindShader(ShaderBase*s);
 			void BindTextureToShader(const TextureBase*t, const std::string& uniform, int texUnit) const;
@@ -94,6 +99,16 @@ namespace NCL {
 				Maths::Vector4 colour;
 			};
 
+			// 30.11.2019 - Ori Lazar
+			struct DebugCircle
+			{
+				Maths::Vector4 colour;
+				Maths::Vector3 position;
+				float radius; 
+			};
+
+			OGLMesh* circleMesh;
+			
 			OGLMesh*	boundMesh;
 			OGLShader*	boundShader;
 
@@ -101,6 +116,7 @@ namespace NCL {
 			SimpleFont* font;
 			std::vector<DebugString>	debugStrings;
 			std::vector<DebugLine>		debugLines;
+			std::vector<DebugCircle>	debugCircles;
 
 			bool initState;
 			bool forceValidDebugState;

@@ -13,6 +13,8 @@
 /___\ /___\
 ***************************************************************************/
 #pragma once
+#include "../../Common/Vector4.h"
+
 namespace NCL
 {
 	// volume type used for bitwise operations in collision detection (as power of two)
@@ -30,7 +32,9 @@ namespace NCL
 	{
 	public:
 		CollisionVolume() : type(VolumeType::Invalid) {}
-		~CollisionVolume() = default;
+		virtual ~CollisionVolume() = default;
 		VolumeType type;
+		virtual void DrawDebug(const NCL::Maths::Vector3& position, const NCL::Maths::Vector4& colour = NCL::Maths::Vector4(0, 1, 0, 1)) {}
+
 	};
 }

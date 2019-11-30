@@ -111,6 +111,11 @@ void TutorialGame::UpdateGame(float dt)
 	renderer->Update(dt);
 	physics->Update(dt);
 
+	//todo: implement the following function
+	//if (drawBoundingVolumes)
+	//	world->DrawBoundingVolumes();
+	if(selectionObject) selectionObject->DrawDebugVolume(); // draw bounding volumes in world should look something like this for each gameobject
+
 	Debug::FlushRenderables();
 	renderer->Render();
 }
@@ -290,6 +295,7 @@ bool TutorialGame::SelectObject()
 				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
 				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
 			}
+			
 		}
 
 		

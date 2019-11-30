@@ -192,6 +192,7 @@
     <ClCompile Include="PushdownState.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="SphereVolume.cpp" />
     <ClCompile Include="StateMachine.cpp" />
     <ClCompile Include="StateTransition.cpp" />
     <ClCompile Include="Transform.cpp" />
