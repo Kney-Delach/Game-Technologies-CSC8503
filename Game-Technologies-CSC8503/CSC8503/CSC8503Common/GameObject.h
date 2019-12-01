@@ -121,7 +121,7 @@ namespace NCL
 			void DrawDebug(const Vector4& color);
 
 			// 30.11.2019
-			void DrawDebugVolume(const Vector4& color = Vector4(0,1,0,1));
+			void DrawDebugVolume();
 
 		public:
 			// 28.11.2019 

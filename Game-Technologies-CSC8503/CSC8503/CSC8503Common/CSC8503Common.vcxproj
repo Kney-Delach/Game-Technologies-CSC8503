@@ -170,6 +170,7 @@
     <ClInclude Include="WorldMacros.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AABBVolume.cpp" />
     <ClCompile Include="BoundingAABB.cpp" />
     <ClCompile Include="BoundingOOBB.cpp" />
     <ClCompile Include="BoundingSphere.cpp" />
@@ -185,6 +186,7 @@
     <ClCompile Include="NetworkBase.cpp" />
     <ClCompile Include="NetworkObject.cpp" />
     <ClCompile Include="NetworkState.cpp" />
+    <ClCompile Include="OBBVolume.cpp" />
     <ClCompile Include="PhysicsObject.cpp" />
     <ClCompile Include="PhysicsSystem.cpp" />
     <ClCompile Include="PositionConstraint.cpp" />

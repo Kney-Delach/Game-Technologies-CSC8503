@@ -19,7 +19,8 @@ namespace NCL {
 
 		protected:
 			void RenderFrame()	override;
-
+			void RenderDebugFrame() override;
+			
 			OGLShader*		defaultShader;
 
 			GameWorld&	gameWorld;

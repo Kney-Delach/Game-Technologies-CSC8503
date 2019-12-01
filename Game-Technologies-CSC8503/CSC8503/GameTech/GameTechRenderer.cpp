@@ -42,12 +42,14 @@ GameTechRenderer::GameTechRenderer(GameWorld& world) : OGLRenderer(*Window::GetW
 	lightPosition = Vector3(-200.0f, 60.0f, -200.0f);
 }
 
-GameTechRenderer::~GameTechRenderer()	{
+GameTechRenderer::~GameTechRenderer()
+{
 	glDeleteTextures(1, &shadowTex);
 	glDeleteFramebuffers(1, &shadowFBO);
 }
 
-void GameTechRenderer::RenderFrame() {
+void GameTechRenderer::RenderFrame()
+{
 	glEnable(GL_CULL_FACE);
 	glClearColor(1, 1, 1, 1);
 	BuildObjectList();
@@ -55,6 +57,11 @@ void GameTechRenderer::RenderFrame() {
 	RenderShadowMap();
 	RenderCamera();
 	glDisable(GL_CULL_FACE); //Todo - text indices are going the wrong way...
+}
+
+void GameTechRenderer::RenderDebugFrame()
+{
+	glClearColor(0, 0 ,0, 1);
 }
 
 void GameTechRenderer::BuildObjectList() {
@@ -75,8 +82,8 @@ void GameTechRenderer::BuildObjectList() {
 	}
 }
 
-void GameTechRenderer::SortObjectList() {
-
+void GameTechRenderer::SortObjectList()
+{
 }
 
 void GameTechRenderer::RenderShadowMap() {

@@ -14,10 +14,8 @@ namespace NCL {
 
 		protected:
 			void InitialiseAssets();
-
 			void InitCamera();
 			void UpdateKeys();
-
 			void InitWorld();
 
 			/*
@@ -48,7 +46,6 @@ namespace NCL {
 			GameObject* AddCharacterToWorld(const Vector3& position);
 			GameObject* AddAppleToWorld(const Vector3& position);
 
-
 			GameTechRenderer*	renderer;
 			PhysicsSystem*		physics;
 			GameWorld*			world;
@@ -77,10 +74,13 @@ namespace NCL {
 			//Coursework Additional functionality	
 			GameObject* lockedObject	= nullptr;
 			Vector3 lockedOffset		= Vector3(0, 14, 20);
-			void LockCameraToObject(GameObject* o) {
-				lockedObject = o;
-			}
+			void LockCameraToObject(GameObject* o) { lockedObject = o; }
+
+			// 1.12.19
+			////////////////////////////////////////////////////////////////////
+			//// Debug functionality a ///////////////////////////////////
+			////////////////////////////////////////////////////////////////////
+			bool displayBoundingVolumes;
 		};
 	}
 }
-

@@ -31,7 +31,6 @@ PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* 
 
 PhysicsObject::~PhysicsObject()
 {
-
 }
 
 ////////////////////////////////////////////////////

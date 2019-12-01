@@ -31,22 +31,31 @@ namespace NCL {
 
 			virtual void Update(float dt) {}
 
-			void Render() {
+			void Render()
+			{
 				BeginFrame();
 				RenderFrame();
 				EndFrame();
 			}
 
-			virtual bool SetVerticalSync(VerticalSyncState s) {
-				return false;
+			// 1.12.19
+			// used to render the debug frame, basically just sets the clear color to black...
+			void DebugRender()
+			{
+				BeginFrame();
+				RenderDebugFrame();
+				EndFrame();
 			}
+
+			virtual bool SetVerticalSync(VerticalSyncState s) { return false; }
 
 		protected:
 			virtual void OnWindowResize(int w, int h) = 0;
 			virtual void OnWindowDetach() {}; //Most renderers won't care about this
 			
 			virtual void BeginFrame()	= 0;
-			virtual void RenderFrame()	= 0;
+			virtual void RenderFrame() = 0;
+			virtual void RenderDebugFrame()	{}
 			virtual void EndFrame()		= 0;
 			
 			Window& hostWindow;

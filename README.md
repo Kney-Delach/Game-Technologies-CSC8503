@@ -1,8 +1,8 @@
 <a name="csc8503"></a>
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
-![build-date](https://img.shields.io/badge/Build%20Date-30.11.19-brightgreen)
-![branch-features](https://img.shields.io/badge/Features-4-informational)
+![build-date](https://img.shields.io/badge/Build%20Date-1.12.19-brightgreen)
+![branch-features](https://img.shields.io/badge/Features-5-informational)
 
 ## About
 This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
@@ -29,6 +29,7 @@ This repo contains a series of physics, networking and AI exercises completed fo
 | Physics |[Linear Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf)|Uses a **semi-implicit Euler integrator** to simulate rigid body dynamics.|![dev][version-1.0.0]|
 | Physics |[Angular Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/3angularmotion/Physics%20-%20Rotation.pdf)|Simulates angular movement dynamics using **moments of inertia**.|![dev][version-1.0.0]|
 | Physics |[Collision Detection + Resolution]()|**Sphere** and **AABB** detection capabilities, with a plan to eventually implement OBB, capsule and swept volume collisions.|![dev][version-1.0.0]|
+| Debug |[Physics Volume Rendering]()|**Displays physics volumes** in the scene.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
 ### Physics 
@@ -73,6 +74,20 @@ The following gif contains an example of collision resolution between AABBs and 
 <a name="ai"></a>
 ### Artificial Intelligence
 --------------------------
+
+### Debug Render View
+--------------------------
+Below is an example of **AABB** and **Sphere physics volumes** in debug render mode:
+<a name="debug-render"></a>
+<p align="center"><img width=100% src="Resources/Images/Screenshots/Debugging/BoundingVolume.png?raw=true"></p>
+
+## Keybindings
+|**Key**|**Tag**|**Description**|
+|:------:|:------:|:-------------:|:---------:|
+| ***P*** | Debug Render Toggle | Toggles rendering between the debug scene and the game scene.|
+| ***Page_Up*** | Enable Console Window | Enables the console window.|
+| ***Page_Down*** | Disable Console Window | Hides the console window.|
+
 <a name="acknowledgments"></a>
 ## Acknowledgments 
 I would like to thank Dr Rich Davison for his exciting and informative lectures and tutorial materials throughout my time at Newcastle University. 

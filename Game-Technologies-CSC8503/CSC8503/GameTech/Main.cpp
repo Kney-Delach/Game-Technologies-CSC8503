@@ -50,10 +50,8 @@ int main()
 	Window*w = Window::CreateGameWindow("CSC8503 Game technology!", 1920, 1080);
 
 	if (!w->HasInitialised()) 
-	{
 		return -1;
-	}	
-
+	
 	//TestStateMachine();
 	//TestNetworking();
 	//TestPathfinding();
@@ -65,10 +63,11 @@ int main()
 
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) 
 	{
-		float dt = w->GetTimer()->GetTimeDeltaSeconds();
+		const float dt = w->GetTimer()->GetTimeDeltaSeconds();
 
-		if (dt > 1.0f) {
-			std::cout << "Skipping large time delta" << std::endl;
+		if (dt > 1.0f) 
+		{
+			std::cout << "Skipping large time delta\n";
 			continue; //must have hit a breakpoint or something to have a 1 second frame time!
 		}
 		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::PRIOR)) 
@@ -82,10 +81,12 @@ int main()
 
 		DisplayPathfinding();
 
-		w->SetTitle("Gametech frame time:" + std::to_string(1000.0f * dt));
+		w->SetTitle("CSC8503 | Physics | Networking | AI | FPS:" + std::to_string(1.0f / dt));
 
 		g->UpdateGame(dt);
 
 	}
 	Window::DestroyGameWindow();
+	
+	return 0;
 }

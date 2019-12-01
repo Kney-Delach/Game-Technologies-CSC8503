@@ -79,7 +79,13 @@ namespace NCL
 			// Acts as a dynamically sized matrix of layers (vector ID positions, i.e layer 0 is index 0 and layer 1 is at index 1,
 			// the second degree vector holds the list of layers that each specific layer can interact with
 			std::vector<std::vector<Layer>> worldLayers; //todo: create a function to append layers to a layer configuration , check it isn't repeated
-			
+
+			// 1.12.19
+			////////////////////////////////////////////////////////////////////
+			//// Debug functions ///////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////
+		public:
+			void DrawBoundingVolumes() const;
 		};
 	}
 }
