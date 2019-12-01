@@ -377,7 +377,7 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 	
 	gameWorld.GetObjectIterators(first, last);
 
-	const float tempDamping = globalDamping; 
+	const float tempDamping = 1 - globalDamping; 
 	const float frameDamping = powf(tempDamping, dt); // simulates resistence 	
 	for (auto i = first; i != last; ++i)  // for each gameobject
 	{

@@ -63,6 +63,9 @@ The following gif contains an example of angular movement using point specific a
   - **Coefficient of Restitution**: The ratio of an object's velocity before and after a collision.
   - **Perfectly Elastic**: Combinations of restitution coefficients of 2 materials = **1**
   - **Inelastic**: Combinations of restitution coefficients of 2 materials = **0**
+
+The following gif contains an example of collision resolution between AABBs and Spheres:
+[![Collision Detection](https://i.gyazo.com/fdace9ca6c99c3e44b8698710e6167c5.gif)](https://gyazo.com/fdace9ca6c99c3e44b8698710e6167c5)
 <a name="networking"></a>
 ### Networking 
 --------------------------
