@@ -82,8 +82,9 @@ Below is an example of **AABB** and **Sphere physics volumes** in debug render m
 <p align="center"><img width=100% src="Resources/Images/Screenshots/Debugging/BoundingVolume.png?raw=true"></p>
 
 ## Keybindings
+
 |**Key**|**Tag**|**Description**|
-|:------:|:------:|:-------------:|:---------:|
+|:------:|:------:|:-------------:|
 | ***P*** | Debug Render Toggle | Toggles rendering between the debug scene and the game scene.|
 | ***Page_Up*** | Enable Console Window | Enables the console window.|
 | ***Page_Down*** | Disable Console Window | Hides the console window.|
