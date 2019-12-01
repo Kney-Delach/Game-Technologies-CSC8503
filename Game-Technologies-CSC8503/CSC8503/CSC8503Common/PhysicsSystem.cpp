@@ -238,14 +238,14 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	// translate each object along collision normal (proportional to penetration distance and object's inverse mass)
 	// dividing by total mass -> total object movement (a & b) results in penetration movement away (with heavier object moving less)
 	// heavier objects have lower (inverse) mass values (as computing using inverses) 
-	transformA.SetWorldPosition(transformA.GetWorldPosition() - (p.normal * p.penetration * (physicsObjectA->GetInverseMass() / totalMass)));
-	transformB.SetWorldPosition(transformB.GetWorldPosition() +	(p.normal * p.penetration * (physicsObjectB->GetInverseMass() / totalMass)));
+	//transformA.SetWorldPosition(transformA.GetWorldPosition() - (p.normal * p.penetration * (physicsObjectA->GetInverseMass() / totalMass)));
+	//transformB.SetWorldPosition(transformB.GetWorldPosition() +	(p.normal * p.penetration * (physicsObjectB->GetInverseMass() / totalMass)));
 
 	// todo : implement conservation of momentum via a change in the amount of linear / angular velocity of objects
 	
 	// 1 - collision points relative to each object's position. 
-	const Vector3 relativePointA = p.localA;
-	const Vector3 relativePointB = p.localB;
+	const Vector3 relativePointA = p.localA;// - transformA.GetWorldPosition();
+	const Vector3 relativePointB = p.localB;// - transformB.GetWorldPosition();
 
 	// 2 - compute angular velocities (the further away from the centre of the object a point is, the faster it moves as the object rotates).
 	const Vector3 angVelocityA = Vector3::Cross(physicsObjectA->GetAngularVelocity(), relativePointA);
@@ -270,8 +270,8 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	}
 
 	// compute inertia
-	const Vector3 inertiaA = Vector3::Cross(physicsObjectA->GetInertiaTensor() * Vector3::Cross(relativePointA, p.normal), relativePointA);
-	const Vector3 inertiaB = Vector3::Cross(physicsObjectB->GetInertiaTensor() * Vector3::Cross(relativePointB, p.normal), relativePointB);
+	const Vector3 inertiaA = Vector3::Cross(physicsObjectA->GetInertiaTensor() * (Vector3::Cross(relativePointA, p.normal)), relativePointA);
+	const Vector3 inertiaB = Vector3::Cross(physicsObjectB->GetInertiaTensor() * (Vector3::Cross(relativePointB, p.normal)), relativePointB);
 
 	const float angularEffect = Vector3::Dot(inertiaA + inertiaB, p.normal);
 
@@ -377,7 +377,7 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 	
 	gameWorld.GetObjectIterators(first, last);
 
-	const float tempDamping = 1 - globalDamping; 
+	const float tempDamping = globalDamping; 
 	const float frameDamping = powf(tempDamping, dt); // simulates resistence 	
 	for (auto i = first; i != last; ++i)  // for each gameobject
 	{
