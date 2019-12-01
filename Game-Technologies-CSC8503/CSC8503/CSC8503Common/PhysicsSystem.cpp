@@ -127,14 +127,13 @@ void PhysicsSystem::Update(float dt)
 		}
 		
 		IntegrateVelocity(iterationDt); //update positions from new velocity changes
-
 		dTOffset -= iterationDt; 
 	}
 	ClearForces();	//Once we've finished with the forces, reset them to zero
 
 	UpdateCollisionList(); //Remove any old collisions
 	//std::cout << iteratorCount << " , " << iterationDt << std::endl;
-	float time = testTimer.GetTimeDeltaSeconds();
+	//float time = testTimer.GetTimeDeltaSeconds();
 	//std::cout << "Physics time taken: " << time << std::endl;
 }
 
@@ -166,7 +165,8 @@ void PhysicsSystem::BasicCollisionDetection()
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) // returns true if collision has taken place 
 			{
-				std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
+				//std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
+				ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
 			}
@@ -214,15 +214,82 @@ void PhysicsSystem::UpdateObjectAABBs()
 	}
 }
 
-/*
-
-In tutorial 5, we start determining the correct response to a collision,
-so that objects separate back out. 
-
-*/
+// 30.11.2019
+// ------------------------------------------------------------------------------
+// Computes the correct response to a collision.
 void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
 {
+	// physics objects of objects
+	PhysicsObject* physicsObjectA = a.GetPhysicsObject();
+	PhysicsObject* physicsObjectB = b.GetPhysicsObject();
 
+	// transforms of objects
+	Transform& transformA = a.GetTransform();
+	Transform& transformB = b.GetTransform();
+
+	// total inverse mass of the two objects (used to calculate impulse and projection)
+	const float totalMass = physicsObjectA->GetInverseMass() + physicsObjectB->GetInverseMass();
+	
+	if (totalMass == 0.f) return; // don't process multiple static objects
+	
+	//////////////////////////////////////////////////
+	//// separate objects using projection method ////
+	//////////////////////////////////////////////////
+	// translate each object along collision normal (proportional to penetration distance and object's inverse mass)
+	// dividing by total mass -> total object movement (a & b) results in penetration movement away (with heavier object moving less)
+	// heavier objects have lower (inverse) mass values (as computing using inverses) 
+	//transformA.SetWorldPosition(transformA.GetWorldPosition() - (p.normal * p.penetration * (physicsObjectA->GetInverseMass() / totalMass)));
+	//transformB.SetWorldPosition(transformB.GetWorldPosition() +	(p.normal * p.penetration * (physicsObjectB->GetInverseMass() / totalMass)));
+
+	// todo : implement conservation of momentum via a change in the amount of linear / angular velocity of objects
+	
+	// 1 - collision points relative to each object's position. 
+	const Vector3 relativePointA = p.localA;// - transformA.GetWorldPosition();
+	const Vector3 relativePointB = p.localB;// - transformB.GetWorldPosition();
+
+	// 2 - compute angular velocities (the further away from the centre of the object a point is, the faster it moves as the object rotates).
+	const Vector3 angVelocityA = Vector3::Cross(physicsObjectA->GetAngularVelocity(), relativePointA);
+	const Vector3 angVelocityB = Vector3::Cross(physicsObjectB->GetAngularVelocity(), relativePointB);
+
+	// 3 - combine each object's linear and angular velocities to determine their total velocity.
+	const Vector3 fullVelocityA = physicsObjectA->GetLinearVelocity() + angVelocityA;
+	const Vector3 fullVelocityB = physicsObjectB->GetLinearVelocity() + angVelocityB;
+
+	// 4 - compute velocities at which the two objects collide.
+	const Vector3 contactVelocity = fullVelocityB - fullVelocityA;
+	/////////////////////////////////////////////////
+	//// compute impulse vector J ///////////////////
+	/////////////////////////////////////////////////
+
+	// compute impulse force
+	const float impulseForce = Vector3::Dot(contactVelocity, p.normal);
+	
+	if (impulseForce > 0) 
+	{
+		return;
+	}
+
+	// compute inertia
+	const Vector3 inertiaA = Vector3::Cross(physicsObjectA->GetInertiaTensor() * (Vector3::Cross(relativePointA, p.normal)), relativePointA);
+	const Vector3 inertiaB = Vector3::Cross(physicsObjectB->GetInertiaTensor() * (Vector3::Cross(relativePointB, p.normal)), relativePointB);
+
+	const float angularEffect = Vector3::Dot(inertiaA + inertiaB, p.normal);
+
+	//todo: Change this coefficient of restitution to non hard-coded value
+	const float restitutionCoefficient = 0.66f; // disperses kinetic energy
+
+	const float impulseJ = (- (1.0f + restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
+	// full impulse 
+	Vector3 fullImpulse = p.normal * impulseJ;
+	//std::cout << "Impulse Force: " << fullImpulse << "\n";
+	
+	////////////////////////////////////////////////////////////////////////////////////
+	//// Apply linear and angular impulses to both objects (in opposite directions) ////
+	////////////////////////////////////////////////////////////////////////////////////
+	physicsObjectA->ApplyLinearImpulse(-fullImpulse);
+	physicsObjectB->ApplyLinearImpulse(fullImpulse);
+	physicsObjectA->ApplyAngularImpulse(Vector3::Cross(relativePointA,-fullImpulse));
+	physicsObjectB->ApplyAngularImpulse(Vector3::Cross(relativePointB,fullImpulse));
 }
 
 /*
@@ -261,8 +328,8 @@ the course of the previous game frame.
 // 28.11.2019
 void PhysicsSystem::IntegrateAccel(float dt)
 {
-	std::vector < GameObject* >::const_iterator first;
-	std::vector < GameObject* >::const_iterator last;
+	std::vector<GameObject*>::const_iterator first;
+	std::vector<GameObject*>::const_iterator last;
 	gameWorld.GetObjectIterators(first, last);
 	
 	for (auto i = first; i != last; ++i) // for each gameobject 
@@ -290,7 +357,7 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		
 		object->UpdateInertiaTensor(); // update tensor vs orientation
 		
-		Vector3 angularAcceleration = object->GetInertiaTensor()* torque;
+		Vector3 angularAcceleration = object->GetInertiaTensor() * torque;
 		
 		angularVelocity += angularAcceleration * dt; // integration 
 		object->SetAngularVelocity(angularVelocity);	}
@@ -310,20 +377,20 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 	
 	gameWorld.GetObjectIterators(first, last);
 
-	float dampingFactor = 1.0f - 0.95f;
-	float frameDamping = powf(dampingFactor, dt); // simulates resistence 
-	
+	const float tempDamping = 1 - globalDamping; 
+	const float frameDamping = powf(tempDamping, dt); // simulates resistence 	
 	for (auto i = first; i != last; ++i)  // for each gameobject
 	{
 		PhysicsObject * object = (*i)->GetPhysicsObject();
 		if (object == nullptr) // don't process objects that don't experience physics
 			continue;
 		
-		Transform & transform = (*i)->GetTransform();
+		Transform& transform = (*i)->GetTransform();
 		Vector3 position = transform.GetLocalPosition();
 		Vector3 linearVel = object->GetLinearVelocity();
 		position += linearVel * dt; // Position calculation
-		transform.SetLocalPosition(position);
+		//transform.SetLocalPosition(position);
+		transform.SetWorldPosition(position); //todo: maybe this?
 
 		linearVel = linearVel * frameDamping; // Linear Damping
 		object->SetLinearVelocity(linearVel);

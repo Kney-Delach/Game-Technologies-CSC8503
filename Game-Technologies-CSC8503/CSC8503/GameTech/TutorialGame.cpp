@@ -96,13 +96,14 @@ void TutorialGame::UpdateGame(float dt)
 	
 	UpdateKeys();
 
-	if (useGravity) 	
-		Debug::Print("(G)ravity on", Vector2(10, 40));	
+	if (useGravity)
+	{
+		Debug::Print("(G)ravity on", Vector2(10, 40));
+	}
 	else 	
 		Debug::Print("(G)ravity off", Vector2(10, 40));
 
 	//todo: integrate imgui with this engine...
-	//physics->SetGravity(physics->GetConstGravity() + Vector3(0,1.f,0));
 	//physics->SetGlobalDamping(physics->GetConstGlobalDamping() + 1.f);
 
 	SelectObject();
@@ -295,9 +296,7 @@ bool TutorialGame::SelectObject()
 				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
 				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
 			}
-			
 		}
-
 		
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) 
 		{
@@ -318,7 +317,6 @@ bool TutorialGame::SelectObject()
 			}
 
 			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
-
 			RayCollision closestCollision;
 			if (world->Raycast(ray, closestCollision, true))  // object has been selected 
 			{
@@ -326,17 +324,16 @@ bool TutorialGame::SelectObject()
 				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 				return true;
 			}
-			else 
-				return false;			
+			return false;
 		}
 		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) 
 		{
 			if (selectionObject) 
 			{
 				if (lockedObject == selectionObject) 
-					lockedObject = nullptr;				
+					lockedObject = nullptr;
 				else 
-					lockedObject = selectionObject;				
+					lockedObject = selectionObject;
 			}
 		}
 	}
@@ -354,7 +351,7 @@ void TutorialGame::MoveSelectedObject()
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 	
 	if (!selectionObject) // No object has been selected!
-		return;		
+		return;
 
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) 
 	{
@@ -365,12 +362,7 @@ void TutorialGame::MoveSelectedObject()
 			if (closestCollision.node == selectionObject)
 				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
 		}
-		
-
 	}
-
-	//todo: abstract the following object controller to its own class
-	//GameObjectMovement();
 }
 
 void TutorialGame::GameObjectMovement()
@@ -414,19 +406,16 @@ void TutorialGame::InitCamera()
 	lockedObject = nullptr;
 }
 
-void TutorialGame::InitWorld()
+void TutorialGame::InitWorld() //todo:
 {
 	world->ClearAndErase();
 	physics->Clear();
-
+	
 	InitMixedGridWorld(10, 10, 3.5f, 3.5f);
-	AddGooseToWorld(Vector3(30, -10, 0));
-	AddAppleToWorld(Vector3(35, -10, 0));
-
-	AddParkKeeperToWorld(Vector3(-40, 10, 0));
-	AddCharacterToWorld(Vector3(-45, 10, 0));
-
-	AddFloorToWorld(Vector3(0, -2, 0));
+	//AddGooseToWorld(Vector3(30, -10, 0));
+	//AddAppleToWorld(Vector3(35, -10, 0));
+	//AddParkKeeperToWorld(Vector3(-40, 10, 0));
+	//AddCharacterToWorld(Vector3(-45, 10, 0));
 }
 
 //From here on it's functions to add in objects to the world!
@@ -440,7 +429,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
 {
 	GameObject* floor = new GameObject("Ground");
 
-	Vector3 floorSize = Vector3(100, 2, 100);
+	Vector3 floorSize = Vector3(100, 2.0, 100);
 	AABBVolume* volume = new AABBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
 	floor->GetTransform().SetWorldScale(floorSize);
@@ -591,7 +580,6 @@ GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
 
 	float r = rand() / (float)RAND_MAX;
 
-
 	AABBVolume* volume = new AABBVolume(Vector3(0.3, 0.9f, 0.3) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
 
@@ -631,41 +619,37 @@ GameObject* TutorialGame::AddAppleToWorld(const Vector3& position)
 
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius)
 {
-	for (int x = 0; x < numCols; ++x) {
-		for (int z = 0; z < numRows; ++z) {
+	for (int x = 0; x < numCols; ++x) 
+	{
+		for (int z = 0; z < numRows; ++z) 
+		{
 			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
-			AddSphereToWorld(position, radius, 1.0f);
+			AddSphereToWorld(position, radius, false);
 		}
 	}
-	//AddFloorToWorld(Vector3(0, -2, 0));
+	AddFloorToWorld(Vector3(0, -8, 0));
 }
 
 void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
 {
 	const float sphereRadius = 1.f;
 	const Vector3 cubeDims = Vector3(1,1,1);
-
-	for (int x = 0; x < numCols; ++x) 
+	for (int x = 0; x < numRows; ++x) 
 	{
-		for (int z = 0; z < numRows; ++z) 
+		for (int z = 0; z < numCols; ++z) 
 		{
 			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
-
-			//AddCubeToWorld(position, cubeDims); // rendering only cubes, as issue with sphere objects
-			//AddSphereToWorld(position, sphereRadius, false);
-
 			if (x % 2)
 			{
 				AddCubeToWorld(position, cubeDims);
-				//AddSphereToWorld(position, sphereRadius, true);
 			}
 			else 
 			{
-				AddSphereToWorld(position, sphereRadius, true);
+				AddSphereToWorld(position, sphereRadius, false);// 1.f / (1.f + (float)x + (float)z));
 			}
 		}
 	}
-	//AddFloorToWorld(Vector3(0, -2, 0));
+	AddFloorToWorld(Vector3(0, -8, 0));
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims)
@@ -673,10 +657,10 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 	for (int x = 1; x < numCols+1; ++x) {
 		for (int z = 1; z < numRows+1; ++z) {
 			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
-			AddCubeToWorld(position, cubeDims, 1.0f);
+			AddCubeToWorld(position, cubeDims);
 		}
 	}
-	//AddFloorToWorld(Vector3(0, -2, 0));
+	AddFloorToWorld(Vector3(0, -8, 0));
 }
 
 void TutorialGame::BridgeConstraintTest()

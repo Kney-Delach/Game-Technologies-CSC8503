@@ -63,23 +63,22 @@ void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3&
 	torque += Vector3::Cross(localPos, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
 }
 
-////////////////////////////////////////////////////
-/// TBD ////////////////////////////////////////////
-////////////////////////////////////////////////////
-void PhysicsObject::ApplyAngularImpulse(const Vector3& force)
-{
-	if (force.Length() > 0) 
-	{
-		bool a = true;
-	}
-	angularVelocity += inverseInteriaTensor * force;
-}
-
+//////////////////////////////////////////////////////////
+// 30.11.2019 - Collision Resolution /////////////////////
+//////////////////////////////////////////////////////////
 void PhysicsObject::ApplyLinearImpulse(const Vector3& force)
 {
 	linearVelocity += force * inverseMass;
 }
 
+void PhysicsObject::ApplyAngularImpulse(const Vector3& force)
+{
+	angularVelocity += inverseInteriaTensor * force;
+}
+
+////////////////////////////////////////////////////
+/// TBD ////////////////////////////////////////////
+////////////////////////////////////////////////////
 void PhysicsObject::AddTorque(const Vector3& addedTorque)
 {
 	torque += addedTorque;
@@ -87,12 +86,9 @@ void PhysicsObject::AddTorque(const Vector3& addedTorque)
 
 void PhysicsObject::InitCubeInertia()
 {
-	Vector3 dimensions	= transform->GetLocalScale();
-
-	Vector3 fullWidth = dimensions * 2;
-
-	Vector3 dimsSqr		= fullWidth * fullWidth;
-
+	const Vector3 dimensions = transform->GetLocalScale();
+	const Vector3 fullWidth = dimensions * 2;
+	const Vector3 dimsSqr = fullWidth * fullWidth;
 	inverseInertia.x = (12.0f * inverseMass) / (dimsSqr.y + dimsSqr.z);
 	inverseInertia.y = (12.0f * inverseMass) / (dimsSqr.x + dimsSqr.z);
 	inverseInertia.z = (12.0f * inverseMass) / (dimsSqr.x + dimsSqr.y);

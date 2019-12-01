@@ -105,17 +105,13 @@ bool CollisionDetection::RayAABBIntersection(const Ray&r, const Transform& world
 //      - performing opposite operations on the collision point (add position back on, and then rotate by world transform)
 bool CollisionDetection::RayOBBIntersection(const Ray&r, const Transform& worldTransform, const OBBVolume& volume, RayCollision& collision)
 {
-	Quaternion orientation = worldTransform.GetWorldOrientation();
-	Vector3 position = worldTransform.GetWorldPosition();
-	
-	Matrix3 transform = Matrix3(orientation);
-	Matrix3 invTransform = Matrix3(orientation.Conjugate());
-	
-	Vector3 localRayPos = r.GetPosition() - position;
-	
-	Ray tempRay(invTransform * localRayPos, invTransform * r.GetDirection());
-	
-	bool collided = RayBoxIntersection(tempRay, Vector3(),volume.GetHalfDimensions(), collision); // raycasting using axis aligned function above. (box sits at its own origin position)
+	const Quaternion orientation = worldTransform.GetWorldOrientation();
+	const Vector3 position = worldTransform.GetWorldPosition();	
+	const Matrix3 transform = Matrix3(orientation);
+	const Matrix3 invTransform = Matrix3(orientation.Conjugate());	
+	const Vector3 localRayPos = r.GetPosition() - position;	
+	const Ray tempRay(invTransform * localRayPos, invTransform * r.GetDirection());
+	const bool collided = RayBoxIntersection(tempRay, Vector3(),volume.GetHalfDimensions(), collision); // raycasting using axis aligned function above. (box sits at its own origin position)
 	if (collided) 
 		collision.collidedAt = transform * collision.collidedAt + position;
 	return collided;
@@ -124,34 +120,32 @@ bool CollisionDetection::RayOBBIntersection(const Ray&r, const Transform& worldT
 // ray intersection with spheres
 bool CollisionDetection::RaySphereIntersection(const Ray&r, const Transform& worldTransform, const SphereVolume& volume, RayCollision& collision)
 {
-	Vector3 spherePos = worldTransform.GetWorldPosition();				// world position of sphere
-	float sphereRadius = volume.GetRadius();							// radius of sphere	
+	const Vector3 spherePos = worldTransform.GetWorldPosition();				// world position of sphere
+	const float sphereRadius = volume.GetRadius();								// radius of sphere	
 
-		//So that the sphere does not see itself as it's target
-	if ((spherePos - r.GetPosition()).Length() < volume.GetRadius())	
+	if (spherePos == r.GetPosition())											//So that the sphere does not see itself as it's target
 		return false;
 	
-	Vector3 dir = spherePos - r.GetPosition();							// Get the direction between the ray origin and the sphere origin
+	const Vector3 direction = spherePos - r.GetPosition();						// Get the direction between the ray origin and the sphere origin
 	
-	float sphereProj = Vector3::Dot(dir, r.GetDirection());			// Project the sphere ’s origin onto the ray direction vector
+	const float sphereProj = Vector3::Dot(direction, r.GetDirection());		// Project the sphere ’s origin onto the ray direction vector
 
 	if (sphereProj < 0)
 		return false;
 	
-	Vector3 point = r.GetPosition() + r.GetDirection() * sphereProj;	// Get closest point on ray line to sphere 
+	const Vector3 point = r.GetPosition() + r.GetDirection() * sphereProj;		// Get closest point on ray line to sphere 
 	
-	float sphereDist = (point - spherePos).Length();					// Distance from the point to the sphere
+	const float sphereDist = (point - spherePos).Length();						// Distance from the point to the sphere
 	
-	if (sphereDist > sphereRadius) // out of sphere radius (NOT COLLIDING)
+	if (sphereDist > sphereRadius)												// out of sphere radius (NOT COLLIDING)
 		return false;
 
 	// determine collision point (COLLIDING)
 	// move collision point back along the direction vector so that it touches the surface of the sphere, rather than being inside of it.
-	float offset = sqrt(sphereRadius * sphereRadius - sphereDist * sphereDist);
+	const float offset = sqrt(sphereRadius * sphereRadius - sphereDist * sphereDist);
 	
 	collision.rayDistance = sphereProj - offset;
-	collision.collidedAt = r.GetPosition() + r.GetDirection() * collision.rayDistance;
-	
+	collision.collidedAt = r.GetPosition() + r.GetDirection() * collision.rayDistance;	
 	return true;
 }
 
@@ -163,8 +157,8 @@ bool CollisionDetection::RaySphereIntersection(const Ray&r, const Transform& wor
 //todo: implement this in an optimized manner -> virtual functions, dispatch functions, function pointers....
 bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, CollisionInfo& collisionInfo)
 {
-	const CollisionVolume * volA = a->GetBoundingVolume();
-	const CollisionVolume * volB = b->GetBoundingVolume();
+	const CollisionVolume* volA = a->GetBoundingVolume();
+	const CollisionVolume* volB = b->GetBoundingVolume();
 	
 	if (!volA || !volB) // collidable shapes must have a bounding volume
 		return false;	
@@ -172,8 +166,8 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 	collisionInfo.a = a;
 	collisionInfo.b = b;
 	
-	const Transform & transformA = a->GetConstTransform();
-	const Transform & transformB = b->GetConstTransform();
+	const Transform& transformA = a->GetConstTransform();
+	const Transform& transformB = b->GetConstTransform();
 
 	// perform bitwise OR operator to determine ordering
 	const VolumeType pairType = (VolumeType)((int)volA->type | (int)volB->type);
