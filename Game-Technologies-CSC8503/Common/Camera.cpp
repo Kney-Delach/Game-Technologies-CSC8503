@@ -9,7 +9,8 @@ Polls the camera for keyboard / mouse movement.
 Should be done once per frame! Pass it the msec since
 last frame (default value is for simplicities sake...)
 */
-void Camera::UpdateCamera(float dt) {
+void Camera::UpdateCamera(float dt)
+{
 	//Update the mouse by how much
 	pitch	-= (Window::GetMouse()->GetRelativePosition().y);
 	yaw		-= (Window::GetMouse()->GetRelativePosition().x);
@@ -27,24 +28,32 @@ void Camera::UpdateCamera(float dt) {
 
 	float frameSpeed = 100 * dt; // this sets the movement speed of the camera
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) 
+	{
 		position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) {
+	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) 
+	{
 		position -= Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
+	{
 		position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(-1, 0, 0) * frameSpeed;
 	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) {
+	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
+	{
 		position -= Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(-1, 0, 0) * frameSpeed;
 	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q)) 
+	{
 		position.y += frameSpeed;
 	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) {
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) 
+	{
 		position.y -= frameSpeed;
 	}
 }

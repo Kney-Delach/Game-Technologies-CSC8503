@@ -152,15 +152,6 @@ void TutorialGame::UpdateKeys()
 	//bias in the calculations - the same objects might keep 'winning' the constraint
 	//allowing the other one to stretch too much etc. Shuffling the order so that it
 	//is random every frame can help reduce such bias.
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F9)) // enable constraint shuffle
-	{
-		world->ShuffleConstraints(true);
-	}
-	
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F10))  // disable constraint shuffle 
-	{
-		world->ShuffleConstraints(false);
-	}
 
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) // enable object shuffles
 	{
@@ -172,11 +163,20 @@ void TutorialGame::UpdateKeys()
 		world->ShuffleObjects(false);
 	}
 
-	if (lockedObject) // pass through lock state specific object movement 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F9)) // enable constraint shuffle
 	{
-		LockedObjectMovement();
+		world->ShuffleConstraints(true);
 	}
 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F10))  // disable constraint shuffle 
+	{
+		world->ShuffleConstraints(false);
+	}
+
+	//todo: implement lock state specific object movement.
+	// pass through lock state specific object movement 
+//	if (lockedObject) 
+//		LockedObjectMovement();
 	DebugObjectMovement(); // move selected object 
 }
 
