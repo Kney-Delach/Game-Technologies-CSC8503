@@ -229,7 +229,9 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 
 	// total inverse mass of the two objects (used to calculate impulse and projection)
 	const float totalMass = physicsObjectA->GetInverseMass() + physicsObjectB->GetInverseMass();
-
+	
+	if (totalMass == 0.f) return; // don't process multiple static objects
+	
 	//////////////////////////////////////////////////
 	//// separate objects using projection method ////
 	//////////////////////////////////////////////////
@@ -262,6 +264,11 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	// compute impulse force
 	const float impulseForce = Vector3::Dot(contactVelocity, p.normal);
 	
+	if (impulseForce > 0) 
+	{
+		return;
+	}
+
 	// compute inertia
 	const Vector3 inertiaA = Vector3::Cross(physicsObjectA->GetInertiaTensor() * Vector3::Cross(relativePointA, p.normal), relativePointA);
 	const Vector3 inertiaB = Vector3::Cross(physicsObjectB->GetInertiaTensor() * Vector3::Cross(relativePointB, p.normal), relativePointB);
@@ -271,11 +278,11 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	//todo: Change this coefficient of restitution to non hard-coded value
 	const float restitutionCoefficient = 0.66f; // disperses kinetic energy
 
-	const float impulseJ = ((-1.0f - restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
+	const float impulseJ = (- (1.0f + restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
 	// full impulse 
-	const Vector3 fullImpulse = p.normal * impulseJ;
+	Vector3 fullImpulse = p.normal * impulseJ;
 	//std::cout << "Impulse Force: " << fullImpulse << "\n";
-
+	
 	////////////////////////////////////////////////////////////////////////////////////
 	//// Apply linear and angular impulses to both objects (in opposite directions) ////
 	////////////////////////////////////////////////////////////////////////////////////
@@ -382,7 +389,8 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		Vector3 position = transform.GetLocalPosition();
 		Vector3 linearVel = object->GetLinearVelocity();
 		position += linearVel * dt; // Position calculation
-		transform.SetLocalPosition(position);
+		//transform.SetLocalPosition(position);
+		transform.SetWorldPosition(position); //todo: maybe this?
 
 		linearVel = linearVel * frameDamping; // Linear Damping
 		object->SetLinearVelocity(linearVel);

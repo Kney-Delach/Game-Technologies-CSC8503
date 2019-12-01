@@ -429,7 +429,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
 {
 	GameObject* floor = new GameObject("Ground");
 
-	Vector3 floorSize = Vector3(100, 0.1, 100);
+	Vector3 floorSize = Vector3(100, 2.0, 100);
 	AABBVolume* volume = new AABBVolume(floorSize);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
 	floor->GetTransform().SetWorldScale(floorSize);
@@ -632,11 +632,11 @@ void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacin
 
 void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
 {
-	const float sphereRadius = 1.5f;
+	const float sphereRadius = 1.f;
 	const Vector3 cubeDims = Vector3(1,1,1);
-	for (int x = 0; x < numCols; ++x) 
+	for (int x = 0; x < numRows; ++x) 
 	{
-		for (int z = 0; z < numRows; ++z) 
+		for (int z = 0; z < numCols; ++z) 
 		{
 			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
 			if (x % 2)
