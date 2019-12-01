@@ -1,8 +1,8 @@
 <a name="csc8503"></a>
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
-![build-date](https://img.shields.io/badge/Build%20Date-30.11.19-brightgreen)
-![branch-features](https://img.shields.io/badge/Features-4-informational)
+![build-date](https://img.shields.io/badge/Build%20Date-1.12.19-brightgreen)
+![branch-features](https://img.shields.io/badge/Features-5-informational)
 
 ## About
 This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
@@ -29,6 +29,7 @@ This repo contains a series of physics, networking and AI exercises completed fo
 | Physics |[Linear Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf)|Uses a **semi-implicit Euler integrator** to simulate rigid body dynamics.|![dev][version-1.0.0]|
 | Physics |[Angular Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/3angularmotion/Physics%20-%20Rotation.pdf)|Simulates angular movement dynamics using **moments of inertia**.|![dev][version-1.0.0]|
 | Physics |[Collision Detection + Resolution]()|**Sphere** and **AABB** detection capabilities, with a plan to eventually implement OBB, capsule and swept volume collisions.|![dev][version-1.0.0]|
+| Debug |[Physics Volume Rendering]()|**Displays physics volumes** in the scene.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
 ### Physics 
@@ -73,6 +74,50 @@ The following gif contains an example of collision resolution between AABBs and 
 <a name="ai"></a>
 ### Artificial Intelligence
 --------------------------
+
+### Debug Render View
+--------------------------
+Below is an example of **AABB** and **Sphere physics volumes** in debug render mode:
+<a name="debug-render"></a>
+<p align="center"><img width=100% src="Resources/Images/Screenshots/Debugging/BoundingVolume.png?raw=true"></p>
+
+[//]: # (Insert keybindings regarding turning and twisting of objects in selection mode)
+## Keybindings
+
+|**Key**|**Tag**|**Description**|
+|:------:|:------:|:-------------:|
+| ***Escape*** | Exit | Terminates the program.|
+| ***Page_Up*** | Enable Console Window | Enables the console window.|
+| ***Page_Down*** | Disable Console Window | Hides the console window.|
+| ****DEBUGGING**** | ---- | *The keybindings listed below are used to **perform debugging** on the simulation.* |
+| ***Mouse 1*** | Object Selection |If used over a gameobject on a raycastable layer, will trigger the **Object Selection State** on that object.|
+| ***P*** | Debug Render Toggle | Toggles rendering between the debug scene and the game scene.|
+| ***R*** | Camera Movement State Toggle | Toggles between free camera movement and no camera movement.|
+| ***L*** | Object Lock Camera Movement | If an object is selected, toggles between object locked camera space and free camera movement.|
+| ****SIMULATION**** | ---- | *The keybindings listed below are used to alter the simulation settings.* |
+| ***F1*** | Reset | Resets the simulation world.|
+| ***F2*** | Camera Reset | Resets the simulation camera to a pre-defined location in the world. |
+| ***F7*** | Enable Object Shuffle | Enable object shuffling to reduce physics calculation bias. |
+| ***F8*** | Disable Object Shuffle | Disable object shuffling. |
+| ***F9*** | Enable Constraints Shuffle | Enable constraint shuffling to reduce physics calculation bias. |
+| ***F10*** | Disable Constraints Shuffle | Disable constraint shuffling. |
+| ***G*** | Gravity Toggle | Toggles the gravity of the simulation between an active and non-active state.|
+| ****CAMERA**** | ---- | *The keybindings listed below are only active when the **camera movement state** is active.* |
+| ***W*** | Forward | Moves the camera in the forward direction. |
+| ***A*** | Left | Moves the camera in the left direction. |
+| ***S*** | Backwards | Moves the camera in the backwards direction. |
+| ***D*** | Right | Moves the camera in the right direction. |
+| ***Q*** | Up | Moves the camera in the upwards direction. |
+| ***E*** | Down | Moves the camera in the downwards direction. |
+| ****OBJECT SELECTION**** | ---- | *The keybindings listed below are only active when the **gameObject selection state** is active.* |
+| ***W*** | Forward | Moves the object in the forward direction. |
+| ***A*** | Left | Moves the object in the left direction. |
+| ***S*** | Backwards | Moves the object in the backwards direction. |
+| ***D*** | Right | Moves the object in the right direction. |
+| ***Q*** | Up | Moves the object in the upwards direction. |
+| ***E*** | Down | Moves the object in the downwards direction. |
+
+
 <a name="acknowledgments"></a>
 ## Acknowledgments 
 I would like to thank Dr Rich Davison for his exciting and informative lectures and tutorial materials throughout my time at Newcastle University. 

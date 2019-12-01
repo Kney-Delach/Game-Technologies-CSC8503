@@ -12,6 +12,6 @@ RenderObject::RenderObject(Transform* parentTransform, MeshGeometry* mesh, Textu
 	this->colour	= Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-RenderObject::~RenderObject() {
-
+RenderObject::~RenderObject()
+{
 }

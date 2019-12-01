@@ -5,19 +5,16 @@ namespace NCL {
 	class AABBVolume : CollisionVolume
 	{
 	public:
-		AABBVolume(const Vector3& halfDims) {
+		AABBVolume(const Maths::Vector3& halfDims)
+		{
 			type		= VolumeType::AABB;
 			halfSizes	= halfDims;
 		}
-		~AABBVolume() {
+		~AABBVolume() = default;
 
-		}
-
-		Vector3 GetHalfDimensions() const {
-			return halfSizes;
-		}
-
+		Maths::Vector3 GetHalfDimensions() const { return halfSizes; }		
+		virtual void DrawDebug(const NCL::Maths::Vector3& position, const NCL::Maths::Vector4& colour = NCL::Maths::Vector4(1, 0, 0, 1)) override;
 	protected:
-		Vector3 halfSizes;
+		Maths::Vector3 halfSizes;
 	};
 }

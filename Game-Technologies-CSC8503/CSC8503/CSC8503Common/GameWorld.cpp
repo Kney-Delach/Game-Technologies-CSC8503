@@ -10,7 +10,8 @@
 using namespace NCL;
 using namespace NCL::CSC8503;
 
-GameWorld::GameWorld()	{
+GameWorld::GameWorld()
+{
 	mainCamera = new Camera();
 
 	quadTree = nullptr;
@@ -30,19 +31,24 @@ GameWorld::GameWorld()	{
 	worldLayers.emplace_back(layerConfig1);
 }
 
-GameWorld::~GameWorld()	{
+GameWorld::~GameWorld()
+{
 }
 
-void GameWorld::Clear() {
+void GameWorld::Clear()
+{
 	gameObjects.clear();
 	constraints.clear();
 }
 
-void GameWorld::ClearAndErase() {
-	for (auto& i : gameObjects) {
+void GameWorld::ClearAndErase()
+{
+	for (auto& i : gameObjects) 
+	{
 		delete i;
 	}
-	for (auto& i : constraints) {
+	for (auto& i : constraints) 
+	{
 		delete i;
 	}
 	Clear();
@@ -56,39 +62,43 @@ void GameWorld::RemoveGameObject(GameObject* o) {
 	std::remove(gameObjects.begin(), gameObjects.end(), o);
 }
 
-void GameWorld::GetObjectIterators(
-	GameObjectIterator& first,
-	GameObjectIterator& last) const {
-
+void GameWorld::GetObjectIterators(GameObjectIterator& first,GameObjectIterator& last) const
+{
 	first	= gameObjects.begin();
 	last	= gameObjects.end();
 }
 
-void GameWorld::OperateOnContents(GameObjectFunc f) {
-	for (GameObject* g : gameObjects) {
+void GameWorld::OperateOnContents(GameObjectFunc f)
+{
+	for (GameObject* g : gameObjects) 
+	{
 		f(g);
 	}
 }
 
-void GameWorld::UpdateWorld(float dt) {
+void GameWorld::UpdateWorld(float dt)
+{
 	UpdateTransforms();
-
-	if (shuffleObjects) {
+	if (shuffleObjects) 
+	{
 		std::random_shuffle(gameObjects.begin(), gameObjects.end());
 	}
-
-	if (shuffleConstraints) {
+	if (shuffleConstraints) 
+	{
 		std::random_shuffle(constraints.begin(), constraints.end());
 	}
 }
 
-void GameWorld::UpdateTransforms() {
-	for (auto& i : gameObjects) {
+void GameWorld::UpdateTransforms()
+{
+	for (auto& i : gameObjects) 
+	{
 		i->GetTransform().UpdateMatrices();
 	}
 }
 
-void GameWorld::UpdateQuadTree() {
+void GameWorld::UpdateQuadTree()
+{
 	delete quadTree;
 
 	//quadTree = new QuadTree<GameObject*>(Vector2(512, 512), 6);
@@ -96,6 +106,16 @@ void GameWorld::UpdateQuadTree() {
 	//for (auto& i : gameObjects) {
 	//	quadTree->Insert(i);
 	//}
+}
+
+// 1.12.19
+// draws debug physics volumes 
+void GameWorld::DrawBoundingVolumes() const
+{
+	for (auto& i : gameObjects)
+	{
+		i->DrawDebugVolume();
+	}
 }
 
 bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObject) const
@@ -123,20 +143,17 @@ bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObje
 		RayCollision thisCollision;
 		if (CollisionDetection::RayIntersection(r, *i, thisCollision)) 
 		{
-				
 			if (!closestObject) 
 			{
 				closestCollision		= collision;
 				closestCollision.node = i;
 				return true;
 			}
-
 			if (thisCollision.rayDistance < collision.rayDistance) 
 			{
 				thisCollision.node = i;
 				collision = thisCollision;
 			}
-			
 		}
 	}
 	if (collision.node) 
@@ -152,18 +169,18 @@ bool GameWorld::Raycast(Ray& r, RayCollision& closestCollision, bool closestObje
 /*
 Constraint Tutorial Stuff
 */
-
-void GameWorld::AddConstraint(Constraint* c) {
+void GameWorld::AddConstraint(Constraint* c)
+{
 	constraints.emplace_back(c);
 }
 
-void GameWorld::RemoveConstraint(Constraint* c) {
+void GameWorld::RemoveConstraint(Constraint* c)
+{
 	std::remove(constraints.begin(), constraints.end(), c);
 }
 
-void GameWorld::GetConstraintIterators(
-	std::vector<Constraint*>::const_iterator& first,
-	std::vector<Constraint*>::const_iterator& last) const {
+void GameWorld::GetConstraintIterators(std::vector<Constraint*>::const_iterator& first,	std::vector<Constraint*>::const_iterator& last) const
+{
 	first	= constraints.begin();
 	last	= constraints.end();
 }

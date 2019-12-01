@@ -34,18 +34,15 @@ TutorialGame::TutorialGame()
 	useGravity		= false;
 	inSelectionMode = false;
 
+	// debug toggles
+	displayBoundingVolumes = false;
+
 	Debug::SetRenderer(renderer);
 
 	InitialiseAssets();
 }
 
-/*
-
-Each of the little demo scenarios used in the game uses the same 2 meshes, 
-and the same texture and shader. There's no need to ever load in anything else
-for this module, even in the coursework, but you can add it if you like!
-
-*/
+// initialises all the assets used in this project.
 void TutorialGame::InitialiseAssets()
 {
 	auto loadFunc = [](const string& name, OGLMesh** into)
@@ -96,15 +93,10 @@ void TutorialGame::UpdateGame(float dt)
 	
 	UpdateKeys();
 
-	if (useGravity)
-	{
-		Debug::Print("(G)ravity on", Vector2(10, 40));
-	}
+	if (useGravity)	
+		Debug::Print("(G)ravity on", Vector2(10, 40));	
 	else 	
 		Debug::Print("(G)ravity off", Vector2(10, 40));
-
-	//todo: integrate imgui with this engine...
-	//physics->SetGlobalDamping(physics->GetConstGlobalDamping() + 1.f);
 
 	SelectObject();
 
@@ -112,65 +104,80 @@ void TutorialGame::UpdateGame(float dt)
 	renderer->Update(dt);
 	physics->Update(dt);
 
-	//todo: implement the following function
-	//if (drawBoundingVolumes)
-	//	world->DrawBoundingVolumes();
-	if(selectionObject) selectionObject->DrawDebugVolume(); // draw bounding volumes in world should look something like this for each gameobject
-
 	Debug::FlushRenderables();
-	renderer->Render();
+
+	
+	// debug draw
+	if(displayBoundingVolumes)
+	{
+		world->DrawBoundingVolumes();
+		//renderer->Render();
+
+		renderer->DebugRender();
+	}
+	else
+	{
+		renderer->Render();
+	}	
 }
 
 void TutorialGame::UpdateKeys()
 {
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F1)) 
+	///////////////////////////////////////////////////////////////////////////////////////
+	//// Debug Toggle Keys ////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::P)) // toggle physics volumes debug display
 	{
-		InitWorld(); //We can reset the simulation at any time with F1
+		displayBoundingVolumes = !displayBoundingVolumes;
+	}
+	
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F1)) // resets the simulation
+	{
+		InitWorld(); 
 		selectionObject = nullptr;
 	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F2)) 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F2)) // resets camera to specific location
 	{
-		InitCamera(); //F2 will reset the camera to a specific default place
+		InitCamera();
 	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::G)) 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::G)) // gravity toggle
 	{
-		useGravity = !useGravity; //Toggle gravity!
+		useGravity = !useGravity;
 		physics->UseGravity(useGravity);
 	}
+	
 	//Running certain physics updates in a consistent order might cause some
 	//bias in the calculations - the same objects might keep 'winning' the constraint
 	//allowing the other one to stretch too much etc. Shuffling the order so that it
 	//is random every frame can help reduce such bias.
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F9)) 
-	{
-		world->ShuffleConstraints(true);
-	}
-	
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F10)) 
-	{
-		world->ShuffleConstraints(false);
-	}
 
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) // enable object shuffles
 	{
 		world->ShuffleObjects(true);
 	}
 	
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F8)) 
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F8))  // disable object shuffles
 	{
 		world->ShuffleObjects(false);
 	}
 
-	if (lockedObject)
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F9)) // enable constraint shuffle
 	{
-		LockedObjectMovement();
-		DebugObjectMovement();
+		world->ShuffleConstraints(true);
 	}
-	else 
-		DebugObjectMovement();
-	
+
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F10))  // disable constraint shuffle 
+	{
+		world->ShuffleConstraints(false);
+	}
+
+	//todo: implement lock state specific object movement.
+	// pass through lock state specific object movement 
+//	if (lockedObject) 
+//		LockedObjectMovement();
+	DebugObjectMovement(); // move selected object 
 }
 
 void TutorialGame::LockedObjectMovement()
