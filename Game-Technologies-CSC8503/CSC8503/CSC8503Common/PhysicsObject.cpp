@@ -62,6 +62,12 @@ void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3&
 	torque += Vector3::Cross(localPos, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
 }
 
+void PhysicsObject::AddForceAtRelativePosition(const Vector3& addedForce, const Vector3& position)
+{
+	force += addedForce;
+	torque += Vector3::Cross(position, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
+}
+
 //////////////////////////////////////////////////////////
 // 30.11.2019 - Collision Resolution /////////////////////
 //////////////////////////////////////////////////////////

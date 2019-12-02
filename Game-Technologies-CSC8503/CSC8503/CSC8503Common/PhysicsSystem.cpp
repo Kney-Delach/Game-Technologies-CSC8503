@@ -75,28 +75,28 @@ void PhysicsSystem::Update(float dt)
 
 	float iterationDt = 1.0f / 120.0f; //Ideally we'll have 120 physics updates a second 
 
-	if (dTOffset > 8 * iterationDt)
-	{ //the physics engine cant catch up!
-		iterationDt = 1.0f / 15.0f; //it'll just have to run bigger timesteps...
-		//std::cout << "Setting physics iterations to 15" << iterationDt << std::endl;
-	}
-	else if (dTOffset > 4  * iterationDt)
-	{ //the physics engine cant catch up!
-		iterationDt = 1.0f / 30.0f; //it'll just have to run bigger timesteps...
-		//std::cout << "Setting iteration dt to 4 case " << iterationDt << std::endl;
-	}
-	else if (dTOffset > 2* iterationDt)
-	{ //the physics engine cant catch up!
-		iterationDt = 1.0f / 60.0f; //it'll just have to run bigger timesteps...
-		//std::cout << "Setting iteration dt to 2 case " << iterationDt << std::endl;
-	}
-	else
-	{
-		//std::cout << "Running normal update " << iterationDt << std::endl;
-	}
+	//if (dTOffset > 8 * iterationDt)
+	//{ //the physics engine cant catch up!
+	//	iterationDt = 1.0f / 15.0f; //it'll just have to run bigger timesteps...
+	//	//std::cout << "Setting physics iterations to 15" << iterationDt << std::endl;
+	//}
+	//else if (dTOffset > 4  * iterationDt)
+	//{ //the physics engine cant catch up!
+	//	iterationDt = 1.0f / 30.0f; //it'll just have to run bigger timesteps...
+	//	//std::cout << "Setting iteration dt to 4 case " << iterationDt << std::endl;
+	//}
+	//else if (dTOffset > 2* iterationDt)
+	//{ //the physics engine cant catch up!
+	//	iterationDt = 1.0f / 60.0f; //it'll just have to run bigger timesteps...
+	//	//std::cout << "Setting iteration dt to 2 case " << iterationDt << std::endl;
+	//}
+	//else
+	//{
+	//	//std::cout << "Running normal update " << iterationDt << std::endl;
+	//}
 
 	int constraintIterationCount = 10;
-	iterationDt = dt;
+	//iterationDt = dt;
 
 	if (useBroadPhase)
 	{
@@ -127,7 +127,7 @@ void PhysicsSystem::Update(float dt)
 		}
 		
 		IntegrateVelocity(iterationDt); //update positions from new velocity changes
-		dTOffset -= iterationDt; 
+		dTOffset -= iterationDt;
 	}
 	ClearForces();	//Once we've finished with the forces, reset them to zero
 
@@ -166,11 +166,13 @@ void PhysicsSystem::BasicCollisionDetection()
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) // returns true if collision has taken place 
 			{
 				//std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
-				ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
+				//ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
+				ResolveSpringCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
 			}
-		}	}
+		}
+	}
 }
 
 // 30.11.2019
@@ -256,7 +258,8 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	const Vector3 fullVelocityB = physicsObjectB->GetLinearVelocity() + angVelocityB;
 
 	// 4 - compute velocities at which the two objects collide.
-	const Vector3 contactVelocity = fullVelocityB - fullVelocityA;
+	const Vector3 contactVelocity = fullVelocityB - fullVelocityA;
+
 	/////////////////////////////////////////////////
 	//// compute impulse vector J ///////////////////
 	/////////////////////////////////////////////////
@@ -275,7 +278,8 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	//todo: Change this coefficient of restitution to non hard-coded value
 	const float restitutionCoefficient = physicsObjectA->GetElasticity() * physicsObjectB->GetElasticity(); // disperses kinetic energy
 
-	const float impulseJ = (- (1.0f + restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
+	const float impulseJ = (-(1.0f + restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
+
 	// full impulse 
 	const Vector3 fullImpulse = p.normal * impulseJ;
 	
@@ -286,6 +290,38 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	physicsObjectB->ApplyLinearImpulse(fullImpulse);
 	physicsObjectA->ApplyAngularImpulse(Vector3::Cross(relativePointA,-fullImpulse));
 	physicsObjectB->ApplyAngularImpulse(Vector3::Cross(relativePointB,fullImpulse));
+}
+
+// 2.12.2019
+// ------------------------------------------------------------------------------
+// Computes the correct response to a collision using Hooke's Law by the penalty method.
+void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
+{
+	// physics objects of objects
+	PhysicsObject* physicsObjectA = a.GetPhysicsObject();
+	PhysicsObject* physicsObjectB = b.GetPhysicsObject();
+
+	// transforms of objects
+	Transform& transformA = a.GetTransform();
+	Transform& transformB = b.GetTransform();
+
+	// 1. model spring with resting length of 0, attached to collision points of the collision
+	float springRestLength = 0.f;
+	const Vector3 springPositionA = p.localA;
+	const Vector3 springPositionB = p.localB;
+	
+	// 2. state temporary spring being extended along the collision normal n by penetration distance p.
+	Vector3 springExtensionDirection = p.normal;
+	float springExtensionLength = p.penetration;
+
+	Vector3 springExtension = springExtensionDirection * springExtensionLength;
+	
+	// 3. apply force proportional to penetration distance, at collision point on each object, in direction of collision normal.
+	//    -> outputs acceleration and torque (like when applied force at specific point during raycasting)
+	const Vector3 forceOnObjectA = -springExtension * 10.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
+	physicsObjectA->AddForceAtRelativePosition(forceOnObjectA, springPositionA);
+	const Vector3 forceOnObjectB = springExtension * 10.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
+	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
 }
 
 /*
@@ -339,10 +375,10 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		Vector3 linearVelocity = object->GetLinearVelocity();
 		Vector3 force = object->GetForce();
 		Vector3 accel = force * inverseMass;
-		
+
 		if (applyGravity && inverseMass > 0) // don ’t move infinitely heavy things
 			accel += gravity;
-		
+
 		linearVelocity += accel * dt; // integrate acceleration
 		object->SetLinearVelocity(linearVelocity);
 
@@ -401,7 +437,6 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		orientation.Normalise();
 		
 		transform.SetLocalOrientation(orientation);
-		//transform.SetWorldOrientation(orientation);
 
 		angularVelocity = angularVelocity * frameDamping; // Damp the angular velocity (simulate resistance) 
 		object->SetAngularVelocity(angularVelocity);	}

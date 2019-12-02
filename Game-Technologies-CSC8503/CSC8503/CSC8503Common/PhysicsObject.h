@@ -48,6 +48,7 @@ namespace NCL
 
 			// 28.11.2019 - angular motion 
 			void AddForceAtPosition(const Vector3& force, const Vector3& position);
+			void AddForceAtRelativePosition(const Vector3& force, const Vector3& position);
 
 			// 30.11.2019 - collision resolution (impulses) 
 			void ApplyAngularImpulse(const Vector3& force);
