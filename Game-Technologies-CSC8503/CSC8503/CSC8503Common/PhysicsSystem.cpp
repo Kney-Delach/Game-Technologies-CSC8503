@@ -318,9 +318,9 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	
 	// 3. apply force proportional to penetration distance, at collision point on each object, in direction of collision normal.
 	//    -> outputs acceleration and torque (like when applied force at specific point during raycasting)
-	const Vector3 forceOnObjectA = -springExtension * 10.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
+	const Vector3 forceOnObjectA = -springExtension * 100.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
 	physicsObjectA->AddForceAtRelativePosition(forceOnObjectA, springPositionA);
-	const Vector3 forceOnObjectB = springExtension * 10.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
+	const Vector3 forceOnObjectB = springExtension * 100.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
 	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
 }
 
