@@ -273,11 +273,11 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	const float angularEffect = Vector3::Dot(inertiaA + inertiaB, p.normal);
 
 	//todo: Change this coefficient of restitution to non hard-coded value
-	const float restitutionCoefficient = 0.66f; // disperses kinetic energy
+	const float restitutionCoefficient = physicsObjectA->GetElasticity() * physicsObjectB->GetElasticity(); // disperses kinetic energy
 
 	const float impulseJ = (- (1.0f + restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
 	// full impulse 
-	Vector3 fullImpulse = p.normal * impulseJ;
+	const Vector3 fullImpulse = p.normal * impulseJ;
 	
 	////////////////////////////////////////////////////////////////////////////////////
 	//// Apply linear and angular impulses to both objects (in opposite directions) ////
