@@ -27,6 +27,7 @@ PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* 
 	inverseMass = 1.0f;
 	elasticity	= 0.8f;
 	friction	= 0.8f;
+	stiffness	= 10.0f;
 }
 
 PhysicsObject::~PhysicsObject()
@@ -62,6 +63,8 @@ void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3&
 	torque += Vector3::Cross(localPos, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
 }
 
+// 2.12.2019
+// used for calculating spring forces
 void PhysicsObject::AddForceAtRelativePosition(const Vector3& addedForce, const Vector3& position)
 {
 	force += addedForce;

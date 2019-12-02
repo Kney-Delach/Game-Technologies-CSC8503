@@ -490,6 +490,7 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	}
 
 	sphere->GetPhysicsObject()->SetElasticity(1.f); // highly elastic material (like a rubber ball) 
+	sphere->GetPhysicsObject()->SetStiffness(30.f);
 
 	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 
@@ -513,7 +514,6 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 		cube->SetBoundingVolume((CollisionVolume*)volume);
 	}
 
-
 	cube->GetTransform().SetWorldPosition(position);
 	cube->GetTransform().SetWorldScale(dimensions);
 
@@ -521,7 +521,8 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
-	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel) 
+	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel)
+	cube->GetPhysicsObject()->SetStiffness(20.f);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)

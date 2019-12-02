@@ -242,8 +242,6 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	// heavier objects have lower (inverse) mass values (as computing using inverses) 
 	transformA.SetWorldPosition(transformA.GetWorldPosition() - (p.normal * p.penetration * (physicsObjectA->GetInverseMass() / totalMass)));
 	transformB.SetWorldPosition(transformB.GetWorldPosition() +	(p.normal * p.penetration * (physicsObjectB->GetInverseMass() / totalMass)));
-
-	// todo : implement conservation of momentum via a change in the amount of linear / angular velocity of objects
 	
 	// 1 - collision points relative to each object's position. 
 	const Vector3 relativePointA = p.localA;
@@ -301,26 +299,21 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	PhysicsObject* physicsObjectA = a.GetPhysicsObject();
 	PhysicsObject* physicsObjectB = b.GetPhysicsObject();
 
-	// transforms of objects
-	Transform& transformA = a.GetTransform();
-	Transform& transformB = b.GetTransform();
-
 	// 1. model spring with resting length of 0, attached to collision points of the collision
-	float springRestLength = 0.f;
 	const Vector3 springPositionA = p.localA;
 	const Vector3 springPositionB = p.localB;
 	
 	// 2. state temporary spring being extended along the collision normal n by penetration distance p.
-	Vector3 springExtensionDirection = p.normal;
-	float springExtensionLength = p.penetration;
+	const Vector3 springExtensionDirection = p.normal;
+	const float springExtensionLength = p.penetration;
 
 	Vector3 springExtension = springExtensionDirection * springExtensionLength;
 	
 	// 3. apply force proportional to penetration distance, at collision point on each object, in direction of collision normal.
 	//    -> outputs acceleration and torque (like when applied force at specific point during raycasting)
-	const Vector3 forceOnObjectA = -springExtension * 100.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
+	const Vector3 forceOnObjectA = -springExtension * physicsObjectA->GetStiffness();
 	physicsObjectA->AddForceAtRelativePosition(forceOnObjectA, springPositionA);
-	const Vector3 forceOnObjectB = springExtension * 100.0f; //todo: make spring constant K dynamic on a per object basis (relative to elasticity)
+	const Vector3 forceOnObjectB = springExtension * physicsObjectB->GetStiffness();
 	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
 }
 

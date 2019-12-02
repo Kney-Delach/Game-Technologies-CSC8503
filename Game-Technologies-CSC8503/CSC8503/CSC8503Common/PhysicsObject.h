@@ -57,9 +57,12 @@ namespace NCL
 			// 2.12.2019 - dynamic restitution coefficients
 			float GetElasticity() const { return elasticity; }
 			void SetElasticity(float elast) { elasticity = elast; }
+			
 			float GetFriction() const { return friction; }
 			void SetFriction(float fric) { friction = fric; }
-
+			
+			float GetStiffness() const { return stiffness; }
+			void SetStiffness(float stiff) { stiffness = stiff; }
 			
 			// tbd....				
 			void AddTorque(const Vector3& torque);
@@ -79,6 +82,7 @@ namespace NCL
 			// 2.12.2019 - Dynamic Restitution Coefficients 
 			float elasticity;
 			float friction;
+			float stiffness;
 			
 			//angular stuff
 			Vector3 angularVelocity;
@@ -88,4 +92,3 @@ namespace NCL
 		};
 	}
 }
-
