@@ -65,8 +65,12 @@ The following gif contains an example of angular movement using point specific a
   - **Perfectly Elastic**: Combinations of restitution coefficients of 2 materials = **1**
   - **Inelastic**: Combinations of restitution coefficients of 2 materials = **0**
 
-The following gif contains an example of collision resolution between AABBs and Spheres:
-[![Collision Detection](https://i.gyazo.com/fdace9ca6c99c3e44b8698710e6167c5.gif)](https://gyazo.com/fdace9ca6c99c3e44b8698710e6167c5)
+The following gif contains an example of **collision resolution** between AABBs and Spheres using **Projection Seperation** and **Impulsing**:
+[![Collision Resolution](https://i.gyazo.com/fdace9ca6c99c3e44b8698710e6167c5.gif)](https://gyazo.com/fdace9ca6c99c3e44b8698710e6167c5)
+
+
+The following gif contains an example of **collision resolution** between AABBs and Spheres using the **Penalty Method** utilising **Hook's Law**:
+[![Collision Resolution](https://i.gyazo.com/02919f829766bfb6037fcce8eea89e6a.gif)](https://gyazo.com/02919f829766bfb6037fcce8eea89e6a)
 <a name="networking"></a>
 ### Networking 
 --------------------------

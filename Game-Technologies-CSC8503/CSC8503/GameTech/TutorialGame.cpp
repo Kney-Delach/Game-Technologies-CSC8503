@@ -446,6 +446,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
 	floor->SetPhysicsObject(new PhysicsObject(&floor->GetTransform(), floor->GetBoundingVolume()));
 
 	floor->GetPhysicsObject()->SetInverseMass(0);
+	floor->GetPhysicsObject()->SetElasticity(0.8);
 	floor->GetPhysicsObject()->InitCubeInertia();
 
 	floor->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
@@ -488,6 +489,9 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 		sphere->GetPhysicsObject()->InitSphereInertia(false);
 	}
 
+	sphere->GetPhysicsObject()->SetElasticity(1.f); // highly elastic material (like a rubber ball) 
+	sphere->GetPhysicsObject()->SetStiffness(30.f);
+
 	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 
 	world->AddGameObject(sphere);
@@ -495,13 +499,20 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	return sphere;
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass)
 {
 	GameObject* cube = new GameObject("Cube");
 
-	AABBVolume* volume = new AABBVolume(dimensions);
-
-	cube->SetBoundingVolume((CollisionVolume*)volume);
+	if(isAABB)
+	{
+		AABBVolume* volume = new AABBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
+	else
+	{
+		OBBVolume* volume = new OBBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
 
 	cube->GetTransform().SetWorldPosition(position);
 	cube->GetTransform().SetWorldScale(dimensions);
@@ -510,6 +521,8 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
+	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel)
+	cube->GetPhysicsObject()->SetStiffness(20.f);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
@@ -648,12 +661,13 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
 			if (x % 2)
 			{
-				AddCubeToWorld(position, cubeDims);
+				if(x % 3)
+					AddCubeToWorld(position, cubeDims, true);
+				else
+					AddCubeToWorld(position, cubeDims, false);
 			}
-			else 
-			{
-				AddSphereToWorld(position, sphereRadius, false);// 1.f / (1.f + (float)x + (float)z));
-			}
+			else 			
+				AddSphereToWorld(position, sphereRadius, false);		
 		}
 	}
 	AddFloorToWorld(Vector3(0, -8, 0));

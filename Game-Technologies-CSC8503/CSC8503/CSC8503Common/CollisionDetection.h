@@ -40,8 +40,8 @@ namespace NCL
 		{
 			Vector3 localA; // location of where collision occured
 			Vector3 localB; // location of collision in object frame
-			Vector3 normal;
-			float penetration;
+			Vector3 normal; // normal vector of the collision
+			float penetration; // length of penetration 
 		};
 		// 29.11.2019
 		struct CollisionInfo

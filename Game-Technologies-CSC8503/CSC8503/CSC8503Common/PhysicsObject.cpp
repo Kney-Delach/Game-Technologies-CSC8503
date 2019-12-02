@@ -27,6 +27,7 @@ PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* 
 	inverseMass = 1.0f;
 	elasticity	= 0.8f;
 	friction	= 0.8f;
+	stiffness	= 10.0f;
 }
 
 PhysicsObject::~PhysicsObject()
@@ -56,10 +57,18 @@ void PhysicsObject::AddForce(const Vector3& addedForce)
 
 void PhysicsObject::AddForceAtPosition(const Vector3& addedForce, const Vector3& position)
 {
-	Vector3 localPos = position - transform->GetWorldPosition(); // calculates position relative to object's center of mass.
+	const Vector3 localPos = position - transform->GetWorldPosition(); // calculates position relative to object's center of mass.
 
 	force += addedForce;
 	torque += Vector3::Cross(localPos, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
+}
+
+// 2.12.2019
+// used for calculating spring forces
+void PhysicsObject::AddForceAtRelativePosition(const Vector3& addedForce, const Vector3& position)
+{
+	force += addedForce;
+	torque += Vector3::Cross(position, addedForce);  // uses cross product to determine the axis around which force will cause object to spin
 }
 
 //////////////////////////////////////////////////////////
@@ -112,8 +121,8 @@ void PhysicsObject::UpdateInertiaTensor()
 {
 	Quaternion q = transform->GetWorldOrientation();
 	
-	Matrix3 invOrientation	= Matrix3(q.Conjugate());
-	Matrix3 orientation		= Matrix3(q);
+	const Matrix3 invOrientation = Matrix3(q.Conjugate());
+	const Matrix3 orientation = Matrix3(q);
 
 	inverseInteriaTensor = orientation * Matrix3::Scale(inverseInertia) *invOrientation;
 }

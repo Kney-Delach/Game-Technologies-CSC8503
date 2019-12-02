@@ -48,10 +48,21 @@ namespace NCL
 
 			// 28.11.2019 - angular motion 
 			void AddForceAtPosition(const Vector3& force, const Vector3& position);
+			void AddForceAtRelativePosition(const Vector3& force, const Vector3& position);
 
 			// 30.11.2019 - collision resolution (impulses) 
 			void ApplyAngularImpulse(const Vector3& force);
 			void ApplyLinearImpulse(const Vector3& force);
+
+			// 2.12.2019 - dynamic restitution coefficients
+			float GetElasticity() const { return elasticity; }
+			void SetElasticity(float elast) { elasticity = elast; }
+			
+			float GetFriction() const { return friction; }
+			void SetFriction(float fric) { friction = fric; }
+			
+			float GetStiffness() const { return stiffness; }
+			void SetStiffness(float stiff) { stiffness = stiff; }
 			
 			// tbd....				
 			void AddTorque(const Vector3& torque);
@@ -60,16 +71,19 @@ namespace NCL
 			void UpdateInertiaTensor();
 		protected:
 			const CollisionVolume* volume;
-			Transform*		transform;
+			Transform* transform;
 
 			// 28.11.2019 - linear motion 
 			float inverseMass;
-			float elasticity;
-			float friction;
+			
 			Vector3 linearVelocity;
 			Vector3 force;
 			
-
+			// 2.12.2019 - Dynamic Restitution Coefficients 
+			float elasticity;
+			float friction;
+			float stiffness;
+			
 			//angular stuff
 			Vector3 angularVelocity;
 			Vector3 torque;
@@ -78,4 +92,3 @@ namespace NCL
 		};
 	}
 }
-
