@@ -3,6 +3,8 @@
 #include "../../Common/Vector3.h"
 namespace NCL
 {
+	namespace Maths { class Quaternion; }
+
 	class OBBVolume : CollisionVolume
 	{
 	public:
@@ -18,7 +20,7 @@ namespace NCL
 			return halfSizes;
 		}
 
-		virtual void DrawDebug(const NCL::Maths::Vector3& position, const NCL::Maths::Vector4& colour = NCL::Maths::Vector4(0, 0, 1, 1)) override;
+		void DrawDebugOBB(const NCL::Maths::Vector3& position, const NCL::Maths::Quaternion& orientation ,const NCL::Maths::Vector4& colour = NCL::Maths::Vector4(0, 0, 1, 1));
 
 	protected:
 		Maths::Vector3 halfSizes;

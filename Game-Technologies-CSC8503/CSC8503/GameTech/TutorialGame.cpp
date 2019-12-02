@@ -495,13 +495,21 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	return sphere;
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass)
 {
 	GameObject* cube = new GameObject("Cube");
 
-	AABBVolume* volume = new AABBVolume(dimensions);
+	if(isAABB)
+	{
+		AABBVolume* volume = new AABBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
+	else
+	{
+		OBBVolume* volume = new OBBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
 
-	cube->SetBoundingVolume((CollisionVolume*)volume);
 
 	cube->GetTransform().SetWorldPosition(position);
 	cube->GetTransform().SetWorldScale(dimensions);
@@ -648,12 +656,13 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
 			if (x % 2)
 			{
-				AddCubeToWorld(position, cubeDims);
+				if(x % 3)
+					AddCubeToWorld(position, cubeDims, true);
+				else
+					AddCubeToWorld(position, cubeDims, false);
 			}
-			else 
-			{
-				AddSphereToWorld(position, sphereRadius, false);// 1.f / (1.f + (float)x + (float)z));
-			}
+			else 			
+				AddSphereToWorld(position, sphereRadius, false);		
 		}
 	}
 	AddFloorToWorld(Vector3(0, -8, 0));

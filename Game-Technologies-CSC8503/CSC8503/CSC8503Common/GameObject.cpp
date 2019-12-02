@@ -85,7 +85,7 @@ void GameObject::DrawDebugVolume()
 	}
 	else if (boundingVolume->type == VolumeType::OBB)
 	{
-		boundingVolume->DrawDebug(transform.GetWorldPosition(), Vector4(0, 0, 1, 1));
+		((OBBVolume*)boundingVolume)->DrawDebugOBB(transform.GetWorldPosition(), transform.GetWorldOrientation(), Vector4(0, 0, 1, 1));
 	}
 }
 
