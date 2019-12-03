@@ -374,32 +374,32 @@ void TutorialGame::MoveSelectedObject()
 
 void TutorialGame::GameObjectMovement()
 {
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q)) // up
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) // up
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 10, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, forceMagnitude, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -forceMagnitude, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(-10, 0, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(-forceMagnitude, 0, 0));
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(10, 0, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(forceMagnitude, 0, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -forceMagnitude));
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, forceMagnitude));
 	}
 }
 
@@ -475,12 +475,12 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position, const Vector3
 
 	floor->GetPhysicsObject()->SetInverseMass(0);
 	floor->GetPhysicsObject()->SetElasticity(0.8);
-	//floor->GetPhysicsObject()->SetStiffness(stiffness);
 	floor->GetPhysicsObject()->InitCubeInertia();
 
 	if(resolveAsSprings)
 	{
 		floor->GetPhysicsObject()->SetResolveAsSpring(true);
+		floor->GetPhysicsObject()->SetStiffness(200.f);
 		floor->GetPhysicsObject()->SetResolveAsImpulse(false);
 	}
 
@@ -573,7 +573,7 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 {
 	float size			= 1.0f;
-	float inverseMass	= 10.0f;
+	float inverseMass = 1.f / 4.f;
 
 	GameObject* goose = new GameObject("Goose");
 
@@ -588,7 +588,7 @@ GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 
 	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
 	goose->GetPhysicsObject()->InitSphereInertia();
-	goose->GetPhysicsObject()->SetStiffness(6.f);
+	goose->GetPhysicsObject()->SetStiffness(300.f);
 	goose->GetPhysicsObject()->SetResolveAsImpulse(true);
 	goose->GetPhysicsObject()->SetResolveAsImpulse(true);
 	
