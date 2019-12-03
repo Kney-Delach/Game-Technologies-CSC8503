@@ -166,8 +166,14 @@ void PhysicsSystem::BasicCollisionDetection()
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) // returns true if collision has taken place 
 			{
 				//std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
-				//ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
-				ResolveSpringCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
+
+				PhysicsObject* physicsObjectA = info.a->GetPhysicsObject();
+				PhysicsObject* physicsObjectB = info.b->GetPhysicsObject();
+
+				if(physicsObjectA->GetResolveAsImpulse() && physicsObjectB->GetResolveAsImpulse())
+					ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
+				else 
+					ResolveSpringCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
 			}
@@ -307,7 +313,7 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	const Vector3 springExtensionDirection = p.normal;
 	const float springExtensionLength = p.penetration;
 
-	Vector3 springExtension = springExtensionDirection * springExtensionLength;
+	const Vector3 springExtension = springExtensionDirection * springExtensionLength;
 	
 	// 3. apply force proportional to penetration distance, at collision point on each object, in direction of collision normal.
 	//    -> outputs acceleration and torque (like when applied force at specific point during raycasting)

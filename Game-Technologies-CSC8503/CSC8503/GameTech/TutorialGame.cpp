@@ -406,7 +406,7 @@ void TutorialGame::GameObjectMovement()
 void TutorialGame::InitCamera()
 {
 	world->GetMainCamera()->SetNearPlane(0.5f);
-	world->GetMainCamera()->SetFarPlane(500.0f);
+	world->GetMainCamera()->SetFarPlane(2000.0f);
 	world->GetMainCamera()->SetPitch(-15.0f);
 	world->GetMainCamera()->SetYaw(315.0f);
 	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
@@ -417,29 +417,57 @@ void TutorialGame::InitWorld() //todo:
 {
 	world->ClearAndErase();
 	physics->Clear();
-	
-	InitMixedGridWorld(10, 10, 3.5f, 3.5f);
-	//AddGooseToWorld(Vector3(30, -10, 0));
-	//AddAppleToWorld(Vector3(35, -10, 0));
-	//AddParkKeeperToWorld(Vector3(-40, 10, 0));
-	//AddCharacterToWorld(Vector3(-45, 10, 0));
+
+	InitGooseGameWorld();
 }
 
-//From here on it's functions to add in objects to the world!
+void TutorialGame::InitGooseGameWorld()
+{
+	//todo: initialize ground level terrain
+	InitGroundLevelTerrain();
+	AddGooseToWorld(Vector3(0.f,1.f,0.f));
+	//InitMixedGridWorld(10, 10, 3.5f, 3.5f);
+	//todo: create initialize player character functionality
+	//todo: create collectable objects init
+	//todo: create DumbAI init function (atleast 1 for each collectable zone 
+	//todo: create SmartAI init function (maybe 1 that follows player throughout entire level? can swim? 
+}
+
+void TutorialGame::InitGroundLevelTerrain()
+{
+	// 1. add water terrain (curently a blue square)
+	AddFloorToWorld(Vector3(0, -5, 0), Vector3(100, 5, 100), Vector4(0, 0, 1, 1), true);
+
+	// 2. add spawn land terrain
+	AddFloorToWorld(Vector3(0, -5, 0),Vector3(25,5.5,25), Vector4(1,1,1,1));
+
+	// 3. add playable terrains (areas with collectables and AI)
+	// red world
+	AddFloorToWorld(Vector3(0, -5, 200), Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1));
+
+	// green world 
+	AddFloorToWorld(Vector3(0, -5, -200), Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1));
+
+	// yellow world
+	AddFloorToWorld(Vector3(200, -5, 0), Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1));
+
+	// light blue world
+	AddFloorToWorld(Vector3(-200, -5, 0), Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
+}
+
 
 /*
 
 A single function to add a large immoveable cube to the bottom of our world
 
 */
-GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
+GameObject* TutorialGame::AddFloorToWorld(const Vector3& position, const Vector3& dimensions, const Vector4& colour, bool resolveAsSprings)
 {
 	GameObject* floor = new GameObject("Ground");
 
-	Vector3 floorSize = Vector3(100, 2.0, 100);
-	AABBVolume* volume = new AABBVolume(floorSize);
+	AABBVolume* volume = new AABBVolume(dimensions);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
-	floor->GetTransform().SetWorldScale(floorSize);
+	floor->GetTransform().SetWorldScale(dimensions);
 	floor->GetTransform().SetWorldPosition(position);
 
 	floor->SetRenderObject(new RenderObject(&floor->GetTransform(), cubeMesh, basicTex, basicShader));
@@ -447,8 +475,17 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
 
 	floor->GetPhysicsObject()->SetInverseMass(0);
 	floor->GetPhysicsObject()->SetElasticity(0.8);
+	//floor->GetPhysicsObject()->SetStiffness(stiffness);
 	floor->GetPhysicsObject()->InitCubeInertia();
 
+	if(resolveAsSprings)
+	{
+		floor->GetPhysicsObject()->SetResolveAsSpring(true);
+		floor->GetPhysicsObject()->SetResolveAsImpulse(false);
+	}
+
+	floor->GetRenderObject()->SetColour(colour);
+	
 	floor->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
 	
 	world->AddGameObject(floor);
@@ -482,15 +519,16 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	{
 		sphere->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
 		sphere->GetPhysicsObject()->InitSphereInertia(true);
+		sphere->GetPhysicsObject()->SetStiffness(100.f);
 	}
 	else
 	{
 		sphere->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 		sphere->GetPhysicsObject()->InitSphereInertia(false);
+		sphere->GetPhysicsObject()->SetStiffness(100.f);
 	}
 
 	sphere->GetPhysicsObject()->SetElasticity(1.f); // highly elastic material (like a rubber ball) 
-	sphere->GetPhysicsObject()->SetStiffness(30.f);
 
 	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 
@@ -522,7 +560,7 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel)
-	cube->GetPhysicsObject()->SetStiffness(20.f);
+	cube->GetPhysicsObject()->SetStiffness(8.f);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
@@ -535,10 +573,9 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 {
 	float size			= 1.0f;
-	float inverseMass	= 1.0f;
+	float inverseMass	= 10.0f;
 
 	GameObject* goose = new GameObject("Goose");
-
 
 	SphereVolume* volume = new SphereVolume(size);
 	goose->SetBoundingVolume((CollisionVolume*)volume);
@@ -551,7 +588,10 @@ GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 
 	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
 	goose->GetPhysicsObject()->InitSphereInertia();
-
+	goose->GetPhysicsObject()->SetStiffness(6.f);
+	goose->GetPhysicsObject()->SetResolveAsImpulse(true);
+	goose->GetPhysicsObject()->SetResolveAsImpulse(true);
+	
 	world->AddGameObject(goose);
 
 	return goose;
@@ -612,6 +652,8 @@ GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
 	character->GetPhysicsObject()->SetInverseMass(inverseMass);
 	character->GetPhysicsObject()->InitCubeInertia();
 
+	// set temporary color (for debugging)
+	character->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
 	world->AddGameObject(character);
 
 	return character;
@@ -666,11 +708,16 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 				else
 					AddCubeToWorld(position, cubeDims, false);
 			}
-			else 			
-				AddSphereToWorld(position, sphereRadius, false);		
+			else
+			{
+				if(x % 3)
+					AddSphereToWorld(position, sphereRadius, false);
+				else 
+					AddSphereToWorld(position, sphereRadius, true);
+
+			}
 		}
 	}
-	AddFloorToWorld(Vector3(0, -8, 0));
 }
 
 void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims)

@@ -139,8 +139,6 @@ namespace NCL
 			string	name;
 
 			Vector3 broadphaseAABB;
-
-
 		};
 	}
 }

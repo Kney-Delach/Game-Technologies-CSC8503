@@ -63,6 +63,12 @@ namespace NCL
 			
 			float GetStiffness() const { return stiffness; }
 			void SetStiffness(float stiff) { stiffness = stiff; }
+
+			// 3.12.2019 - used to determine which collision response method to utilise
+			bool GetResolveAsSpring() const { return resolveAsSpring; }
+			void SetResolveAsSpring(bool resolve) { resolveAsSpring = resolve; }
+			bool GetResolveAsImpulse() const { return resolveAsImpulse; }
+			void SetResolveAsImpulse(bool resolve) { resolveAsImpulse = resolve; }
 			
 			// tbd....				
 			void AddTorque(const Vector3& torque);
@@ -89,6 +95,10 @@ namespace NCL
 			Vector3 torque;
 			Vector3 inverseInertia;
 			Matrix3 inverseInteriaTensor;
+
+			// 3.12.2019
+			bool resolveAsSpring;
+			bool resolveAsImpulse;
 		};
 	}
 }

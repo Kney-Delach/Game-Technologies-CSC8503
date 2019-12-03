@@ -20,10 +20,11 @@ using namespace NCL;
 using namespace CSC8503;
 
 PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* parentVolume)
+	: resolveAsSpring(false), resolveAsImpulse(true)
 {
 	transform	= parentTransform;
 	volume		= parentVolume;
-
+	
 	inverseMass = 1.0f;
 	elasticity	= 0.8f;
 	friction	= 0.8f;
