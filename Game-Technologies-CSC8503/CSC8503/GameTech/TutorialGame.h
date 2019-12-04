@@ -22,7 +22,7 @@ namespace NCL {
 			// goose level world initialization
 			void InitGooseGameWorld();
 			void InitGroundLevelTerrain();
-
+			void InitBoundaries();
 			
 			/*
 			These are some of the world/object creation functions I created when testing the functionality

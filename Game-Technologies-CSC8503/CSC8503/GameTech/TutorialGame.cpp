@@ -425,8 +425,10 @@ void TutorialGame::InitGooseGameWorld()
 {
 	//todo: initialize ground level terrain
 	InitGroundLevelTerrain();
+	InitBoundaries();
 	AddGooseToWorld(Vector3(0.f,1.f,0.f));
-	//InitMixedGridWorld(10, 10, 3.5f, 3.5f);
+	InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
+
 	//todo: create initialize player character functionality
 	//todo: create collectable objects init
 	//todo: create DumbAI init function (atleast 1 for each collectable zone 
@@ -455,7 +457,10 @@ void TutorialGame::InitGroundLevelTerrain()
 	AddFloorToWorld(Vector3(-200, -5, 0), Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
 }
 
-
+void TutorialGame::InitBoundaries()
+{
+	
+}
 /*
 
 A single function to add a large immoveable cube to the bottom of our world
