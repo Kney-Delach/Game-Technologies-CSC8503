@@ -446,19 +446,37 @@ void TutorialGame::InitGroundLevelTerrain()
 	// 3. add playable terrains (areas with collectables and AI)
 	// red world
 	AddFloorToWorld(Vector3(0, -5, 200), Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(0, -5, 400), Vector3(200, 5.5, 100), Vector4(1, 0, 0, 1));
 
 	// green world 
 	AddFloorToWorld(Vector3(0, -5, -200), Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(0, -5, -400), Vector3(200, 5.5, 100), Vector4(0, 1, 0, 1));
 
 	// yellow world
 	AddFloorToWorld(Vector3(200, -5, 0), Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1));
+	AddFloorToWorld(Vector3(400, -5, 0), Vector3(100, 5.5, 200), Vector4(1, 1, 0, 1));
 
 	// light blue world
 	AddFloorToWorld(Vector3(-200, -5, 0), Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
+	AddFloorToWorld(Vector3(-400, -5, 0), Vector3(100, 5.5, 200), Vector4(0, 1, 1, 1));
+
 }
 
 void TutorialGame::InitBoundaries()
 {
+	// 0. boundaries around 
+	// 1. red world boundaries
+	AddFloorToWorld(Vector3(-50.f, 50, 200), Vector3(1.f, 50.f, 100.f), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(50.f, 50, 200), Vector3(1.f, 50.f, 100.f), Vector4(1, 0, 0, 1));
+
+
+	// 2. green world boundaries
+	AddFloorToWorld(Vector3(-50.f, 50, -200), Vector3(1.f, 50.f, 100.f), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(50.f, 50, -200), Vector3(1.f, 50.f, 100.f), Vector4(0, 1, 0, 1));
+
+	// 3. yellow world
+
+	// 4. light blue world 
 	
 }
 /*
