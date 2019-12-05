@@ -43,7 +43,7 @@ namespace NCL {
 
 			void GameObjectMovement();
 			
-			GameObject* AddFloorToWorld(const Vector3& position, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), bool resolveAsSprings = false);
+			GameObject* AddFloorToWorld(const Vector3& position, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), bool resolveAsSprings = false, float stiffness = 0.8f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
 			

@@ -438,53 +438,73 @@ void TutorialGame::InitGooseGameWorld()
 void TutorialGame::InitGroundLevelTerrain()
 {
 	// 1. add water terrain (curently a blue square)
-	AddFloorToWorld(Vector3(0, -5, 0), Vector3(100, 5, 100), Vector4(0, 0, 1, 1), true);
+	AddFloorToWorld(Vector3(0, -5, 0), Vector3(500, 4, 500), Vector4(0, 0, 1, 1), true);
+	AddFloorToWorld(Vector3(0, -4.f, 0), Vector3(500, 1, 500), Vector4(1, 0, 0, 1), false, 2.2f); // lower water boundary
+	 
+	// sky
+	AddFloorToWorld(Vector3(0, 450.f, 0), Vector3(500, 1, 500), Vector4(1, 1, 1, 1), false, 1.f);
 
 	// 2. add spawn land terrain
-	AddFloorToWorld(Vector3(0, -5, 0),Vector3(25,5.5,25), Vector4(1,1,1,1));
+	AddFloorToWorld(Vector3(0, -5, 0),Vector3(25,4.5,25), Vector4(1,1,1,1));
 
 	// 3. add playable terrains (areas with collectables and AI)
 	// red world
 	AddFloorToWorld(Vector3(0, -5, 200), Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1));
-	AddFloorToWorld(Vector3(0, -5, 400), Vector3(200, 5.5, 100), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(0, -5, 400), Vector3(300, 5.5, 100), Vector4(1, 0, 0, 1));
 
 	// green world 
 	AddFloorToWorld(Vector3(0, -5, -200), Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1));
-	AddFloorToWorld(Vector3(0, -5, -400), Vector3(200, 5.5, 100), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(0, -5, -400), Vector3(300, 5.5, 100), Vector4(0, 1, 0, 1));
 
 	// yellow world
 	AddFloorToWorld(Vector3(200, -5, 0), Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1));
-	AddFloorToWorld(Vector3(400, -5, 0), Vector3(100, 5.5, 200), Vector4(1, 1, 0, 1));
+	AddFloorToWorld(Vector3(400, -5, 0), Vector3(100, 5.5, 300), Vector4(1, 1, 0, 1));
 
 	// light blue world
 	AddFloorToWorld(Vector3(-200, -5, 0), Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
-	AddFloorToWorld(Vector3(-400, -5, 0), Vector3(100, 5.5, 200), Vector4(0, 1, 1, 1));
-
+	AddFloorToWorld(Vector3(-400, -5, 0), Vector3(100, 5.5, 300), Vector4(0, 1, 1, 1));
 }
 
 void TutorialGame::InitBoundaries()
 {
 	// 0. boundaries around 
 	// 1. red world boundaries
-	AddFloorToWorld(Vector3(-50.f, 50, 200), Vector3(1.f, 50.f, 100.f), Vector4(1, 0, 0, 1));
-	AddFloorToWorld(Vector3(50.f, 50, 200), Vector3(1.f, 50.f, 100.f), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(-50.f, 50, 200), Vector3(1.f, 55.f, 100.f), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(50.f, 50, 200), Vector3(1.f, 55.f, 100.f), Vector4(1, 0, 0, 1));
 
 
 	// 2. green world boundaries
-	AddFloorToWorld(Vector3(-50.f, 50, -200), Vector3(1.f, 50.f, 100.f), Vector4(0, 1, 0, 1));
-	AddFloorToWorld(Vector3(50.f, 50, -200), Vector3(1.f, 50.f, 100.f), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(-50.f, 50, -200), Vector3(1.f, 55.f, 100.f), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(50.f, 50, -200), Vector3(1.f, 55.f, 100.f), Vector4(0, 1, 0, 1));
 
 	// 3. yellow world
+	AddFloorToWorld(Vector3(200.f, 50, -50), Vector3(100.f, 55.f, 1.f), Vector4(1, 1, 0, 1));
+	AddFloorToWorld(Vector3(200.f, 50, 50), Vector3(100.f, 55.f, 1.f), Vector4(1, 1, 0, 1));
 
 	// 4. light blue world 
-	
+	AddFloorToWorld(Vector3(-200.f, 50, -50), Vector3(100.f, 55.f, 1.f), Vector4(0, 1, 1, 1));
+	AddFloorToWorld(Vector3(-200.f, 50, 50), Vector3(100.f, 55.f, 1.f), Vector4(0, 1, 1, 1));
+
+	// add surrounding world walls boundary
+
+	// red world boundary
+	AddFloorToWorld(Vector3(0.f, 200.f, 500.f), Vector3(500.f, 250.f, 1.f), Vector4(1, 0, 0, 1));
+
+	// green world boundaries
+	AddFloorToWorld(Vector3(0.f, 200.f, -500.f), Vector3(500.f, 250.f, 1.f), Vector4(0, 1, 0, 1));
+
+	// yellow world boundary
+	AddFloorToWorld(Vector3(500.f, 200.f, 0.f), Vector3(1.f, 250.f, 500.f), Vector4(1, 1, 0, 1));
+
+	// light blue world boundary
+	AddFloorToWorld(Vector3(-500.f, 200.f, 0.f), Vector3(1.f, 250.f, 500.f), Vector4(0, 1, 1, 1));
 }
 /*
 
 A single function to add a large immoveable cube to the bottom of our world
 
 */
-GameObject* TutorialGame::AddFloorToWorld(const Vector3& position, const Vector3& dimensions, const Vector4& colour, bool resolveAsSprings)
+GameObject* TutorialGame::AddFloorToWorld(const Vector3& position, const Vector3& dimensions, const Vector4& colour, bool resolveAsSprings, float stiffness)
 {
 	GameObject* floor = new GameObject("Ground");
 
@@ -497,13 +517,13 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position, const Vector3
 	floor->SetPhysicsObject(new PhysicsObject(&floor->GetTransform(), floor->GetBoundingVolume()));
 
 	floor->GetPhysicsObject()->SetInverseMass(0);
-	floor->GetPhysicsObject()->SetElasticity(0.8);
+	floor->GetPhysicsObject()->SetElasticity(stiffness);
 	floor->GetPhysicsObject()->InitCubeInertia();
 
 	if(resolveAsSprings)
 	{
 		floor->GetPhysicsObject()->SetResolveAsSpring(true);
-		floor->GetPhysicsObject()->SetStiffness(200.f);
+		floor->GetPhysicsObject()->SetStiffness(300.f);
 		floor->GetPhysicsObject()->SetResolveAsImpulse(false);
 	}
 
@@ -611,6 +631,7 @@ GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 
 	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
 	goose->GetPhysicsObject()->InitSphereInertia();
+	goose->GetPhysicsObject()->SetElasticity(0.8f); // low elasticity material (like steel)
 	goose->GetPhysicsObject()->SetStiffness(300.f);
 	goose->GetPhysicsObject()->SetResolveAsImpulse(true);
 	goose->GetPhysicsObject()->SetResolveAsImpulse(true);
