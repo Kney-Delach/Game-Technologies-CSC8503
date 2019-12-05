@@ -427,7 +427,9 @@ void TutorialGame::InitGooseGameWorld()
 	InitGroundLevelTerrain();
 	InitBoundaries();
 	AddGooseToWorld(Vector3(0.f,1.f,0.f));
-	InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
+	InitCollectables();
+	InitJumpPads();
+	//InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
 
 	//todo: create initialize player character functionality
 	//todo: create collectable objects init
@@ -438,7 +440,7 @@ void TutorialGame::InitGooseGameWorld()
 void TutorialGame::InitGroundLevelTerrain()
 {
 	// 1. add water terrain (curently a blue square)
-	AddFloorToWorld(Vector3(0, -5, 0), Vector3(500, 4, 500), Vector4(0, 0, 1, 1), true);
+	AddFloorToWorld(Vector3(0, -5, 0), Vector3(500, 4, 500), Vector4(0, 0, 1, 1), true, 300.f);
 	AddFloorToWorld(Vector3(0, -4.f, 0), Vector3(500, 1, 500), Vector4(1, 0, 0, 1), false, 2.2f); // lower water boundary
 	 
 	// sky
@@ -450,18 +452,22 @@ void TutorialGame::InitGroundLevelTerrain()
 	// 3. add playable terrains (areas with collectables and AI)
 	// red world
 	AddFloorToWorld(Vector3(0, -5, 200), Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(0, 100, 200), Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1)); // red roof
 	AddFloorToWorld(Vector3(0, -5, 400), Vector3(300, 5.5, 100), Vector4(1, 0, 0, 1));
 
 	// green world 
 	AddFloorToWorld(Vector3(0, -5, -200), Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(0, 100.f, -200), Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1)); // green roof
 	AddFloorToWorld(Vector3(0, -5, -400), Vector3(300, 5.5, 100), Vector4(0, 1, 0, 1));
 
 	// yellow world
 	AddFloorToWorld(Vector3(200, -5, 0), Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1));
+	AddFloorToWorld(Vector3(200, 100.f, 0), Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1)); // yellow roof
 	AddFloorToWorld(Vector3(400, -5, 0), Vector3(100, 5.5, 300), Vector4(1, 1, 0, 1));
 
 	// light blue world
 	AddFloorToWorld(Vector3(-200, -5, 0), Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
+	AddFloorToWorld(Vector3(-200, 100.f, 0), Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1)); // light blue roof
 	AddFloorToWorld(Vector3(-400, -5, 0), Vector3(100, 5.5, 300), Vector4(0, 1, 1, 1));
 }
 
@@ -499,6 +505,43 @@ void TutorialGame::InitBoundaries()
 	// light blue world boundary
 	AddFloorToWorld(Vector3(-500.f, 200.f, 0.f), Vector3(1.f, 250.f, 500.f), Vector4(0, 1, 1, 1));
 }
+
+void TutorialGame::InitCollectables()
+{
+	AddAppleToWorld(Vector3(450.f, 1.f, 0));
+	AddAppleToWorld(Vector3(-450.f, 1.f, 0));
+	AddAppleToWorld(Vector3(0.f, 1.f, 450.f));
+	AddAppleToWorld(Vector3(0.f, 1.f, -450.f));
+}
+
+void TutorialGame::InitJumpPads()
+{
+	AddJumpPadToWorld(Vector3(450.f, 2.f, 0), Vector3(10.0, 1.0, 10.0));
+	AddJumpPadToWorld(Vector3(-450.f, 2.f, 0), Vector3(10.0, 1.0, 10.0));
+	AddJumpPadToWorld(Vector3(0.f, 2.f, 450.f), Vector3(10.0, 1.0, 10.0));
+	AddJumpPadToWorld(Vector3(0.f, 2.f, -450.f), Vector3(10.0,1.0,10.0));
+}
+
+
+//todo: fix the way collisions are resolved here
+void TutorialGame::AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions)
+{
+	// the center of the pad (actually makes you jump)	
+	AddFloorToWorld(position, dimensions, Vector4(0.5,0.5,0.5,1), true, 1000.f); //todo: make this resolve collisions differently (as a jump pad)
+
+	// left padding
+	AddFloorToWorld(position - Vector3(0.f, 0.f, dimensions.z + 1.f), Vector3(dimensions.x, dimensions.y * 2.f, 1.f), Vector4(1, 1, 1, 1), false, 0.8f); // green
+
+	// right padding
+	AddFloorToWorld(position + Vector3(0.f, 0.f, dimensions.z + 1.f), Vector3(dimensions.x, dimensions.y * 2.f, 1.f), Vector4(1, 1, 1, 1), false, 0.8f); // green
+
+	// front padding
+	AddFloorToWorld(position - Vector3(dimensions.x + 1.f, 0.f, 0.f), Vector3(1.f, dimensions.y * 2.f, dimensions.z + 2.f), Vector4(1, 1, 1, 1), false, 0.8f); // green
+
+	// back padding
+	AddFloorToWorld(position + Vector3(dimensions.x + 1.f, 0.f, 0.f), Vector3(1.f, dimensions.y * 2.f, dimensions.z + 2.f), Vector4(1, 1, 1, 1), false, 0.8f); // green
+}
+
 /*
 
 A single function to add a large immoveable cube to the bottom of our world
@@ -523,7 +566,7 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position, const Vector3
 	if(resolveAsSprings)
 	{
 		floor->GetPhysicsObject()->SetResolveAsSpring(true);
-		floor->GetPhysicsObject()->SetStiffness(300.f);
+		floor->GetPhysicsObject()->SetStiffness(stiffness);
 		floor->GetPhysicsObject()->SetResolveAsImpulse(false);
 	}
 
@@ -707,9 +750,9 @@ GameObject* TutorialGame::AddAppleToWorld(const Vector3& position)
 {
 	GameObject* apple = new GameObject("Apple");
 
-	SphereVolume* volume = new SphereVolume(0.7f);
+	SphereVolume* volume = new SphereVolume(4.f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
-	apple->GetTransform().SetWorldScale(Vector3(4, 4, 4));
+	apple->GetTransform().SetWorldScale(Vector3(20, 20, 20));
 	apple->GetTransform().SetWorldPosition(position);
 
 	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), appleMesh, nullptr, basicShader));
@@ -718,6 +761,14 @@ GameObject* TutorialGame::AddAppleToWorld(const Vector3& position)
 	apple->GetPhysicsObject()->SetInverseMass(1.0f);
 	apple->GetPhysicsObject()->InitSphereInertia();
 
+	apple->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1)); //todo: make this red
+	apple->GetPhysicsObject()->InitSphereInertia(false);
+
+	// resolve as both springs and impulses (So that apples can interact with jump pads)
+	apple->GetPhysicsObject()->SetResolveAsSpring(true);
+	apple->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
+	apple->GetPhysicsObject()->SetResolveAsImpulse(true);
+	
 	world->AddGameObject(apple);
 
 	return apple;

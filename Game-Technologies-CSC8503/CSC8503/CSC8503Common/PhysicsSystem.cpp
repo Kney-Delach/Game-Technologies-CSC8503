@@ -391,7 +391,8 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		Vector3 angularAcceleration = object->GetInertiaTensor() * torque;
 		
 		angularVelocity += angularAcceleration * dt; // integration 
-		object->SetAngularVelocity(angularVelocity);	}
+		object->SetAngularVelocity(angularVelocity);
+	}
 }
 
 /*
@@ -438,7 +439,8 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		transform.SetLocalOrientation(orientation);
 
 		angularVelocity = angularVelocity * frameDamping; // Damp the angular velocity (simulate resistance) 
-		object->SetAngularVelocity(angularVelocity);	}
+		object->SetAngularVelocity(angularVelocity);
+	}
 }
 
 /*
