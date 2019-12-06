@@ -165,15 +165,34 @@ void PhysicsSystem::BasicCollisionDetection()
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) // returns true if collision has taken place 
 			{
-				//std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
-
-				PhysicsObject* physicsObjectA = info.a->GetPhysicsObject();
-				PhysicsObject* physicsObjectB = info.b->GetPhysicsObject();
-
-				if(physicsObjectA->GetResolveAsImpulse() && physicsObjectB->GetResolveAsImpulse())
-					ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
-				else 
-					ResolveSpringCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
+				switch (info.a->GetPhysicsObject()->GetCollisionType() & info.b->GetPhysicsObject()->GetCollisionType())
+				{
+					case ObjectCollisionType::IMPULSE:
+					{
+						ImpulseResolveCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::SPRING:
+					{
+						ResolveSpringCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::COLLECTABLE:
+					{
+						ResolveCollectableCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::JUMP_PAD:
+					{
+						ResolveJumpPadCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD:
+					{
+						ImpulseResolveCollision(*info.a, *info.b, info.point);
+						break;
+					}
+				}				
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
 			}
@@ -323,6 +342,21 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
 }
 
+void PhysicsSystem::ResolveCollectableCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
+{
+	//todo: implement me
+	std::cout << "Collided with collectable\n";
+}
+
+void PhysicsSystem::ResolveJumpPadCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
+{
+	const float totalMass = a.GetPhysicsObject()->GetInverseMass() + b.GetPhysicsObject()->GetInverseMass();
+	if(totalMass == 0.f) return;
+
+	PhysicsObject* dynamicPhysicsObject = a.GetPhysicsObject()->GetInverseMass() == 0 ? b.GetPhysicsObject() : a.GetPhysicsObject();
+	dynamicPhysicsObject->AddForceAtRelativePosition(Vector3(0, 200.f, 0) * dynamicPhysicsObject->GetStiffness(), p.localA);
+}
+
 /*
 
 Later, we replace the BasicCollisionDetection method with a broadphase
@@ -375,7 +409,7 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		Vector3 force = object->GetForce();
 		Vector3 accel = force * inverseMass;
 
-		if (applyGravity && inverseMass > 0) // don ’t move infinitely heavy things
+		if (applyGravity && inverseMass > 0 && object->GetCollisionType() != ObjectCollisionType::COLLECTABLE) // don ’t move infinitely heavy things
 			accel += gravity * 1.f;
 
 		linearVelocity += accel * dt; // integrate acceleration

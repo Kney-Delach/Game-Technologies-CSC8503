@@ -2,7 +2,8 @@
 * Filename		: PhysicsSystem.h
 * Name			: Ori Lazar
 * Date			: 28/11/2019
-* Description	:
+* Description	: Declares the physics engine for NCL, contains implementations
+*                 for dealing with collisions and forces between the game world.
     .---.
   .'_:___".
   |__ --==|
@@ -50,7 +51,9 @@ namespace NCL
 			void UpdateObjectAABBs();
 
 			void ImpulseResolveCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const;
-			void ResolveSpringCollision(GameObject& a , GameObject&b, CollisionDetection::ContactPoint& p) const;
+			void ResolveSpringCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const;
+			void ResolveCollectableCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const;
+			void ResolveJumpPadCollision(GameObject& a , GameObject&b, CollisionDetection::ContactPoint& p) const;
 
 			GameWorld& gameWorld;
 

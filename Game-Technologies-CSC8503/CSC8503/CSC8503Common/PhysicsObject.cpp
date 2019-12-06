@@ -20,7 +20,7 @@ using namespace NCL;
 using namespace CSC8503;
 
 PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* parentVolume)
-	: resolveAsSpring(false), resolveAsImpulse(true)
+	//: resolveAsSpring(false), resolveAsImpulse(true)
 {
 	transform	= parentTransform;
 	volume		= parentVolume;

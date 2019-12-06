@@ -1,5 +1,5 @@
 #pragma once
-#include "TutorialGame.h"
+#include "GooseGame.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -7,7 +7,7 @@ namespace NCL {
 		class GameClient;
 		class NetworkPlayer;
 
-		class NetworkedGame : public TutorialGame, public PacketReceiver {
+		class NetworkedGame : public GooseGame, public PacketReceiver {
 		public:
 			NetworkedGame();
 			~NetworkedGame();
