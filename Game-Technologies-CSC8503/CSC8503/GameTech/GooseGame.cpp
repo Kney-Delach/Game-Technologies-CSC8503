@@ -1,5 +1,5 @@
 /***************************************************************************
-* Filename		: TutorialGame.h
+* Filename		: GooseGame.h
 * Name			: Ori Lazar
 * Date			: 28/11/2019
 * Description	: Central point for running the tutorial game.
@@ -12,7 +12,7 @@
  |-/.____.'
 /___\ /___\
 ***************************************************************************/
-#include "TutorialGame.h"
+#include "GooseGame.h"
 #include "../CSC8503Common/GameWorld.h"
 #include "../../Plugins/OpenGLRendering/OGLMesh.h"
 #include "../../Plugins/OpenGLRendering/OGLShader.h"
@@ -24,7 +24,7 @@
 using namespace NCL;
 using namespace CSC8503;
 
-TutorialGame::TutorialGame()
+GooseGame::GooseGame()
 {
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
@@ -43,7 +43,7 @@ TutorialGame::TutorialGame()
 }
 
 // initialises all the assets used in this project.
-void TutorialGame::InitialiseAssets()
+void GooseGame::InitialiseAssets()
 {
 	auto loadFunc = [](const string& name, OGLMesh** into)
 	{
@@ -64,10 +64,13 @@ void TutorialGame::InitialiseAssets()
 	basicShader = new OGLShader("GameTechVert.glsl", "GameTechFrag.glsl");
 
 	InitCamera();
+
+	// this fixes a bug, I don't know why its a bug....
+	InitWorld();
 	InitWorld();
 }
 
-TutorialGame::~TutorialGame()
+GooseGame::~GooseGame()
 {
 	delete cubeMesh;
 	delete sphereMesh;
@@ -80,7 +83,7 @@ TutorialGame::~TutorialGame()
 	delete world;
 }
 
-void TutorialGame::UpdateGame(float dt)
+void GooseGame::UpdateGame(float dt)
 {
 	if (!inSelectionMode) 	
 		world->GetMainCamera()->UpdateCamera(dt);	
@@ -111,8 +114,6 @@ void TutorialGame::UpdateGame(float dt)
 	if(displayBoundingVolumes)
 	{
 		world->DrawBoundingVolumes();
-		//renderer->Render();
-
 		renderer->DebugRender();
 	}
 	else
@@ -121,7 +122,7 @@ void TutorialGame::UpdateGame(float dt)
 	}	
 }
 
-void TutorialGame::UpdateKeys()
+void GooseGame::UpdateKeys()
 {
 	///////////////////////////////////////////////////////////////////////////////////////
 	//// Debug Toggle Keys ////////////////////////////////////////////////////////////////
@@ -180,7 +181,7 @@ void TutorialGame::UpdateKeys()
 	DebugObjectMovement(); // move selected object 
 }
 
-void TutorialGame::LockedObjectMovement()
+void GooseGame::LockedObjectMovement()
 {
 	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
 	Matrix4 camWorld	= view.Inverse();
@@ -214,7 +215,7 @@ void TutorialGame::LockedObjectMovement()
 	}
 }
 
-void  TutorialGame::LockedCameraMovement()
+void  GooseGame::LockedCameraMovement()
 {
 	if (lockedObject != nullptr) 
 	{
@@ -235,7 +236,7 @@ void  TutorialGame::LockedCameraMovement()
 }
 
 // move selected gameobjects with keyboard presses
-void TutorialGame::DebugObjectMovement()
+void GooseGame::DebugObjectMovement()
 {
 	if (inSelectionMode && selectionObject) 
 	{
@@ -251,7 +252,7 @@ manipulated later. Pressing Q will let you toggle between this behaviour and ins
 letting you move the camera around.
 
 */
-bool TutorialGame::SelectObject()
+bool GooseGame::SelectObject()
 {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R)) 
 	{
@@ -352,7 +353,7 @@ bool TutorialGame::SelectObject()
 //todo: Add keys to modify position of selected object using forces
 // 28.11.2019 - linear motion
 // If an object has been clicked, it can be pushed with the right mouse button, by an amount determined by the scroll wheel.
-void TutorialGame::MoveSelectedObject()
+void GooseGame::MoveSelectedObject()
 {
 	renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
@@ -372,83 +373,199 @@ void TutorialGame::MoveSelectedObject()
 	}
 }
 
-void TutorialGame::GameObjectMovement()
+void GooseGame::GameObjectMovement()
 {
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q)) // up
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) // up
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 10, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, forceMagnitude, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -forceMagnitude, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(-10, 0, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(-forceMagnitude, 0, 0));
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(10, 0, 0));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(forceMagnitude, 0, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -forceMagnitude));
 	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
 	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, forceMagnitude));
 	}
 }
 
-void TutorialGame::InitCamera()
+void GooseGame::InitCamera()
 {
 	world->GetMainCamera()->SetNearPlane(0.5f);
-	world->GetMainCamera()->SetFarPlane(500.0f);
+	world->GetMainCamera()->SetFarPlane(2000.0f);
 	world->GetMainCamera()->SetPitch(-15.0f);
 	world->GetMainCamera()->SetYaw(315.0f);
 	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
 	lockedObject = nullptr;
 }
 
-void TutorialGame::InitWorld() //todo:
+void GooseGame::InitWorld()
 {
 	world->ClearAndErase();
 	physics->Clear();
-	
-	InitMixedGridWorld(10, 10, 3.5f, 3.5f);
-	//AddGooseToWorld(Vector3(30, -10, 0));
-	//AddAppleToWorld(Vector3(35, -10, 0));
-	//AddParkKeeperToWorld(Vector3(-40, 10, 0));
-	//AddCharacterToWorld(Vector3(-45, 10, 0));
+
+	InitGooseGameWorld();
 }
 
-//From here on it's functions to add in objects to the world!
+void GooseGame::InitGooseGameWorld()
+{
+	//todo: initialize ground level terrain
+	InitGroundLevelTerrain();
+	InitBoundaries();
+	AddGooseToWorld(Vector3(0.f,1.f,0.f));
+	InitCollectables();
+	InitJumpPads();
+	//InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
 
-/*
+	//todo: create initialize player character functionality
+	//todo: create collectable objects init
+	//todo: create DumbAI init function (atleast 1 for each collectable zone 
+	//todo: create SmartAI init function (maybe 1 that follows player throughout entire level? can swim? 
+}
 
-A single function to add a large immoveable cube to the bottom of our world
+void GooseGame::InitGroundLevelTerrain()
+{
+	// 1. add water terrain (curently a blue square)
+	AddFloorToWorld(Vector3(0, -5, 0), ObjectCollisionType::SPRING,Vector3(500, 4, 500), Vector4(0, 0, 1, 1), 300.f); //water
+	AddFloorToWorld(Vector3(0, -4.f, 0), ObjectCollisionType::IMPULSE, Vector3(500, 1, 500), Vector4(1, 0, 0, 1), 2.2f); // lower water boundary
+	 
+	// sky
+	AddFloorToWorld(Vector3(0, 450.f, 0), ObjectCollisionType::IMPULSE, Vector3(500, 1, 500), Vector4(1, 1, 1, 1), 1.f);
 
-*/
-GameObject* TutorialGame::AddFloorToWorld(const Vector3& position)
+	// 2. add spawn land terrain
+	AddFloorToWorld(Vector3(0, -5, 0), ObjectCollisionType::IMPULSE, Vector3(25,4.5,25), Vector4(1,1,1,1));
+
+	// 3. add playable terrains (areas with collectables and AI)
+	// red world
+	AddFloorToWorld(Vector3(0, -5, 200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(0, 100, 200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1)); // red roof
+	AddFloorToWorld(Vector3(0, -5, 400), ObjectCollisionType::IMPULSE, Vector3(300, 5.5, 100), Vector4(1, 0, 0, 1));
+
+	// green world 
+	AddFloorToWorld(Vector3(0, -5, -200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(0, 100.f, -200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1)); // green roof
+	AddFloorToWorld(Vector3(0, -5, -400), ObjectCollisionType::IMPULSE, Vector3(300, 5.5, 100), Vector4(0, 1, 0, 1));
+
+	// yellow world
+	AddFloorToWorld(Vector3(200, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1));
+	AddFloorToWorld(Vector3(200, 100.f, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1)); // yellow roof
+	AddFloorToWorld(Vector3(400, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 300), Vector4(1, 1, 0, 1));
+
+	// light blue world
+	AddFloorToWorld(Vector3(-200, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
+	AddFloorToWorld(Vector3(-200, 100.f, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1)); // light blue roof
+	AddFloorToWorld(Vector3(-400, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 300), Vector4(0, 1, 1, 1));
+}
+
+void GooseGame::InitBoundaries()
+{
+	// 0. boundaries around 
+	// 1. red world boundaries
+	AddFloorToWorld(Vector3(-50.f, 50, 200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(1, 0, 0, 1));
+	AddFloorToWorld(Vector3(50.f, 50, 200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(1, 0, 0, 1));
+
+
+	// 2. green world boundaries
+	AddFloorToWorld(Vector3(-50.f, 50, -200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(0, 1, 0, 1));
+	AddFloorToWorld(Vector3(50.f, 50, -200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(0, 1, 0, 1));
+
+	// 3. yellow world
+	AddFloorToWorld(Vector3(200.f, 50, -50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(1, 1, 0, 1));
+	AddFloorToWorld(Vector3(200.f, 50, 50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(1, 1, 0, 1));
+
+	// 4. light blue world 
+	AddFloorToWorld(Vector3(-200.f, 50, -50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(0, 1, 1, 1));
+	AddFloorToWorld(Vector3(-200.f, 50, 50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(0, 1, 1, 1));
+
+	// add surrounding world walls boundary
+
+	// red world boundary
+	AddFloorToWorld(Vector3(0.f, 200.f, 500.f), ObjectCollisionType::IMPULSE, Vector3(500.f, 250.f, 1.f), Vector4(1, 0, 0, 1));
+
+	// green world boundaries
+	AddFloorToWorld(Vector3(0.f, 200.f, -500.f), ObjectCollisionType::IMPULSE, Vector3(500.f, 250.f, 1.f), Vector4(0, 1, 0, 1));
+
+	// yellow world boundary
+	AddFloorToWorld(Vector3(500.f, 200.f, 0.f), ObjectCollisionType::IMPULSE, Vector3(1.f, 250.f, 500.f), Vector4(1, 1, 0, 1));
+
+	// light blue world boundary
+	AddFloorToWorld(Vector3(-500.f, 200.f, 0.f), ObjectCollisionType::IMPULSE, Vector3(1.f, 250.f, 500.f), Vector4(0, 1, 1, 1));
+}
+
+void GooseGame::InitCollectables()
+{
+	AddAppleToWorld(Vector3(450.f, 10.f, 0));
+	AddAppleToWorld(Vector3(-450.f, 10.f, 0));
+	AddAppleToWorld(Vector3(0.f, 10.f, 450.f));
+	AddAppleToWorld(Vector3(0.f, 10.f, -450.f));
+}
+
+void GooseGame::InitJumpPads()
+{
+	AddJumpPadToWorld(Vector3(450.f, 2.f, 0), Vector3(10.0, 1.0, 10.0));
+	AddJumpPadToWorld(Vector3(-450.f, 2.f, 0), Vector3(10.0, 1.0, 10.0));
+	AddJumpPadToWorld(Vector3(0.f, 2.f, 450.f), Vector3(10.0, 1.0, 10.0));
+	AddJumpPadToWorld(Vector3(0.f, 2.f, -450.f), Vector3(10.0,1.0,10.0));
+}
+
+
+//todo: fix the way collisions are resolved here
+void GooseGame::AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions)
+{
+	// the center of the pad (actually makes you jump)	
+	AddFloorToWorld(position, ObjectCollisionType::JUMP_PAD, dimensions, Vector4(0.5,0.5,0.5,1), 1000.f); //todo: make this resolve collisions differently (as a jump pad)
+
+	// left padding
+	AddFloorToWorld(position - Vector3(0.f, 0.f, dimensions.z + 1.f), ObjectCollisionType::IMPULSE, Vector3(dimensions.x, dimensions.y * 2.f, 1.f), Vector4(1, 1, 1, 1), 0.8f); // green
+
+	// right padding
+	AddFloorToWorld(position + Vector3(0.f, 0.f, dimensions.z + 1.f), ObjectCollisionType::IMPULSE, Vector3(dimensions.x, dimensions.y * 2.f, 1.f), Vector4(1, 1, 1, 1), 0.8f); // green
+
+	// front padding
+	AddFloorToWorld(position - Vector3(dimensions.x + 1.f, 0.f, 0.f), ObjectCollisionType::IMPULSE, Vector3(1.f, dimensions.y * 2.f, dimensions.z + 2.f), Vector4(1, 1, 1, 1), 0.8f); // green
+
+	// back padding
+	AddFloorToWorld(position + Vector3(dimensions.x + 1.f, 0.f, 0.f), ObjectCollisionType::IMPULSE, Vector3(1.f, dimensions.y * 2.f, dimensions.z + 2.f), Vector4(1, 1, 1, 1), 0.8f); // green
+}
+
+
+// A single function to add a large immoveable cube to the bottom of our world
+GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness)
 {
 	GameObject* floor = new GameObject("Ground");
 
-	Vector3 floorSize = Vector3(100, 2.0, 100);
-	AABBVolume* volume = new AABBVolume(floorSize);
+	AABBVolume* volume = new AABBVolume(dimensions);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
-	floor->GetTransform().SetWorldScale(floorSize);
+	floor->GetTransform().SetWorldScale(dimensions);
 	floor->GetTransform().SetWorldPosition(position);
 
 	floor->SetRenderObject(new RenderObject(&floor->GetTransform(), cubeMesh, basicTex, basicShader));
 	floor->SetPhysicsObject(new PhysicsObject(&floor->GetTransform(), floor->GetBoundingVolume()));
 
 	floor->GetPhysicsObject()->SetInverseMass(0);
-	floor->GetPhysicsObject()->SetElasticity(0.8);
+	floor->GetPhysicsObject()->SetElasticity(stiffness);
+	floor->GetPhysicsObject()->SetStiffness(stiffness);
 	floor->GetPhysicsObject()->InitCubeInertia();
-
+	
+	floor->GetPhysicsObject()->SetCollisionType(collisionType);
+	
+	floor->GetRenderObject()->SetColour(colour);
+	
 	floor->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
 	
 	world->AddGameObject(floor);
@@ -463,7 +580,7 @@ rigid body representation. This and the cube function will let you build a lot o
 physics worlds. You'll probably need another function for the creation of OBB cubes too.
 
 */
-GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass)
+GameObject* GooseGame::AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass)
 {
 	GameObject* sphere = new GameObject("Sphere");
 
@@ -481,17 +598,18 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	if(isHollow)
 	{
 		sphere->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
-		sphere->GetPhysicsObject()->InitSphereInertia(true);
+		sphere->GetPhysicsObject()->InitSphereInertia(true); // creates a hollow sphere
+		sphere->GetPhysicsObject()->SetStiffness(100.f);
 	}
 	else
 	{
 		sphere->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 		sphere->GetPhysicsObject()->InitSphereInertia(false);
+		sphere->GetPhysicsObject()->SetStiffness(100.f);
 	}
 
 	sphere->GetPhysicsObject()->SetElasticity(1.f); // highly elastic material (like a rubber ball) 
-	sphere->GetPhysicsObject()->SetStiffness(30.f);
-
+	sphere->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
 	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 
 	world->AddGameObject(sphere);
@@ -499,7 +617,7 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 	return sphere;
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass)
+GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass)
 {
 	GameObject* cube = new GameObject("Cube");
 
@@ -522,7 +640,8 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel)
-	cube->GetPhysicsObject()->SetStiffness(20.f);
+	cube->GetPhysicsObject()->SetStiffness(8.f);
+	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
@@ -532,18 +651,17 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	return cube;
 }
 
-GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
+GameObject* GooseGame::AddGooseToWorld(const Vector3& position)
 {
 	float size			= 1.0f;
-	float inverseMass	= 1.0f;
+	float inverseMass = 1.f / 4.f;
 
 	GameObject* goose = new GameObject("Goose");
-
 
 	SphereVolume* volume = new SphereVolume(size);
 	goose->SetBoundingVolume((CollisionVolume*)volume);
 
-	goose->GetTransform().SetWorldScale(Vector3(size,size,size) );
+	goose->GetTransform().SetWorldScale(Vector3(size,size,size));
 	goose->GetTransform().SetWorldPosition(position);
 
 	goose->SetRenderObject(new RenderObject(&goose->GetTransform(), gooseMesh, nullptr, basicShader));
@@ -551,13 +669,17 @@ GameObject* TutorialGame::AddGooseToWorld(const Vector3& position)
 
 	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
 	goose->GetPhysicsObject()->InitSphereInertia();
-
+	goose->GetPhysicsObject()->SetElasticity(0.8f); // low elasticity material (like steel)
+	goose->GetPhysicsObject()->SetStiffness(300.f);
+	
+	goose->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD | ObjectCollisionType::COLLECTABLE);
+	
 	world->AddGameObject(goose);
 
 	return goose;
 }
 
-GameObject* TutorialGame::AddParkKeeperToWorld(const Vector3& position)
+GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position)
 {
 	float meshSize = 4.0f;
 	float inverseMass = 0.5f;
@@ -576,12 +698,15 @@ GameObject* TutorialGame::AddParkKeeperToWorld(const Vector3& position)
 	keeper->GetPhysicsObject()->SetInverseMass(inverseMass);
 	keeper->GetPhysicsObject()->InitCubeInertia();
 
+	//todo: change this to attacker type
+	keeper->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
+
 	world->AddGameObject(keeper);
 
 	return keeper;
 }
 
-GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
+GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
 {
 	float meshSize = 4.0f;
 	float inverseMass = 0.5f;
@@ -612,45 +737,47 @@ GameObject* TutorialGame::AddCharacterToWorld(const Vector3& position)
 	character->GetPhysicsObject()->SetInverseMass(inverseMass);
 	character->GetPhysicsObject()->InitCubeInertia();
 
+	//todo: change this to attacker type
+	character->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
+	
+	// set temporary color (for debugging)
+	character->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
 	world->AddGameObject(character);
 
 	return character;
 }
 
-GameObject* TutorialGame::AddAppleToWorld(const Vector3& position)
+GameObject* GooseGame::AddAppleToWorld(const Vector3& position)
 {
 	GameObject* apple = new GameObject("Apple");
 
-	SphereVolume* volume = new SphereVolume(0.7f);
+	float size = 20.0f;
+
+	SphereVolume* volume = new SphereVolume(4.f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
-	apple->GetTransform().SetWorldScale(Vector3(4, 4, 4));
+	apple->GetTransform().SetWorldScale(Vector3(size, size, size));
 	apple->GetTransform().SetWorldPosition(position);
 
 	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), appleMesh, nullptr, basicShader));
 	apple->SetPhysicsObject(new PhysicsObject(&apple->GetTransform(), apple->GetBoundingVolume()));
 
+	apple->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1)); //todo: make this red
+	
 	apple->GetPhysicsObject()->SetInverseMass(1.0f);
 	apple->GetPhysicsObject()->InitSphereInertia();
+	apple->GetPhysicsObject()->SetElasticity(0.8f); 
+	apple->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
 
+	// resolve as both springs and impulses (So that apples can interact with jump pads)
+	apple->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
+	
 	world->AddGameObject(apple);
 
 	return apple;
 }
 
-void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius)
-{
-	for (int x = 0; x < numCols; ++x) 
-	{
-		for (int z = 0; z < numRows; ++z) 
-		{
-			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
-			AddSphereToWorld(position, radius, false);
-		}
-	}
-	AddFloorToWorld(Vector3(0, -8, 0));
-}
 
-void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
+void GooseGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
 {
 	const float sphereRadius = 1.f;
 	const Vector3 cubeDims = Vector3(1,1,1);
@@ -666,25 +793,19 @@ void TutorialGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing
 				else
 					AddCubeToWorld(position, cubeDims, false);
 			}
-			else 			
-				AddSphereToWorld(position, sphereRadius, false);		
+			else
+			{
+				if(x % 3)
+					AddSphereToWorld(position, sphereRadius, false);
+				else 
+					AddSphereToWorld(position, sphereRadius, true);
+
+			}
 		}
 	}
-	AddFloorToWorld(Vector3(0, -8, 0));
 }
 
-void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims)
-{
-	for (int x = 1; x < numCols+1; ++x) {
-		for (int z = 1; z < numRows+1; ++z) {
-			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
-			AddCubeToWorld(position, cubeDims);
-		}
-	}
-	AddFloorToWorld(Vector3(0, -8, 0));
-}
-
-void TutorialGame::BridgeConstraintTest()
+void GooseGame::BridgeConstraintTest()
 {
 	Vector3 cubeSize = Vector3(8, 8, 8);
 
@@ -712,7 +833,7 @@ void TutorialGame::BridgeConstraintTest()
 	world->AddConstraint(constraint);
 }
 
-void TutorialGame::SimpleGJKTest()
+void GooseGame::SimpleGJKTest()
 {
 	Vector3 dimensions		= Vector3(5, 5, 5);
 	Vector3 floorDimensions = Vector3(100, 2, 100);

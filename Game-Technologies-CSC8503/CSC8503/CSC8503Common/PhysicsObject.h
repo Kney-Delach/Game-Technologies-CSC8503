@@ -20,6 +20,8 @@ using namespace NCL::Maths;
 
 namespace NCL
 {
+	enum ObjectCollisionType { IMPULSE = 1, SPRING = 2, COLLECTABLE = 4, JUMP_PAD = 8 };
+	
 	class CollisionVolume;
 	
 	namespace CSC8503
@@ -63,7 +65,17 @@ namespace NCL
 			
 			float GetStiffness() const { return stiffness; }
 			void SetStiffness(float stiff) { stiffness = stiff; }
-			
+
+			// 3.12.2019 - used to determine which collision response method to utilise
+			//bool GetResolveAsSpring() const { return resolveAsSpring; }
+			//void SetResolveAsSpring(bool resolve) { resolveAsSpring = resolve; }
+			//bool GetResolveAsImpulse() const { return resolveAsImpulse; }
+			//void SetResolveAsImpulse(bool resolve) { resolveAsImpulse = resolve; }
+
+			// 6.12.2019 - used to determine which collision response method to utilise
+			void SetCollisionType(const int value) { bitCollisionType = value; }
+			int GetCollisionType() const { return bitCollisionType; }
+
 			// tbd....				
 			void AddTorque(const Vector3& torque);
 			void InitCubeInertia();
@@ -83,12 +95,20 @@ namespace NCL
 			float elasticity;
 			float friction;
 			float stiffness;
-			
+
 			//angular stuff
 			Vector3 angularVelocity;
 			Vector3 torque;
 			Vector3 inverseInertia;
 			Matrix3 inverseInteriaTensor;
+
+			//todo: remove these
+			// 3.12.2019
+			//bool resolveAsSpring;
+			//bool resolveAsImpulse;
+
+			// 6.12.2019 - collision response bitwise comparison reference
+			int bitCollisionType;
 		};
 	}
 }

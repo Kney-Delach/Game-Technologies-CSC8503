@@ -5,10 +5,10 @@
 
 namespace NCL {
 	namespace CSC8503 {
-		class TutorialGame		{
+		class GooseGame		{
 		public:
-			TutorialGame();
-			~TutorialGame();
+			GooseGame();
+			~GooseGame();
 
 			virtual void UpdateGame(float dt);
 
@@ -17,6 +17,16 @@ namespace NCL {
 			void InitCamera();
 			void UpdateKeys();
 			void InitWorld();
+
+			// 3.12.19
+			// goose level world initialization
+			void InitGooseGameWorld();
+			void InitGroundLevelTerrain();
+			void InitBoundaries();
+			void InitCollectables();
+			void InitJumpPads();
+			
+			void AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions);
 
 			/*
 			These are some of the world/object creation functions I created when testing the functionality
@@ -37,15 +47,16 @@ namespace NCL {
 
 			void GameObjectMovement();
 			
-			GameObject* AddFloorToWorld(const Vector3& position);
+			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
+			
 			//IT'S HAPPENING
 			GameObject* AddGooseToWorld(const Vector3& position);
 			GameObject* AddParkKeeperToWorld(const Vector3& position);
 			GameObject* AddCharacterToWorld(const Vector3& position);
 			GameObject* AddAppleToWorld(const Vector3& position);
-
+			
 			GameTechRenderer*	renderer;
 			PhysicsSystem*		physics;
 			GameWorld*			world;

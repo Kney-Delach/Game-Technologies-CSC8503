@@ -165,9 +165,34 @@ void PhysicsSystem::BasicCollisionDetection()
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) // returns true if collision has taken place 
 			{
-				//std::cout << " Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << "\n";
-				//ImpulseResolveCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
-				ResolveSpringCollision(*info.a, *info.b, info.point); // resolves collisions through impulse resolution
+				switch (info.a->GetPhysicsObject()->GetCollisionType() & info.b->GetPhysicsObject()->GetCollisionType())
+				{
+					case ObjectCollisionType::IMPULSE:
+					{
+						ImpulseResolveCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::SPRING:
+					{
+						ResolveSpringCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::COLLECTABLE:
+					{
+						ResolveCollectableCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::JUMP_PAD:
+					{
+						ResolveJumpPadCollision(*info.a, *info.b, info.point);
+						break;
+					}
+					case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD:
+					{
+						ImpulseResolveCollision(*info.a, *info.b, info.point);
+						break;
+					}
+				}				
 				info.framesLeft = numCollisionFrames;
 				allCollisions.insert(info);
 			}
@@ -307,14 +332,29 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	const Vector3 springExtensionDirection = p.normal;
 	const float springExtensionLength = p.penetration;
 
-	Vector3 springExtension = springExtensionDirection * springExtensionLength;
+	const Vector3 springExtension = springExtensionDirection * springExtensionLength;
 	
 	// 3. apply force proportional to penetration distance, at collision point on each object, in direction of collision normal.
 	//    -> outputs acceleration and torque (like when applied force at specific point during raycasting)
-	const Vector3 forceOnObjectA = -springExtension * physicsObjectA->GetStiffness();
+	const Vector3 forceOnObjectA = -springExtension * physicsObjectB->GetStiffness();
 	physicsObjectA->AddForceAtRelativePosition(forceOnObjectA, springPositionA);
-	const Vector3 forceOnObjectB = springExtension * physicsObjectB->GetStiffness();
+	const Vector3 forceOnObjectB = springExtension * physicsObjectA->GetStiffness();
 	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
+}
+
+void PhysicsSystem::ResolveCollectableCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
+{
+	//todo: implement me
+	std::cout << "Collided with collectable\n";
+}
+
+void PhysicsSystem::ResolveJumpPadCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
+{
+	const float totalMass = a.GetPhysicsObject()->GetInverseMass() + b.GetPhysicsObject()->GetInverseMass();
+	if(totalMass == 0.f) return;
+
+	PhysicsObject* dynamicPhysicsObject = a.GetPhysicsObject()->GetInverseMass() == 0 ? b.GetPhysicsObject() : a.GetPhysicsObject();
+	dynamicPhysicsObject->AddForceAtRelativePosition(Vector3(0, 200.f, 0) * dynamicPhysicsObject->GetStiffness(), p.localA);
 }
 
 /*
@@ -369,8 +409,8 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		Vector3 force = object->GetForce();
 		Vector3 accel = force * inverseMass;
 
-		if (applyGravity && inverseMass > 0) // don ’t move infinitely heavy things
-			accel += gravity;
+		if (applyGravity && inverseMass > 0 && object->GetCollisionType() != ObjectCollisionType::COLLECTABLE) // don ’t move infinitely heavy things
+			accel += gravity * 1.f;
 
 		linearVelocity += accel * dt; // integrate acceleration
 		object->SetLinearVelocity(linearVelocity);
@@ -385,7 +425,8 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		Vector3 angularAcceleration = object->GetInertiaTensor() * torque;
 		
 		angularVelocity += angularAcceleration * dt; // integration 
-		object->SetAngularVelocity(angularVelocity);	}
+		object->SetAngularVelocity(angularVelocity);
+	}
 }
 
 /*
@@ -432,7 +473,8 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		transform.SetLocalOrientation(orientation);
 
 		angularVelocity = angularVelocity * frameDamping; // Damp the angular velocity (simulate resistance) 
-		object->SetAngularVelocity(angularVelocity);	}
+		object->SetAngularVelocity(angularVelocity);
+	}
 }
 
 /*

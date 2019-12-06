@@ -26,6 +26,7 @@
 #include <vector>
 #include "SphereVolume.h"
 
+//todo: add a static id counter for each object
 
 using std::vector;
 
@@ -139,8 +140,6 @@ namespace NCL
 			string	name;
 
 			Vector3 broadphaseAABB;
-
-
 		};
 	}
 }

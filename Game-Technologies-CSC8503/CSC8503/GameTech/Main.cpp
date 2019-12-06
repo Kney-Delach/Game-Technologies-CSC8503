@@ -9,7 +9,7 @@
 
 #include "../CSC8503Common/NavigationGrid.h"
 
-#include "TutorialGame.h"
+#include "GooseGame.h"
 #include "NetworkedGame.h"
 
 using namespace NCL;
@@ -59,7 +59,7 @@ int main()
 	w->ShowOSPointer(false);
 	w->LockMouseToWindow(true);
 
-	TutorialGame* g = new TutorialGame();
+	GooseGame* g = new GooseGame();
 
 	while (w->UpdateWindow() && !Window::GetKeyboard()->KeyDown(KeyboardKeys::ESCAPE)) 
 	{
@@ -87,6 +87,7 @@ int main()
 
 	}
 	Window::DestroyGameWindow();
+	delete g; 
 	
 	return 0;
 }
