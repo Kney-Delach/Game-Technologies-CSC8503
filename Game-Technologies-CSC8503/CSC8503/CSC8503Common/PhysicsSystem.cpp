@@ -179,7 +179,6 @@ void PhysicsSystem::BasicCollisionDetection()
 					}
 					case ObjectCollisionType::COLLECTABLE:
 					{
-						ResolveCollectableCollision(*info.a, *info.b, info.point);
 						break;
 					}
 					case ObjectCollisionType::JUMP_PAD:
@@ -342,12 +341,6 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
 }
 
-void PhysicsSystem::ResolveCollectableCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
-{
-	//todo: implement me
-	std::cout << "Collided with collectable\n";
-}
-
 void PhysicsSystem::ResolveJumpPadCollision(GameObject& a, GameObject& b, CollisionDetection::ContactPoint& p) const
 {
 	const float totalMass = a.GetPhysicsObject()->GetInverseMass() + b.GetPhysicsObject()->GetInverseMass();
@@ -409,7 +402,7 @@ void PhysicsSystem::IntegrateAccel(float dt)
 		Vector3 force = object->GetForce();
 		Vector3 accel = force * inverseMass;
 
-		if (applyGravity && inverseMass > 0 && object->GetCollisionType() != ObjectCollisionType::COLLECTABLE) // don ’t move infinitely heavy things
+		if (applyGravity && inverseMass > 0 && object->UsesGravity()) // don ’t move infinitely heavy things
 			accel += gravity * 1.f;
 
 		linearVelocity += accel * dt; // integrate acceleration

@@ -1,7 +1,7 @@
 <a name="csc8503"></a>
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
-![build-date](https://img.shields.io/badge/Build%20Date-2.12.19-brightgreen)
+![build-date](https://img.shields.io/badge/Build%20Date-6.12.19-brightgreen)
 ![branch-features](https://img.shields.io/badge/Features-5-informational)
 
 ## About

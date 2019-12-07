@@ -1,8 +1,8 @@
 /***************************************************************************
-* Filename		: GooseGame.h
+* Filename		: GooseGame.cpp
 * Name			: Ori Lazar
 * Date			: 28/11/2019
-* Description	: Central point for running the tutorial game.
+* Description	: Central point for running the goose game.
     .---.
   .'_:___".
   |__ --==|
@@ -20,6 +20,8 @@
 #include "../../Common/TextureLoader.h"
 
 #include "../CSC8503Common/PositionConstraint.h"
+#include "../CSC8503Common/CollectableObject.h"
+#include "../CSC8503Common/PlayerIsland.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -85,6 +87,9 @@ GooseGame::~GooseGame()
 
 void GooseGame::UpdateGame(float dt)
 {
+	playerGameObject->DrawInventoryToUI(); //todo: move this from here
+	playerGameObject->UpdateInventoryTransformations(dt); //todo: move this from here, updates inventory object transforms
+	
 	if (!inSelectionMode) 	
 		world->GetMainCamera()->UpdateCamera(dt);	
 	else
@@ -148,7 +153,11 @@ void GooseGame::UpdateKeys()
 		useGravity = !useGravity;
 		physics->UseGravity(useGravity);
 	}
-	
+
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::M)) // drop all items 
+	{
+		playerGameObject->DropItems();
+	}
 	//Running certain physics updates in a consistent order might cause some
 	//bias in the calculations - the same objects might keep 'winning' the constraint
 	//allowing the other one to stretch too much etc. Shuffling the order so that it
@@ -425,9 +434,10 @@ void GooseGame::InitWorld()
 void GooseGame::InitGooseGameWorld()
 {
 	//todo: initialize ground level terrain
+	playerGameObject = AddGooseToWorld(Vector3(0.f, 1.f, 0.f));
+
 	InitGroundLevelTerrain();
 	InitBoundaries();
-	AddGooseToWorld(Vector3(0.f,1.f,0.f));
 	InitCollectables();
 	InitJumpPads();
 	//InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
@@ -447,8 +457,13 @@ void GooseGame::InitGroundLevelTerrain()
 	// sky
 	AddFloorToWorld(Vector3(0, 450.f, 0), ObjectCollisionType::IMPULSE, Vector3(500, 1, 500), Vector4(1, 1, 1, 1), 1.f);
 
-	// 2. add spawn land terrain
-	AddFloorToWorld(Vector3(0, -5, 0), ObjectCollisionType::IMPULSE, Vector3(25,4.5,25), Vector4(1,1,1,1));
+	// 2. add spawn land terrain	
+	// player 1 island
+	AddPlayerIslandToWorld(Vector3(-12.5f, -5.f, -12.5f), ObjectCollisionType::IMPULSE, Vector3(12.5, 4.5, 12.5), Vector4(1, 1, 1, 1));
+
+	//todo: update the island creation function to be dynamically assignable
+	// player 2 island
+	AddPlayerIslandToWorld(Vector3(12.5f, -5.f, 12.5f), ObjectCollisionType::IMPULSE, Vector3(12.5,4.5,12.5), Vector4(1,1,1,1));
 
 	// 3. add playable terrains (areas with collectables and AI)
 	// red world
@@ -509,10 +524,18 @@ void GooseGame::InitBoundaries()
 
 void GooseGame::InitCollectables()
 {
+	// apples
+	AddAppleToWorld(Vector3(0.f, 20.f ,0.f));
 	AddAppleToWorld(Vector3(450.f, 10.f, 0));
 	AddAppleToWorld(Vector3(-450.f, 10.f, 0));
 	AddAppleToWorld(Vector3(0.f, 10.f, 450.f));
 	AddAppleToWorld(Vector3(0.f, 10.f, -450.f));
+
+	// corn
+	AddCornToWorld(Vector3(0.f, 10.f, 0.f));
+
+	// farmers hats
+	AddHatToWorld(Vector3(0.f, 15.f, 0.f));
 }
 
 void GooseGame::InitJumpPads()
@@ -571,6 +594,35 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	world->AddGameObject(floor);
 
 	return floor;
+}
+
+GameObject* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness)
+{
+	PlayerIsland* island = new PlayerIsland("Player Island");
+
+	AABBVolume* volume = new AABBVolume(dimensions);
+	island->SetBoundingVolume((CollisionVolume*)volume);
+	island->GetTransform().SetWorldScale(dimensions);
+	island->GetTransform().SetWorldPosition(position);
+
+	island->SetRenderObject(new RenderObject(&island->GetTransform(), cubeMesh, basicTex, basicShader));
+	island->SetPhysicsObject(new PhysicsObject(&island->GetTransform(), island->GetBoundingVolume()));
+
+	island->GetPhysicsObject()->SetInverseMass(0);
+	island->GetPhysicsObject()->SetElasticity(stiffness);
+	island->GetPhysicsObject()->SetStiffness(stiffness);
+	island->GetPhysicsObject()->InitCubeInertia();
+
+	island->GetPhysicsObject()->SetCollisionType(collisionType);
+
+	island->GetRenderObject()->SetColour(colour);
+
+	island->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+
+	island->SetParent(playerGameObject); //todo: make this more dynamic and usable for multiplayer capabilities
+	world->AddGameObject(island);
+
+	return island;
 }
 
 /*
@@ -639,7 +691,7 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
-	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel)
+	cube->GetPhysicsObject()->SetElasticity(0.01f); // low elasticity material (like steel)
 	cube->GetPhysicsObject()->SetStiffness(8.f);
 	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
 	cube->GetPhysicsObject()->InitCubeInertia();
@@ -651,12 +703,12 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	return cube;
 }
 
-GameObject* GooseGame::AddGooseToWorld(const Vector3& position)
+PlayerObject* GooseGame::AddGooseToWorld(const Vector3& position)
 {
 	float size			= 1.0f;
 	float inverseMass = 1.f / 4.f;
 
-	GameObject* goose = new GameObject("Goose");
+	PlayerObject* goose = new PlayerObject("Goose");
 
 	SphereVolume* volume = new SphereVolume(size);
 	goose->SetBoundingVolume((CollisionVolume*)volume);
@@ -669,8 +721,8 @@ GameObject* GooseGame::AddGooseToWorld(const Vector3& position)
 
 	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
 	goose->GetPhysicsObject()->InitSphereInertia();
-	goose->GetPhysicsObject()->SetElasticity(0.8f); // low elasticity material (like steel)
-	goose->GetPhysicsObject()->SetStiffness(300.f);
+	goose->GetPhysicsObject()->SetElasticity(0.7f); // low elasticity material (like steel)
+	goose->GetPhysicsObject()->SetStiffness(200.f);
 	
 	goose->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD | ObjectCollisionType::COLLECTABLE);
 	
@@ -686,7 +738,7 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position)
 
 	GameObject* keeper = new GameObject("Park Keeper");
 
-	AABBVolume* volume = new AABBVolume(Vector3(0.3, 0.9f, 0.3) * meshSize);
+	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	keeper->SetBoundingVolume((CollisionVolume*)volume);
 
 	keeper->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
@@ -725,7 +777,7 @@ GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
 
 	float r = rand() / (float)RAND_MAX;
 
-	AABBVolume* volume = new AABBVolume(Vector3(0.3, 0.9f, 0.3) * meshSize);
+	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
 
 	character->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
@@ -749,11 +801,11 @@ GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
 
 GameObject* GooseGame::AddAppleToWorld(const Vector3& position)
 {
-	GameObject* apple = new GameObject("Apple");
+	CollectableObject* apple = new CollectableObject(CollectableType::APPLE, "Apple"); //todo: insert static id (use the final value of this to dictate victory checks, also reset when world respawns
 
-	float size = 20.0f;
+	float size = 4.f;
 
-	SphereVolume* volume = new SphereVolume(4.f);
+	SphereVolume* volume = new SphereVolume(0.7f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
 	apple->GetTransform().SetWorldScale(Vector3(size, size, size));
 	apple->GetTransform().SetWorldPosition(position);
@@ -768,12 +820,71 @@ GameObject* GooseGame::AddAppleToWorld(const Vector3& position)
 	apple->GetPhysicsObject()->SetElasticity(0.8f); 
 	apple->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
 
-	// resolve as both springs and impulses (So that apples can interact with jump pads)
+	 // apples aren't affected by gravity and should only collide with collectable collisions types (i.e player controlled characters)
 	apple->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
+	apple->GetPhysicsObject()->SetGravityUsage(false);
 	
 	world->AddGameObject(apple);
 
 	return apple;
+}
+
+GameObject* GooseGame::AddCornToWorld(const Vector3& position)
+{
+	CollectableObject* corn = new CollectableObject(CollectableType::CORN, "Corn"); //todo: insert static id (use the final value of this to dictate victory checks, also reset when world respawns
+
+	float size = 0.7f;
+
+	SphereVolume* volume = new SphereVolume(0.7f);
+	corn->SetBoundingVolume((CollisionVolume*)volume);
+	corn->GetTransform().SetWorldScale(Vector3(size, size, size));
+	corn->GetTransform().SetWorldPosition(position);
+
+	corn->SetRenderObject(new RenderObject(&corn->GetTransform(), sphereMesh, nullptr, basicShader));
+	corn->SetPhysicsObject(new PhysicsObject(&corn->GetTransform(), corn->GetBoundingVolume()));
+
+	corn->GetRenderObject()->SetColour(Vector4(1, 1, 0, 1)); //todo: give this a corn texture
+
+	corn->GetPhysicsObject()->SetInverseMass(1.0f);
+	corn->GetPhysicsObject()->InitSphereInertia();
+	corn->GetPhysicsObject()->SetElasticity(0.8f);
+	corn->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
+
+	corn->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
+	corn->GetPhysicsObject()->SetGravityUsage(false);
+
+	world->AddGameObject(corn);
+
+	return corn;
+}
+
+GameObject* GooseGame::AddHatToWorld(const Vector3& position)
+{
+	CollectableObject* hat = new CollectableObject(CollectableType::HAT, "Hat"); //todo: insert static id (use the final value of this to dictate victory checks, also reset when world respawns
+
+	float size = 0.7f;
+
+	SphereVolume* volume = new SphereVolume(0.7f);
+	hat->SetBoundingVolume((CollisionVolume*)volume);
+	hat->GetTransform().SetWorldScale(Vector3(size, size, size));
+	hat->GetTransform().SetWorldPosition(position);
+
+	hat->SetRenderObject(new RenderObject(&hat->GetTransform(), sphereMesh, nullptr, basicShader));
+	hat->SetPhysicsObject(new PhysicsObject(&hat->GetTransform(), hat->GetBoundingVolume()));
+
+	hat->GetRenderObject()->SetColour(Vector4(0, 1, 1, 1)); //todo: give this a hat texture and mesh
+
+	hat->GetPhysicsObject()->SetInverseMass(1.0f);
+	hat->GetPhysicsObject()->InitSphereInertia();
+	hat->GetPhysicsObject()->SetElasticity(0.8f);
+	hat->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
+
+	hat->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
+	hat->GetPhysicsObject()->SetGravityUsage(false);
+
+	world->AddGameObject(hat);
+
+	return hat;
 }
 
 
@@ -838,8 +949,8 @@ void GooseGame::SimpleGJKTest()
 	Vector3 dimensions		= Vector3(5, 5, 5);
 	Vector3 floorDimensions = Vector3(100, 2, 100);
 
-	GameObject* fallingCube = AddCubeToWorld(Vector3(0, 20, 0), dimensions, 10.0f);
-	GameObject* newFloor	= AddCubeToWorld(Vector3(0, 0, 0), floorDimensions, 0.0f);
+	GameObject* fallingCube = AddCubeToWorld(Vector3(0, 20, 0), dimensions, true);//10.0f);
+	GameObject* newFloor = AddCubeToWorld(Vector3(0, 0, 0), floorDimensions, false);//0.0f);
 
 	delete fallingCube->GetBoundingVolume();
 	delete newFloor->GetBoundingVolume();
