@@ -1,8 +1,8 @@
 <a name="csc8503"></a>
 <p align="center"><img width=100% src="Resources/Images/banner.png?raw=true"></p>
 
-![build-date](https://img.shields.io/badge/Build%20Date-6.12.19-brightgreen)
-![branch-features](https://img.shields.io/badge/Features-5-informational)
+![build-date](https://img.shields.io/badge/Build%20Date-7.12.19-brightgreen)
+![branch-features](https://img.shields.io/badge/Features-7-informational)
 
 ## About
 This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
@@ -29,6 +29,8 @@ This repo contains a series of physics, networking and AI exercises completed fo
 | Physics |[Linear Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/2linearmotion/Physics%20-%20Movement.pdf)|Uses a **semi-implicit Euler integrator** to simulate rigid body dynamics.|![dev][version-1.0.0]|
 | Physics |[Angular Motion](https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/physicstutorials/3angularmotion/Physics%20-%20Rotation.pdf)|Simulates angular movement dynamics using **moments of inertia**.|![dev][version-1.0.0]|
 | Physics |[Collision Detection + Resolution]()|**Sphere** and **AABB** detection capabilities, with a plan to eventually implement OBB, capsule and swept volume collisions.|![dev][version-1.0.0]|
+| AI |[State Machines]()|Using a templated **generic FSM**.|![dev][version-1.0.0]|
+| AI |[A* Pathfinding]()|Using **Manhattan** heuristic on **grid-based** paths.|![dev][version-1.0.0]|
 | Debug |[Physics Volume Rendering]()|**Displays physics volumes** in the scene.|![dev][version-1.0.0]|
 
 <a name="physics"></a>
