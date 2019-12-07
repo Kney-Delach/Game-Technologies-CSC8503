@@ -1,52 +1,66 @@
+/***************************************************************************
+* Filename		: NavigationGrid.h
+* Name			: Ori Lazar
+* Date			: 07/12/2019
+* Description	: Declaration of a Grid-Based navigable area.
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #pragma once
 #include "NavigationMap.h"
 #include <string>
-namespace NCL {
-	namespace CSC8503 {
-		struct GridNode {
-			GridNode* parent;
 
-			GridNode* connected[4];
-			int		  costs[4];
-
-			Vector3		position;
-
-			float f;
-			float g;
-
+namespace NCL
+{
+	namespace CSC8503
+	{
+		// 7.12.2019
+		// represents a node in a path finding graph
+		struct GridNode
+		{
+			GridNode* parent; 
+			GridNode* connected[4]; // pointers to nodes it may connect to
+			int costs[4]; // costs of navigating from this node to the connected nodes (above)
+			Vector3 position; // represents center of this node in world space co-ordinates
+			float f; // distance traveled to get to the current node 
+			float g; // heuristic of how far this node is from the destination (manhattan)
 			int type;
 
-			GridNode() {
-				for (int i = 0; i < 4; ++i) {
+			//todo: initialize position?
+			GridNode() : parent(nullptr), position(Vector3(1.f, 1.f, 1.f)), f(0), g(0), type(0)
+			{
+				for (int i = 0; i < 4; ++i) 
+				{
 					connected[i] = nullptr;
 					costs[i] = 0;
 				}
-				f = 0;
-				g = 0;
-				type = 0;
-				parent = nullptr;
 			}
-			~GridNode() {	}
+			~GridNode() = default;
 		};
 
-		class NavigationGrid : public NavigationMap	{
+		// 7.12.2019
+		// represents a node in a grid-based graph
+		class NavigationGrid : public NavigationMap
+		{
 		public:
 			NavigationGrid();
 			NavigationGrid(const std::string&filename);
 			~NavigationGrid();
-
 			bool FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) override;
-				
 		protected:
-			bool		NodeInList(GridNode* n, std::vector<GridNode*>& list) const;
-			GridNode*	RemoveBestNode(std::vector<GridNode*>& list) const;
-			float		Heuristic(GridNode* hNode, GridNode* endNode) const;
+			bool NodeInList(GridNode* node, std::vector<GridNode*>& nodeList) const; //todo: make static?
+			GridNode* RemoveBestNode(std::vector<GridNode*>& nodeList) const; //todo: make static?
+			float Heuristic(GridNode* startNode, GridNode* endNode) const; //todo: make static?
 			int nodeSize;
 			int gridWidth;
 			int gridHeight;
-
 			GridNode* allNodes;
 		};
 	}
 }
-
