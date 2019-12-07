@@ -47,7 +47,7 @@ namespace NCL
 		//todo: add an option to drop items to different locations on the map rather than all to their initial spawn point
 		void PlayerObject::DropItems() 
 		{
-			for (unsigned int i = 0; i < inventory.size(); i++)
+			for(unsigned int i = 0; i < inventory.size(); i++)
 			{
 				dynamic_cast<CollectableObject*>(inventory[i])->DropToInitialSpawn();
 			}

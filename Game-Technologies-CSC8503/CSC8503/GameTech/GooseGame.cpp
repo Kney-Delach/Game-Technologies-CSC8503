@@ -691,7 +691,7 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
-	cube->GetPhysicsObject()->SetElasticity(0.01); // low elasticity material (like steel)
+	cube->GetPhysicsObject()->SetElasticity(0.01f); // low elasticity material (like steel)
 	cube->GetPhysicsObject()->SetStiffness(8.f);
 	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
 	cube->GetPhysicsObject()->InitCubeInertia();
@@ -738,7 +738,7 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position)
 
 	GameObject* keeper = new GameObject("Park Keeper");
 
-	AABBVolume* volume = new AABBVolume(Vector3(0.3, 0.9f, 0.3) * meshSize);
+	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	keeper->SetBoundingVolume((CollisionVolume*)volume);
 
 	keeper->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
@@ -777,7 +777,7 @@ GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
 
 	float r = rand() / (float)RAND_MAX;
 
-	AABBVolume* volume = new AABBVolume(Vector3(0.3, 0.9f, 0.3) * meshSize);
+	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	character->SetBoundingVolume((CollisionVolume*)volume);
 
 	character->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
@@ -949,8 +949,8 @@ void GooseGame::SimpleGJKTest()
 	Vector3 dimensions		= Vector3(5, 5, 5);
 	Vector3 floorDimensions = Vector3(100, 2, 100);
 
-	GameObject* fallingCube = AddCubeToWorld(Vector3(0, 20, 0), dimensions, 10.0f);
-	GameObject* newFloor	= AddCubeToWorld(Vector3(0, 0, 0), floorDimensions, 0.0f);
+	GameObject* fallingCube = AddCubeToWorld(Vector3(0, 20, 0), dimensions, true);//10.0f);
+	GameObject* newFloor = AddCubeToWorld(Vector3(0, 0, 0), floorDimensions, false);//0.0f);
 
 	delete fallingCube->GetBoundingVolume();
 	delete newFloor->GetBoundingVolume();
