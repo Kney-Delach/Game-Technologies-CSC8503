@@ -22,6 +22,12 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{d8842344-7498-423c-9262-23c30d353008}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjects">
+      <UniqueIdentifier>{c63a5b48-4cce-4818-8e83-899fc963dfae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{2836e985-c0a2-43ea-b403-de7bf6fc5560}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionDetection.h">
@@ -132,6 +138,15 @@
     <ClInclude Include="WorldMacros.h">
       <Filter>Resources</Filter>
     </ClInclude>
+    <ClInclude Include="PlayerObject.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="CollectableObject.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerIsland.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionDetection.cpp">
@@ -217,6 +232,15 @@
     </ClCompile>
     <ClCompile Include="AABBVolume.cpp">
       <Filter>CollisionDetection</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerObject.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CollectableObject.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerIsland.cpp">
+      <Filter>GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -40,7 +40,7 @@ namespace NCL
 		{
 		public:
 			GameObject(string name = "");
-			~GameObject();
+			virtual ~GameObject();
 
 			void SetBoundingVolume(CollisionVolume* vol) {
 				boundingVolume = vol;
@@ -116,7 +116,10 @@ namespace NCL
 			bool GetBroadphaseAABB(Vector3&outsize) const;
 
 			void UpdateBroadphaseAABB();
-		
+
+			void UpdateObjectPosition(float dt, const Vector3& parentPosition, const unsigned int index);
+			void UpdateIslandStoredObjectPosition(const Vector3& parentPosition, const unsigned row, const unsigned index);
+
 			// 28.11.2019 
 			// used to display debug information and selection of the object 
 			void DrawDebug(const Vector4& color);

@@ -1,6 +1,21 @@
+/***************************************************************************
+* Filename		: GooseGame.h
+* Name			: Ori Lazar
+* Date			: 28/11/2019
+* Description	: Central point for running the goose game.
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #pragma once
 #include "GameTechRenderer.h"
 #include "../CSC8503Common/PhysicsSystem.h"
+#include "../CSC8503Common/PlayerObject.h"
 
 
 namespace NCL {
@@ -33,9 +48,9 @@ namespace NCL {
 			in the module. Feel free to mess around with them to see different objects being created in different
 			test scenarios (constraints, collision types, and so on). 
 			*/
-			void InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius);
+			//void InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius);
+			//void InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims);
 			void InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing);
-			void InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims);
 			void BridgeConstraintTest();
 			void SimpleGJKTest();
 
@@ -47,15 +62,20 @@ namespace NCL {
 
 			void GameObjectMovement();
 			
-			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f);
+			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f);
+			GameObject* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
-			
-			//IT'S HAPPENING
-			GameObject* AddGooseToWorld(const Vector3& position);
+
+			// 6.12.2019 - adds a player to the world 
+			PlayerObject* AddGooseToWorld(const Vector3& position);
+			// 6.12.2019 - adds a collectable objects to the world
+			GameObject* AddAppleToWorld(const Vector3& position);
+			GameObject* AddCornToWorld(const Vector3& position);
+			GameObject* AddHatToWorld(const Vector3& position);
+
 			GameObject* AddParkKeeperToWorld(const Vector3& position);
 			GameObject* AddCharacterToWorld(const Vector3& position);
-			GameObject* AddAppleToWorld(const Vector3& position);
 			
 			GameTechRenderer*	renderer;
 			PhysicsSystem*		physics;
@@ -84,7 +104,7 @@ namespace NCL {
 
 			//Coursework Additional functionality	
 			GameObject* lockedObject	= nullptr;
-			Vector3 lockedOffset		= Vector3(0, 14, 20);
+			Vector3 lockedOffset		= Vector3(0, 5, 20);
 			void LockCameraToObject(GameObject* o) { lockedObject = o; }
 
 			// 1.12.19
@@ -92,6 +112,10 @@ namespace NCL {
 			//// Debug functionality a ///////////////////////////////////
 			////////////////////////////////////////////////////////////////////
 			bool displayBoundingVolumes;
+
+			// 6.12.2019
+			// player controllers (currently only 1 but make this 2 in the multiplayer version)
+			PlayerObject* playerGameObject = nullptr;
 		};
 	}
 }

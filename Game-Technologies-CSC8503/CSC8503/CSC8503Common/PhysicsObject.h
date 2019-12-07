@@ -76,6 +76,10 @@ namespace NCL
 			void SetCollisionType(const int value) { bitCollisionType = value; }
 			int GetCollisionType() const { return bitCollisionType; }
 
+			// 6.12.2019 - toggle gravity usage
+			bool UsesGravity() const { return usesGravity; }
+			void SetGravityUsage(bool value) { usesGravity = value; }
+			
 			// tbd....				
 			void AddTorque(const Vector3& torque);
 			void InitCubeInertia();
@@ -102,13 +106,10 @@ namespace NCL
 			Vector3 inverseInertia;
 			Matrix3 inverseInteriaTensor;
 
-			//todo: remove these
-			// 3.12.2019
-			//bool resolveAsSpring;
-			//bool resolveAsImpulse;
-
 			// 6.12.2019 - collision response bitwise comparison reference
 			int bitCollisionType;
+
+			bool usesGravity;
 		};
 	}
 }
