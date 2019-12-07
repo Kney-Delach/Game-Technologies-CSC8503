@@ -1,29 +1,51 @@
+/***************************************************************************
+* Filename		: State.h
+* Name			: Ori Lazar
+* Date			: 07/12/2019
+* Description	: Representation of a state for state machine usages.
+    .---.
+  .'_:___".
+  |__ --==|
+  [  ]  :[|
+  |__| I=[|
+  / / ____|
+ |-/.____.'
+/___\ /___\
+***************************************************************************/
 #pragma once
 
-namespace NCL {
-	namespace CSC8503 {
-		class State		{
+namespace NCL
+{
+	namespace CSC8503
+	{
+		typedef void(*StateFunction)(void*);
+
+		class State
+		{
 		public:
-			State() {}
-			virtual ~State() {}
-			virtual void Update() = 0; //Pure virtual base class
+			State() = default;
+			virtual ~State() = default;
+			virtual void Update() = 0;
 		};
 
-		typedef void(*StateFunc)(void*);
-
-		class GenericState : public State		{
+		// The following class simply runs a single function 
+		class GenericState : public State
+		{
 		public:
-			GenericState(StateFunc someFunc, void* someData) {
+			GenericState(StateFunction someFunc, void* someData)
+			{
 				func		= someFunc;
 				funcData	= someData;
-			}
-			virtual void Update() {
-				if (funcData != nullptr) {
+			}			
+			virtual void Update() override
+			{
+				if (funcData != nullptr) 
+				{
 					func(funcData);
 				}
 			}
 		protected:
-			StateFunc func;
+			StateFunction func;
 			void* funcData;
 		};
 	}
