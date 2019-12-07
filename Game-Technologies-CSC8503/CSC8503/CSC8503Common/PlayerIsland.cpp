@@ -66,12 +66,10 @@ namespace NCL
 				}
 				((PlayerObject*)other)->GetInventory().clear(); // empty player inventory
 			}
-
-			//todo: call a global victory check function which compares all players' scores and islands.
 		}
 
 		void PlayerIsland::DrawCollectedObjectsToUI() const
 		{
-		}//todo: implement me
+		}//todo: implement me || maybe make this a debug draw override?
 	}
 }
