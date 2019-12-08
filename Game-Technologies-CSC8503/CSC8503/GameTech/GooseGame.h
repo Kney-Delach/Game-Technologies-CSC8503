@@ -18,9 +18,12 @@
 #include "../CSC8503Common/PlayerObject.h"
 
 
-namespace NCL {
-	namespace CSC8503 {
-		class GooseGame		{
+namespace NCL 
+{
+	namespace CSC8503 
+	{
+		class GooseGame
+		{
 		public:
 			GooseGame();
 			~GooseGame();
@@ -33,6 +36,10 @@ namespace NCL {
 			void UpdateKeys();
 			void InitWorld();
 
+			// 8.12.2019
+			// used to load a world from a file 
+			void LoadWorldFromFile(const std::string& filePath = "SinglePlayerWorld.goose");
+			
 			// 3.12.19
 			// goose level world initialization
 			void InitGooseGameWorld();
@@ -119,6 +126,13 @@ namespace NCL {
 			// 6.12.2019
 			// player controllers (currently only 1 but make this 2 in the multiplayer version)
 			PlayerObject* playerGameObject = nullptr;
+
+		protected:
+			// 8.12.2019
+			// load from file specific world data
+			int nodeSize;
+			int gridWidth;
+			int gridHeight;
 		};
 	}
 }

@@ -22,9 +22,49 @@
 #include "../CSC8503Common/PositionConstraint.h"
 #include "../CSC8503Common/CollectableObject.h"
 #include "../CSC8503Common/PlayerIsland.h"
+#include "../../Common/Assets.h"
+#include <fstream>
 
 using namespace NCL;
 using namespace CSC8503;
+
+//todo: this function is currently doesn't contain any error checking functionality (due to cw time constraints, fix this eventually)
+void GooseGame::LoadWorldFromFile(const std::string& filePath)
+{
+	if (filePath.empty())
+	{
+		std::cout << "Cannot load game world with empty path\n";
+		return;
+	}
+
+	// load file into an input stream
+	std::ifstream infile(Assets::DATADIR + filePath);
+	int numberOfHumanPlayers = 0; 
+	if(!(infile >> numberOfHumanPlayers))
+	{
+		std::cout << "Invalid file format [Number Of Human Players], please read the attached documentation for the correct format\n";
+		return;
+	}
+
+	for (int i = 0; i < numberOfHumanPlayers; ++i)
+	{
+		float posX, posY, posZ;
+		
+		infile >> posX;
+		infile >> posY;
+		infile >> posZ;
+		playerGameObject = AddGooseToWorld(Vector3(posX, posY, posZ)); //todo: make this an array of player objects
+	}
+	
+	infile >> nodeSize;
+	infile >> gridWidth;
+	infile >> gridHeight;
+
+	// adds the water to the entire world 
+	AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -20.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 20.f, static_cast<float>(gridHeight)* nodeSize) / 2.f, Vector4(0.f,0.f,1.f,0.f), 300.f);
+
+	//todo: make a minimum height, width and node size for the world
+}
 
 GooseGame::GooseGame()
 {
@@ -421,8 +461,12 @@ void GooseGame::InitWorld()
 	world->ClearAndErase();
 	physics->Clear();
 
-	InitGooseGameWorld();
+	LoadWorldFromFile();
+	
+	//InitGooseGameWorld();
 }
+
+//todo: move _LoadWorldFromFile to this location
 
 void GooseGame::InitGooseGameWorld()
 {
