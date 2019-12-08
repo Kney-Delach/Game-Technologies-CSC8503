@@ -57,8 +57,11 @@ namespace NCL {
 			bool SelectObject();
 			void MoveSelectedObject();
 			void DebugObjectMovement();
-			void LockedObjectMovement();
-			void LockedCameraMovement();
+
+			// 8.12.2019 
+			// player movement
+			void PlayerMovement(); // used to move the player goose around
+			void PlayerCameraMovement();
 
 			void GameObjectMovement();
 			
