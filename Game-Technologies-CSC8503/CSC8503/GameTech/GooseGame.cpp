@@ -87,19 +87,26 @@ GooseGame::~GooseGame()
 
 void GooseGame::UpdateGame(float dt)
 {
+	if (!inSelectionMode)
+		world->GetMainCamera()->UpdateCamera(dt);
+	
 	playerGameObject->DrawInventoryToUI(); //todo: move this from here
 	playerGameObject->UpdateInventoryTransformations(dt); //todo: move this from here, updates inventory object transforms
-	
-	if (!inSelectionMode) 	
-		world->GetMainCamera()->UpdateCamera(dt);	
-	else
-		MoveSelectedObject();
-	
 
-	if (lockedObject != nullptr)
-		LockedCameraMovement();
+	UpdateKeys(); // check if pressed any keys 
+
+	MoveSelectedObject();
 	
-	UpdateKeys();
+	if (lockedObject)
+	{
+		PlayerMovement();
+		PlayerCameraMovement();
+		DebugObjectMovement();
+	}
+	else
+	{
+		DebugObjectMovement(); // move selected object 
+	}	
 
 	if (useGravity)	
 		Debug::Print("(G)ravity on", Vector2(10, 40));	
@@ -113,7 +120,6 @@ void GooseGame::UpdateGame(float dt)
 	physics->Update(dt);
 
 	Debug::FlushRenderables();
-
 	
 	// debug draw
 	if(displayBoundingVolumes)
@@ -182,66 +188,53 @@ void GooseGame::UpdateKeys()
 	{
 		world->ShuffleConstraints(false);
 	}
-
-	//todo: implement lock state specific object movement.
-	// pass through lock state specific object movement 
-//	if (lockedObject) 
-//		LockedObjectMovement();
-	DebugObjectMovement(); // move selected object 
 }
 
-void GooseGame::LockedObjectMovement()
+void GooseGame::PlayerMovement()
 {
-	Matrix4 view		= world->GetMainCamera()->BuildViewMatrix();
-	Matrix4 camWorld	= view.Inverse();
-
-	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); //view is inverse of model!
-
-	//forward is more tricky -  camera forward is 'into' the screen...
-	//so we can take a guess, and use the cross of straight up, and
-	//the right axis, to hopefully get a vector that's good enough!
+	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
+	Matrix4 camWorld = view.Inverse();
+	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
 
 	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) 
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
 	{
-		selectionObject->GetPhysicsObject()->AddForce(-rightAxis);
+		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
+	}
+	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
+	{
+		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
 	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) 
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
 	{
-		selectionObject->GetPhysicsObject()->AddForce(rightAxis);
+		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
 	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) 
+	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
 	{
-		selectionObject->GetPhysicsObject()->AddForce(fwdAxis);
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) 
-	{
-		selectionObject->GetPhysicsObject()->AddForce(-fwdAxis);
+		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
 	}
 }
 
-void  GooseGame::LockedCameraMovement()
-{
-	if (lockedObject != nullptr) 
-	{
-		Vector3 objPos = lockedObject->GetTransform().GetWorldPosition();
-		Vector3 camPos = objPos + lockedOffset;
+void  GooseGame::PlayerCameraMovement()
+{	
+	Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
+	Vector3 camPos = objPos + lockedOffset;
 
-		Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+	Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
 
-		Matrix4 modelMat = temp.Inverse();
+	Matrix4 modelMat = temp.Inverse();
 
-		Quaternion q(modelMat);
-		Vector3 angles = q.ToEuler(); //nearly there now!
+	Quaternion q(modelMat);
+	Vector3 angles = q.ToEuler(); //nearly there now!
 
-		world->GetMainCamera()->SetPosition(camPos);
-		world->GetMainCamera()->SetPitch(angles.x);
-		world->GetMainCamera()->SetYaw(angles.y);
-	}
+	world->GetMainCamera()->SetPosition(camPos);
+	world->GetMainCamera()->SetPitch(angles.x);
+	world->GetMainCamera()->SetYaw(angles.y);
+	
 }
 
 // move selected gameobjects with keyboard presses
@@ -440,12 +433,11 @@ void GooseGame::InitGooseGameWorld()
 	InitBoundaries();
 	InitCollectables();
 	InitJumpPads();
-	//InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
-
+	
 	//todo: create initialize player character functionality
 	//todo: create collectable objects init
-	//todo: create DumbAI init function (atleast 1 for each collectable zone 
-	//todo: create SmartAI init function (maybe 1 that follows player throughout entire level? can swim? 
+	//todo: create DumbAI init function (atleast 1 for each collectable zone) 
+	//todo: create SmartAI init function, spawn new ones every x seconds, these should be able to swim 
 }
 
 void GooseGame::InitGroundLevelTerrain()
