@@ -77,12 +77,12 @@ vector<Vector3> testNodes;
 // used to exercise usage of the path finding implementation in this framework
 void TestPathfinding()
 {
-	NavigationGrid grid("TestGrid1.txt");
+	NavigationGrid grid("GreenGrid.txt");//"TestGrid1.txt");
 
 	NavigationPath outPath;
 
-	const Vector3 startPos(80,0, 10);
-	const Vector3 endPos(80, 0, 80);
+	const Vector3 startPos(-80,0, -10);
+	const Vector3 endPos(-80, 0, -80);
 
 	bool found = grid.FindPath(startPos, endPos, outPath);
 
@@ -104,8 +104,15 @@ void DisplayPathfinding()
 	{
 		Vector3 a = testNodes[i - 1];
 		Vector3 b = testNodes[i];
+		if (i == 1)
+			Debug::DrawCircle(a, 1.f, Vector4(0.f, 1.f, 0.f, 1.f));
+		else
+			Debug::DrawCircle(a, 1.f, Vector4(0.f, 0.f, 1.f, 1.f));
+
 		Debug::DrawLine(a, b, Vector4(1, 1, 0, 1));
 	}
+	Vector3 finalNode = testNodes[testNodes.size()-1];
+	Debug::DrawCircle(finalNode, 1.f, Vector4(1.f, 0.f, 0.f, 1.f));
 }
 
 

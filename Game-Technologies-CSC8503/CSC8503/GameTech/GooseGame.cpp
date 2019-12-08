@@ -433,12 +433,11 @@ void GooseGame::InitGooseGameWorld()
 	InitBoundaries();
 	InitCollectables();
 	InitJumpPads();
-	//InitMixedGridWorld(10, 10, 3.5f, 3.5f); //todo: remove these
-
+	
 	//todo: create initialize player character functionality
 	//todo: create collectable objects init
-	//todo: create DumbAI init function (atleast 1 for each collectable zone 
-	//todo: create SmartAI init function (maybe 1 that follows player throughout entire level? can swim? 
+	//todo: create DumbAI init function (atleast 1 for each collectable zone) 
+	//todo: create SmartAI init function, spawn new ones every x seconds, these should be able to swim 
 }
 
 void GooseGame::InitGroundLevelTerrain()
