@@ -19,44 +19,55 @@
 
 using namespace NCL::CSC8503;
 
-GameObject::GameObject(string objectName)	{
-	name			= objectName;
+GameObject::GameObject(string objectName)
+{
+	name = objectName;
 	layer.SetLayerID(0);
-	isActive		= true;
-	boundingVolume	= nullptr;
-	physicsObject	= nullptr;
-	renderObject	= nullptr;
-	networkObject	= nullptr;
+	isActive = true;
+	boundingVolume = nullptr;
+	physicsObject = nullptr;
+	renderObject = nullptr;
+	networkObject = nullptr;
 }
 
-GameObject::~GameObject()	{
+GameObject::~GameObject()
+{
 	delete boundingVolume;
 	delete physicsObject;
 	delete renderObject;
 	delete networkObject;
 }
 
-bool GameObject::GetBroadphaseAABB(Vector3&outSize) const {
-	if (!boundingVolume) {
+// 8.12.2019
+bool GameObject::GetBroadphaseAABB(Vector3& outSize) const
+{
+	if (!boundingVolume) 
+	{
 		return false;
 	}
 	outSize = broadphaseAABB;
 	return true;
 }
 
-// These would be better as a virtual 'ToAABB' type function, really...
-void GameObject::UpdateBroadphaseAABB() {
-	if (!boundingVolume) {
+// 8.12.2019
+// These would be better as a virtual 'ToAABB' type function
+void GameObject::UpdateBroadphaseAABB()
+{
+	if (!boundingVolume) 
+	{
 		return;
 	}
-	if (boundingVolume->type == VolumeType::AABB) {
+	if (boundingVolume->type == VolumeType::AABB) 
+	{
 		broadphaseAABB = ((AABBVolume&)*boundingVolume).GetHalfDimensions();
 	}
-	else if (boundingVolume->type == VolumeType::Sphere) {
+	else if (boundingVolume->type == VolumeType::Sphere) 
+	{
 		float r = ((SphereVolume&)*boundingVolume).GetRadius();
 		broadphaseAABB = Vector3(r, r, r);
 	}
-	else if (boundingVolume->type == VolumeType::OBB) {
+	else if (boundingVolume->type == VolumeType::OBB) 
+	{
 		Matrix3 mat = Matrix3(transform.GetWorldOrientation());
 		mat = mat.Absolute();
 		Vector3 halfSizes = ((OBBVolume&)*boundingVolume).GetHalfDimensions();

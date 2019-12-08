@@ -59,13 +59,12 @@ namespace NCL
 				point.penetration = p;
 			}
 
-			// Advanced collision detection / resolution
+			// 8.12.2019
 			// This gets used as a quick hashing function to identify unique pairs of colliding objects in lists.
-			bool operator <(const CollisionInfo& other) const
+			bool operator<(const CollisionInfo& other) const
 			{
 				size_t otherHash = (size_t)other.a + ((size_t)other.b << 8);
 				size_t thisHash  = (size_t)a + ((size_t)b << 8);
-
 				return (thisHash < otherHash);
 			}
 

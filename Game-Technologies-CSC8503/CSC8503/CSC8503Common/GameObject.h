@@ -42,23 +42,28 @@ namespace NCL
 			GameObject(string name = "");
 			virtual ~GameObject();
 
-			void SetBoundingVolume(CollisionVolume* vol) {
+			void SetBoundingVolume(CollisionVolume* vol)
+			{
 				boundingVolume = vol;
 			}
 
-			const CollisionVolume* GetBoundingVolume() const {
+			const CollisionVolume* GetBoundingVolume() const
+			{
 				return boundingVolume;
 			}
 
-			bool IsActive() const {
+			bool IsActive() const
+			{
 				return isActive;
 			}
 
-			const Transform& GetConstTransform() const {
+			const Transform& GetConstTransform() const
+			{
 				return transform;
 			}
 
-			Transform& GetTransform() {
+			Transform& GetTransform()
+			{
 				return transform;
 			}
 
@@ -79,27 +84,33 @@ namespace NCL
 				return Ray(transform.GetWorldPosition(), transform.GetWorldOrientation() * direction); 
 			}
 
-			RenderObject* GetRenderObject() const {
+			RenderObject* GetRenderObject() const
+			{
 				return renderObject;
 			}
 
-			PhysicsObject* GetPhysicsObject() const {
+			PhysicsObject* GetPhysicsObject() const
+			{
 				return physicsObject;
 			}
 
-			NetworkObject* GetNetworkObject() const {
+			NetworkObject* GetNetworkObject() const 
+			{
 				return networkObject;
 			}
 
-			void SetRenderObject(RenderObject* newObject) {
+			void SetRenderObject(RenderObject* newObject)
+		{
 				renderObject = newObject;
 			}
 
-			void SetPhysicsObject(PhysicsObject* newObject) {
+			void SetPhysicsObject(PhysicsObject* newObject)
+			{
 				physicsObject = newObject;
 			}
 
-			const string& GetName() const {
+			const string& GetName() const
+			{
 				return name;
 			}
 
@@ -131,18 +142,18 @@ namespace NCL
 			// 28.11.2019 
 			static void DrawLineBetweenObjects(const GameObject* from, const GameObject* to);
 		protected:
-			Transform			transform;
-			Layer				layer; // 28.11.2019 - collision layer references
+			Transform transform;
+			Layer layer; // 28.11.2019 - collision layer references
 			
-			CollisionVolume*	boundingVolume;
-			PhysicsObject*		physicsObject;
-			RenderObject*		renderObject;
-			NetworkObject*		networkObject;
+			CollisionVolume* boundingVolume;
+			PhysicsObject* physicsObject;
+			RenderObject* renderObject;
+			NetworkObject* networkObject;
 
-			bool	isActive;
-			string	name;
+			bool isActive;
+			string name;
 
-			Vector3 broadphaseAABB;
+			Vector3 broadphaseAABB; // 8.12.2019
 		};
 	}
 }

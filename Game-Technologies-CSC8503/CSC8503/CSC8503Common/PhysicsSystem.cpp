@@ -29,7 +29,7 @@ using namespace CSC8503;
 PhysicsSystem::PhysicsSystem(GameWorld& g) : gameWorld(g)
 {
 	applyGravity	= false;
-	useBroadPhase	= false;	
+	useBroadPhase	= false; //todo: turn on only when in release mode	
 	dTOffset		= 0.0f;
 	globalDamping	= 0.95f;
 	SetGravity(Vector3(0.0f, -9.8f, 0.0f));
@@ -228,6 +228,7 @@ void PhysicsSystem::UpdateCollisionList()
 	}
 }
 
+// 8.12.2019
 void PhysicsSystem::UpdateObjectAABBs()
 {
 	std::vector<GameObject*>::const_iterator first;
@@ -361,7 +362,37 @@ compare the collisions that we absolutely need to.
 
 void PhysicsSystem::BroadPhase()
 {
+	broadphaseCollisions.clear();
+	QuadTree<GameObject*>tree(Vector2(1024, 1024), 7, 6);
+	std::vector<GameObject*>::const_iterator first;
+	std::vector<GameObject*>::const_iterator last;
+	
+	gameWorld.GetObjectIterators(first, last);
+	for (auto i = first; i != last; ++i) 
+	{
+		Vector3 halfSizes;
+		if (!(*i)->GetBroadphaseAABB(halfSizes))
+		{
+			continue;
+		}
+		Vector3 pos = (*i)->GetConstTransform().GetWorldPosition();
+		tree.Insert(*i, pos, halfSizes);
 
+		tree.OperateOnContents([&](std::list<QuadTreeEntry<GameObject*>>& data)
+		{
+			CollisionDetection::CollisionInfo info;
+			for (auto i = data.begin(); i != data.end(); ++i)
+			{
+				for (auto j = std::next(i); j != data.end(); ++j)
+				{
+					// is this pair of items already in the collision set
+					// if the same pair is in another quadtree node together etc
+					info.a = min((*i).object, (*j).object);
+					info.b = max((*i).object, (*j).object);
+					broadphaseCollisions.insert(info);
+				}			}
+		});
+	}
 }
 
 /*
@@ -371,7 +402,43 @@ and work out if they are truly colliding, and if so, add them into the main coll
 */
 void PhysicsSystem::NarrowPhase()
 {
-
+	for (std::set < CollisionDetection::CollisionInfo >::iterator i = broadphaseCollisions.begin(); i != broadphaseCollisions.end(); ++i) 
+	{
+		CollisionDetection::CollisionInfo info = *i;
+		if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) 
+		{
+			info.framesLeft = numCollisionFrames;
+			switch (info.a->GetPhysicsObject()->GetCollisionType() & info.b->GetPhysicsObject()->GetCollisionType())
+			{
+				case ObjectCollisionType::IMPULSE:
+				{
+					ImpulseResolveCollision(*info.a, *info.b, info.point);
+					break;
+				}
+				case ObjectCollisionType::SPRING:
+				{
+					ResolveSpringCollision(*info.a, *info.b, info.point);
+					break;
+				}
+				case ObjectCollisionType::COLLECTABLE:
+				{
+					break;
+				}
+				case ObjectCollisionType::JUMP_PAD:
+				{
+					ResolveJumpPadCollision(*info.a, *info.b, info.point);
+					break;
+				}
+				case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD:
+				{
+					ImpulseResolveCollision(*info.a, *info.b, info.point);
+					break;
+				}
+			}
+			allCollisions.insert(info); // insert into our main set
+		}
+	
+	}
 }
 
 /*
