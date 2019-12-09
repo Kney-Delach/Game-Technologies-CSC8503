@@ -21,29 +21,34 @@ namespace NCL
 {
 	namespace CSC8503
 	{
-		enum AIType { FARMER = 1, ADVANCED = 2, SUPER_ADVANCED = 4 };
+		class NavigationGrid;
+
+		enum AIType { BASIC = 1 };
 		
 		class BasicAIObject : public GameObject
 		{
 		public:
-			BasicAIObject(const int collType = 1, const std::string name = "Basic Simple AI");
-			virtual ~BasicAIObject();
-
+			BasicAIObject(const Vector3& spawnPos, const int type = 1, const std::string name = "Basic AI");
+			virtual ~BasicAIObject() = default;
+			
 			virtual void OnCollisionBegin(GameObject* other) override;
-
+			
 			int GetAIType() const { return aiType; }
-
+			
 			int GetObjectID() const { return objectID; }
 			void SetObjectID(const unsigned int id) { objectID = id; }
-
+			
 			void ReturnHome();
 			void TargetPlayer(GameObject* player);
 
+			void SetNavigationGrid(NavigationGrid* grid) { navigationGrid = grid; }
+			NavigationGrid* GetNavigationGrid() const { return navigationGrid; }
 		protected:
 			GameObject* parent;
 			unsigned int objectID;
 			int aiType;
 			Vector3 spawnPosition;
+			NavigationGrid* navigationGrid; 
 		};
 	}
 }

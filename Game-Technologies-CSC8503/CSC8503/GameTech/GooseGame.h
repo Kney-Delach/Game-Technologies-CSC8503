@@ -22,6 +22,8 @@ namespace NCL
 {
 	namespace CSC8503 
 	{
+		class NavigationGrid;
+		
 		class GooseGame
 		{
 		public:
@@ -134,6 +136,9 @@ namespace NCL
 			int nodeSize;
 			int gridWidth;
 			int gridHeight;
+
+			// 9.12.2019
+			// pathfinding related variables
 		};
 	}
 }

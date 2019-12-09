@@ -23,6 +23,8 @@
 #include "../CSC8503Common/CollectableObject.h"
 #include "../CSC8503Common/PlayerIsland.h"
 #include "../../Common/Assets.h"
+#include "../CSC8503Common/NavigationGrid.h"
+
 #include <fstream>
 
 using namespace NCL;
@@ -66,20 +68,30 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	// adds the water to the entire world 
 	AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -2.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 2.f, static_cast<float>(gridHeight)* nodeSize) / 2.f, Vector4(0.f,0.f,1.f,0.f), 300.f);
 
-
-	Vector3 cubeDims = Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2);
+	const Vector3 cubeDims = Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2);
 	Vector3 position;
 
 	// add the world data from the file to a vector
 	vector<int> dataMap;
 	char entity;
-	for (int z = 0; z < gridHeight; ++z) {
-		for (int x = 0; x < gridWidth; ++x) {
+	for (int z = 0; z < gridHeight; ++z) 
+	{
+		for (int x = 0; x < gridWidth; ++x) 
+		{
 			infile >> entity;
 			dataMap.push_back(entity);
 		}
 	}
 
+	//todo: DO THIS FIRST!!!
+	//todo: DO THIS FIRST!!!
+	//todo: DO THIS FIRST!!!
+	//todo: -------------------- Load in the positions that the ai can start and end in, then pre-process navigation tables
+	//todo: DO THIS FIRST!!!
+	//todo: DO THIS FIRST!!!
+	//todo: DO THIS FIRST!!!
+	//todo: DO THIS FIRST!!!
+	
 	for (int z = 0; z < gridHeight; ++z) 
 	{
 		for (int x = 0; x < gridWidth; ++x) 
@@ -92,6 +104,12 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
 				AddStaticCubeToWorld(position, Vector3(((float)nodeSize)/2.f, 5, ((float)nodeSize)/2.f), 0.f);
+			}
+			if (dataMap[x + z * gridWidth] == 'l') // walkable land
+			{
+				position = Vector3(x * 2 * cubeDims.x, 0.25f, z * 2 * cubeDims.z);
+				GameObject* cube = AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 1.f, ((float)nodeSize) / 2.f), 0.f);
+				cube->GetRenderObject()->SetColour(Vector4(1.f, 1.f, 0.f, 0.f));
 			}
 			if (dataMap[x + z * gridWidth] == 's')
 			{
@@ -132,7 +150,7 @@ GooseGame::GooseGame()
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
 	physics		= new PhysicsSystem(*world);
-
+		
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
 	inSelectionMode = false;
@@ -180,10 +198,10 @@ GooseGame::~GooseGame()
 	delete gooseMesh;
 	delete basicTex;
 	delete basicShader;
-
 	delete physics;
 	delete renderer;
 	delete world;
+
 }
 
 void GooseGame::UpdateGame(float dt)

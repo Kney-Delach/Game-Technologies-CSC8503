@@ -22,6 +22,20 @@ namespace NCL
 {
 	namespace CSC8503
 	{
-		
+		BasicAIObject::BasicAIObject(const Vector3& spawnPos, const int type, const std::string name)
+			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
+		{}
+
+		void BasicAIObject::OnCollisionBegin(GameObject* other)
+		{
+		}
+
+		void BasicAIObject::ReturnHome()
+		{
+		}
+
+		void BasicAIObject::TargetPlayer(GameObject* player)
+		{
+		}
 	}
 }

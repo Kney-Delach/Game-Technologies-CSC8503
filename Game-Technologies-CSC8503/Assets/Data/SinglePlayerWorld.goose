@@ -6,8 +6,8 @@
 xxxxxxxxxx
 xa.......x
 x.......sx
-x....xxxxx
-x.c......x
+xlll.xxxxx
+xlcl.....x
 xxxxxx...x
 xh.....xxx
 x..xxxxxxx

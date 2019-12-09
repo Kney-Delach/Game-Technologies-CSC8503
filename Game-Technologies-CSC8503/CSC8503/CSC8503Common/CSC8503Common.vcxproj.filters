@@ -150,6 +150,9 @@
     <ClInclude Include="BasicAIObject.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
+    <ClInclude Include="NavigationTable.h">
+      <Filter>Pathfinding</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionDetection.cpp">
@@ -247,6 +250,9 @@
     </ClCompile>
     <ClCompile Include="BasicAIObject.cpp">
       <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="NavigationTable.cpp">
+      <Filter>Pathfinding</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
