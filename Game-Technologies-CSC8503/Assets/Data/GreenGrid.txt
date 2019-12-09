@@ -2,8 +2,8 @@
 10
 10
 xxxxxxxxxx
-x........x 
-x........x
+x......xxx 
+x......xxx
 x....xxxxx
 x........x
 xxxxxx...x

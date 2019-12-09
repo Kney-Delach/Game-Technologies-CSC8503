@@ -81,8 +81,8 @@ void TestPathfinding()
 
 	NavigationPath outPath;
 
-	const Vector3 startPos(80,0, 10);
-	const Vector3 endPos(80, 0, 80);
+	const Vector3 startPos(80,0, 80);
+	const Vector3 endPos(60, 0, 10);
 
 	bool found = grid.FindPath(startPos, endPos, outPath);
 
