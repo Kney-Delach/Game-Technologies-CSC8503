@@ -16,6 +16,8 @@
 #include "CollectableObject.h"
 #include "PlayerObject.h"
 
+#include "../../Common/Assets.h" // for sound effects
+
 namespace NCL
 {
 	namespace CSC8503
@@ -39,6 +41,16 @@ namespace NCL
 				parent = other;
 				objectID = ((PlayerObject*)other)->AddObjectToInventory((GameObject*)this);
 				UpdateObjectPosition(0, parent->GetConstTransform().GetWorldPosition(), objectID);
+				//todo: add collection sound effect
+				if(name == "Apple")
+				{
+					// play apple sound effect
+					PlaySound(TEXT("../../Assets/Audio/CollectApple.wav") , NULL, SND_FILENAME  | SND_ASYNC );
+				}
+				else if(name == "Hat")
+				{
+					//todo: add more sound effects for other objects
+				}
 			}
 		}
 
@@ -47,6 +59,8 @@ namespace NCL
 			this->GetTransform().SetWorldPosition(spawnPosition);
 			parent = nullptr;
 			objectID = 0;
+			PlaySound(TEXT("../../Assets/Audio/DropItems.wav"), NULL, SND_FILENAME | SND_ASYNC);
+
 		}
 	}
 }
