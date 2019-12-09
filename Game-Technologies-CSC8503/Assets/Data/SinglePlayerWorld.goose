@@ -1,13 +1,15 @@
 10
 10
 10
+1
+7 3 1
 xxxxxxxxxx
-x......xxx 
-x......xxx
+xa.......x
+x.......sx
 x....xxxxx
-x........x
+x.c......x
 xxxxxx...x
-x......xxx
+xh.....xxx
 x..xxxxxxx
-x........x
+x..a....rx
 xxxxxxxxxx

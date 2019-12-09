@@ -1,0 +1,2 @@
+Number of human players 
+for each player, insert x y z spawn positions -> 1 2 3

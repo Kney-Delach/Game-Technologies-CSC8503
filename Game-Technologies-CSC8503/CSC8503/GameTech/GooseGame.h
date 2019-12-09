@@ -18,9 +18,12 @@
 #include "../CSC8503Common/PlayerObject.h"
 
 
-namespace NCL {
-	namespace CSC8503 {
-		class GooseGame		{
+namespace NCL 
+{
+	namespace CSC8503 
+	{
+		class GooseGame
+		{
 		public:
 			GooseGame();
 			~GooseGame();
@@ -33,6 +36,10 @@ namespace NCL {
 			void UpdateKeys();
 			void InitWorld();
 
+			// 8.12.2019
+			// used to load a world from a file 
+			void LoadWorldFromFile(const std::string& filePath = "SinglePlayerWorld.goose");
+			
 			// 3.12.19
 			// goose level world initialization
 			void InitGooseGameWorld();
@@ -69,6 +76,7 @@ namespace NCL {
 			GameObject* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
+			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, float elasticity = 0.01f, float stiffness = 8.f);
 
 			// 6.12.2019 - adds a player to the world 
 			PlayerObject* AddGooseToWorld(const Vector3& position);
@@ -119,6 +127,13 @@ namespace NCL {
 			// 6.12.2019
 			// player controllers (currently only 1 but make this 2 in the multiplayer version)
 			PlayerObject* playerGameObject = nullptr;
+
+		protected:
+			// 8.12.2019
+			// load from file specific world data
+			int nodeSize;
+			int gridWidth;
+			int gridHeight;
 		};
 	}
 }

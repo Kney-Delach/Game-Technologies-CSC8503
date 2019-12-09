@@ -22,9 +22,110 @@
 #include "../CSC8503Common/PositionConstraint.h"
 #include "../CSC8503Common/CollectableObject.h"
 #include "../CSC8503Common/PlayerIsland.h"
+#include "../../Common/Assets.h"
+#include <fstream>
 
 using namespace NCL;
 using namespace CSC8503;
+
+//todo: this function is currently doesn't contain any error checking functionality (due to cw time constraints, fix this eventually)
+void GooseGame::LoadWorldFromFile(const std::string& filePath)
+{
+	if (filePath.empty())
+	{
+		std::cout << "Cannot load game world with empty path\n";
+		return;
+	}
+
+	// load file into an input stream
+	std::ifstream infile(Assets::DATADIR + filePath);
+
+	// load in level data
+	infile >> nodeSize;
+	infile >> gridWidth;
+	infile >> gridHeight;
+
+	// add human players
+	int numberOfHumanPlayers = 0;
+	if (!(infile >> numberOfHumanPlayers))
+	{
+		std::cout << "Invalid file format [Number Of Human Players], please read the attached documentation for the correct format\n";
+		return;
+	}
+
+	for (int i = 0; i < numberOfHumanPlayers; ++i)
+	{
+		float posX, posY, posZ;
+
+		infile >> posX;
+		infile >> posY;
+		infile >> posZ;
+		playerGameObject = AddGooseToWorld(Vector3(posX * nodeSize, posY, posZ * nodeSize)); //todo: make this an array of player objects
+	}
+	
+	// adds the water to the entire world 
+	AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -2.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 2.f, static_cast<float>(gridHeight)* nodeSize) / 2.f, Vector4(0.f,0.f,1.f,0.f), 300.f);
+
+
+	Vector3 cubeDims = Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2);
+	Vector3 position;
+
+	// add the world data from the file to a vector
+	vector<int> dataMap;
+	char entity;
+	for (int z = 0; z < gridHeight; ++z) {
+		for (int x = 0; x < gridWidth; ++x) {
+			infile >> entity;
+			dataMap.push_back(entity);
+		}
+	}
+
+	for (int z = 0; z < gridHeight; ++z) 
+	{
+		for (int x = 0; x < gridWidth; ++x) 
+		{
+			if (dataMap[x + z * gridWidth] == '.')
+			{
+				continue;
+			}
+			if(dataMap[x + z * gridWidth] == 'x')
+			{
+				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize)/2.f, 5, ((float)nodeSize)/2.f), 0.f);
+			}
+			if (dataMap[x + z * gridWidth] == 's')
+			{
+				position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 1.f, -cubeDims.z + (z * 2 * cubeDims.z));
+				AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1));
+			}
+
+			if (dataMap[x + z * gridWidth] == 'a')
+			{
+				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				AddAppleToWorld(position);
+			}
+			
+			if (dataMap[x + z * gridWidth] == 'c')
+			{
+				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				AddCornToWorld(position);
+			}
+
+			if (dataMap[x + z * gridWidth] == 'h')
+			{
+				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				AddHatToWorld(position);
+			}
+
+			if (dataMap[x + z * gridWidth] == 'r')
+			{
+				position = Vector3(x * 2 * cubeDims.x, 4.f, z * 2 * cubeDims.z);
+				AddParkKeeperToWorld(position);
+			}
+			//todo: add capabilities to add additional obstacles to the level
+		}
+	}
+}
 
 GooseGame::GooseGame()
 {
@@ -69,7 +170,7 @@ void GooseGame::InitialiseAssets()
 
 	// this fixes a bug, I don't know why its a bug....
 	InitWorld();
-	InitWorld();
+	//InitWorld();
 }
 
 GooseGame::~GooseGame()
@@ -421,8 +522,12 @@ void GooseGame::InitWorld()
 	world->ClearAndErase();
 	physics->Clear();
 
-	InitGooseGameWorld();
+	LoadWorldFromFile();
+	
+	//InitGooseGameWorld();
 }
+
+//todo: move _LoadWorldFromFile to this location
 
 void GooseGame::InitGooseGameWorld()
 {
@@ -685,11 +790,37 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(0.01f); // low elasticity material (like steel)
 	cube->GetPhysicsObject()->SetStiffness(8.f);
-	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
+	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE);// | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD); //todo: change this 
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 	
+	world->AddGameObject(cube);
+
+	return cube;
+}
+
+GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, float elasticity, float stiffness)
+{
+	GameObject* cube = new GameObject("Cube");
+
+	AABBVolume* volume = new AABBVolume(dimensions);
+	cube->SetBoundingVolume((CollisionVolume*)volume);
+
+	cube->GetTransform().SetWorldPosition(position);
+	cube->GetTransform().SetWorldScale(dimensions);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
+	cube->GetPhysicsObject()->SetElasticity(elasticity);
+	cube->GetPhysicsObject()->SetStiffness(stiffness);
+	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE);
+	cube->GetPhysicsObject()->InitCubeInertia();
+	cube->GetPhysicsObject()->SetGravityUsage(false);
+	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
+
 	world->AddGameObject(cube);
 
 	return cube;
@@ -741,9 +872,12 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position)
 
 	keeper->GetPhysicsObject()->SetInverseMass(inverseMass);
 	keeper->GetPhysicsObject()->InitCubeInertia();
-
+	
+	keeper->GetPhysicsObject()->SetElasticity(0.7f); // low elasticity material (like steel)
+	keeper->GetPhysicsObject()->SetStiffness(200.f);
+	
 	//todo: change this to attacker type
-	keeper->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
+	keeper->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING);// | ObjectCollisionType::JUMP_PAD);
 
 	world->AddGameObject(keeper);
 

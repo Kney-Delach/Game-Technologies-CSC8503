@@ -85,7 +85,7 @@ void GameObject::UpdateObjectPosition(float dt, const Vector3& parentPosition, c
 // 6.12.2019
 void GameObject::UpdateIslandStoredObjectPosition(const Vector3& parentPosition, const unsigned row, const unsigned index)
 {
-	this->GetTransform().SetWorldPosition(parentPosition + Vector3(3.f * row - 6.f, 5.2f, index * 2.5f - 6.f));
+	this->GetTransform().SetWorldPosition(parentPosition + Vector3(3.f * row - 6.f, 2.f, index * 2.5f - 6.f));
 }
 
 // 28.11.2019 
