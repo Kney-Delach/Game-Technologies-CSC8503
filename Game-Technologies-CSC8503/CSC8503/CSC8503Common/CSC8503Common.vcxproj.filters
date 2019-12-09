@@ -147,6 +147,9 @@
     <ClInclude Include="PlayerIsland.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
+    <ClInclude Include="BasicAIObject.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionDetection.cpp">
@@ -240,6 +243,9 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="PlayerIsland.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicAIObject.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
