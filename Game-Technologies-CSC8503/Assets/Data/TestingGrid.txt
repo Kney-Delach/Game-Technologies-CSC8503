@@ -1,17 +1,15 @@
 10
 12
 12
-1
-6 3 2
 xxxxxxxxxxxx
 xxxxxxxxxxxx
-xxa.......xx
-xx.......sxx
-xxlll.xxxxxx
-xxlcl.....xx
+xx......xxxx 
+xx......xxxx
+xx....xxxxxx
+xx........xx
 xxxxxxx...xx
-xxh.....xxxx
+xx......xxxx
 xx..xxxxxxxx
-xx..a....rxx
+xx........xx
 xxxxxxxxxxxx
 xxxxxxxxxxxx

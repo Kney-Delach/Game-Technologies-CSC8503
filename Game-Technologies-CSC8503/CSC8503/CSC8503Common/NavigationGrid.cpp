@@ -45,11 +45,13 @@ NavigationGrid::NavigationGrid(const std::string&filename) : NavigationGrid()
 
 	allNodes = new GridNode[gridWidth * gridHeight];
 
+	int counter = 0;
 	for (int y = 0; y < gridHeight; ++y) 
 	{
 		for (int x = 0; x < gridWidth; ++x) 
 		{
 			GridNode&n = allNodes[(gridWidth * y) + x];
+			n.nodeID = counter++;
 			char type = 0;
 			infile >> type;
 			n.type = type;
@@ -147,6 +149,7 @@ bool NavigationGrid::FindPath(const Vector3& from, const Vector3& to, Navigation
 			while (node != nullptr) 
 			{
 				outPath.AddWaypoint(node->position);
+				outPath.AddWaypointID(node->nodeID);
 				node = node->parent; // Build up the waypoints
 			}
 			return true;

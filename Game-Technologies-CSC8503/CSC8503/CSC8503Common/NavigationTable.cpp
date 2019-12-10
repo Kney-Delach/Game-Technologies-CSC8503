@@ -43,19 +43,66 @@ namespace NCL
 
 		void NavigationTable::CalculateTable(NavigationGrid* grid)
 		{
+			const int navWidth = grid->GetWidth();
+			const int navHeight = grid->GetHeight();
 
-			const Vector3 startPos(80, 0, 80);
-			const Vector3 endPos(60, 0, 10);
-
-			//todo: iterate over the following for all possible combinations of nodes
-
-			NavigationPath path;
-			bool found = (*grid).FindPath(startPos, endPos, path);
-
-			Vector3 pos;
-
-			if(path.RemoveWaypoint(pos))
+			GridNode* allNavigationNodes = grid->GetNodes();
+			
+			for (int start = 0; start < navWidth * navHeight; ++start) // for each node in the list
 			{
+				for (int end = 0; end < navWidth * navHeight; ++end) // for each node in the list 
+				{
+					if (&allNavigationNodes[start] == &allNavigationNodes[end])
+					{
+						navigationTable[start][end].position = allNavigationNodes[end].position;
+						navigationTable[start][end].nearestNodeID = end;
+					}
+					else
+					{
+						NavigationPath path;
+						const bool found = grid->FindPath(allNavigationNodes[start].position, allNavigationNodes[end].position, path);
+						if(found)
+						{
+							Vector3 position; 
+							if(path.RemoveWaypoint(position))
+							{
+								navigationTable[start][end].position = position;
+							}
+							int id = 0;
+							if(path.RemoveWaypointID(id))
+							{
+								navigationTable[start][end].nearestNodeID = id;
+							}
+						}
+						else
+						{
+							// not reachable
+							navigationTable[start][end].nearestNodeID = -1;
+							navigationTable[start][end].position = Vector3(-1.f,-1.f,-1.f);
+						}
+					}
+				}
+			}
+
+			//todo: remove this section
+			// output the navigation table to cmd (testing)
+			for (int i = 0; i < navWidth * navHeight; ++i)
+			{
+				std::cout << i << ",";
+			}
+			std::cout << "\n";
+			std::cout << "------------------------------------------------------\n";
+			for (int i = 0; i < navWidth * navHeight; ++i)
+			{
+				std::cout << i << "|";
+				for (int k = 0; k < navWidth * navHeight; ++k)
+				{
+					if (navigationTable[i][k].nearestNodeID == -1)
+						std::cout << ".,";
+					else
+						std::cout << navigationTable[i][k].nearestNodeID << ",";
+				}
+				std::cout << "\n";
 			}
 		}
 	}

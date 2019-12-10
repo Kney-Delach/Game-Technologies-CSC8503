@@ -23,7 +23,6 @@ namespace NCL
 
 		struct NavTableNode
 		{
-			int nodeID;
 			int nearestNodeID;
 			Maths::Vector3 position;
 		};
@@ -33,11 +32,12 @@ namespace NCL
 		public:
 			NavigationTable(int numNodes, NavigationGrid* grid);
 			~NavigationTable();
+			NavTableNode** GetNavTable() const { return navigationTable; }
 		private:
 			void CalculateTable(NavigationGrid* grid);
 		private:
 			NavTableNode** navigationTable;
-			int numberOfNodes; 
+			int numberOfNodes;
 		};
 	}
 }

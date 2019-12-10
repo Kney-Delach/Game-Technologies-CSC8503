@@ -73,34 +73,34 @@ void TestNetworking()
 
 // 7.12.2019
 // sample waypoint nodes  
-vector<Vector3> testNodes;
+//vector<Vector3> testNodes;
 // used to exercise usage of the path finding implementation in this framework
 void TestPathfinding()
 {
-	NavigationGrid grid("GreenGrid.txt");//"TestGrid1.txt");
+	//NavigationGrid grid("GreenGrid.txt");//"TestGrid1.txt");
 
-	NavigationPath outPath;
+	//NavigationPath outPath;
 
-	const Vector3 startPos(80,0, 80);
-	const Vector3 endPos(65, 0, 10);
+	//const Vector3 startPos(80,0, 80);
+	//const Vector3 endPos(65, 0, 10);
 
-	bool found = grid.FindPath(startPos, endPos, outPath);
+	//bool found = grid.FindPath(startPos, endPos, outPath);
 
-	Vector3 pos;
+	//Vector3 pos;
 
-	// for an ai character, only pop waypoint if AI is close enough to current node to start moving towards next one
-	//todo: as stated above for ai game-objects
-	while (outPath.RemoveWaypoint(pos)) 
-	{
-		testNodes.push_back(pos);
-	}
+	//// for an ai character, only pop waypoint if AI is close enough to current node to start moving towards next one
+	////todo: as stated above for ai game-objects
+	//while (outPath.RemoveWaypoint(pos)) 
+	//{
+	//	testNodes.push_back(pos);
+	//}
 }
 
 // 7.12.2019
 // used to display usage of path finding implementation in this framework
 void DisplayPathfinding()
 {
-	for (int i = 1; i < testNodes.size(); i++) 	
+	/*for (int i = 1; i < testNodes.size(); i++) 	
 	{
 		Vector3 a = testNodes[i - 1];
 		Vector3 b = testNodes[i];
@@ -112,7 +112,7 @@ void DisplayPathfinding()
 		Debug::DrawLine(a, b, Vector4(1, 1, 0, 1));
 	}
 	Vector3 finalNode = testNodes[testNodes.size()-1];
-	Debug::DrawCircle(finalNode, 1.f, Vector4(1.f, 0.f, 0.f, 1.f));
+	Debug::DrawCircle(finalNode, 1.f, Vector4(1.f, 0.f, 0.f, 1.f));*/
 }
 
 
@@ -139,7 +139,7 @@ int main()
 	//todo: implement main menu through pushdown automata
 	TestStateMachine(); // this funciton displays the outcome of the simple state machine initialized in this file (located above)
 	//TestNetworking();
-	TestPathfinding();
+	//TestPathfinding();
 	
 	w->ShowOSPointer(false);
 	w->LockMouseToWindow(true);
@@ -164,7 +164,7 @@ int main()
 			w->ShowConsole(false);
 		}
 
-		DisplayPathfinding();
+		//DisplayPathfinding();
 
 		w->SetTitle("CSC8503 | Physics | Networking | AI | FPS:" + std::to_string(1.0f / dt));
 

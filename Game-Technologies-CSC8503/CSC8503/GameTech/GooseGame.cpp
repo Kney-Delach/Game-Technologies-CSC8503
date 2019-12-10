@@ -26,6 +26,8 @@
 #include "../CSC8503Common/NavigationGrid.h"
 
 #include <fstream>
+#include "../CSC8503Common/NavigationTable.h"
+#include "../CSC8503Common/BasicAIObject.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -38,7 +40,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		std::cout << "Cannot load game world with empty path\n";
 		return;
 	}
-
+	
 	// load file into an input stream
 	std::ifstream infile(Assets::DATADIR + filePath);
 
@@ -82,15 +84,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			dataMap.push_back(entity);
 		}
 	}
-
-	//todo: DO THIS FIRST!!!
-	//todo: DO THIS FIRST!!!
-	//todo: DO THIS FIRST!!!
-	//todo: -------------------- Load in the positions that the ai can start and end in, then pre-process navigation tables
-	//todo: DO THIS FIRST!!!
-	//todo: DO THIS FIRST!!!
-	//todo: DO THIS FIRST!!!
-	//todo: DO THIS FIRST!!!
 	
 	for (int z = 0; z < gridHeight; ++z) 
 	{
@@ -103,7 +96,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if(dataMap[x + z * gridWidth] == 'x')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
-				AddStaticCubeToWorld(position, Vector3(((float)nodeSize)/2.f, 5, ((float)nodeSize)/2.f), 0.f);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize)/2.f, 5, ((float)nodeSize)/2.f), 0.f, true, 1.f, 10000.f);
 			}
 			if (dataMap[x + z * gridWidth] == 'l') // walkable land
 			{
@@ -138,10 +131,19 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if (dataMap[x + z * gridWidth] == 'r')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 4.f, z * 2 * cubeDims.z);
-				AddParkKeeperToWorld(position);
+				//todo: abstract this from here
+				NavigationGrid* dumbAiNavGrid = new NavigationGrid("TestingGrid.txt");
+				NavigationTable* navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid);
+				AddParkKeeperToWorld(position, dumbAiNavGrid, navTable);
 			}
 			//todo: add capabilities to add additional obstacles to the level
 		}
+	}
+
+	//todo: move this from here to post stealing event
+	if(farmerAIObject && playerGameObject)
+	{
+		farmerAIObject->SetTarget(playerGameObject);
 	}
 }
 
@@ -227,6 +229,9 @@ void GooseGame::UpdateGame(float dt)
 		DebugObjectMovement(); // move selected object 
 	}	
 
+	farmerAIObject->DebugDraw(); //todo: add movement
+
+	
 	if (useGravity)	
 		Debug::Print("(G)ravity on", Vector2(10, 40));	
 	else 	
@@ -740,13 +745,6 @@ GameObject* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int
 	return island;
 }
 
-/*
-
-Builds a game object that uses a sphere mesh for its graphics, and a bounding sphere for its
-rigid body representation. This and the cube function will let you build a lot of 'simple' 
-physics worlds. You'll probably need another function for the creation of OBB cubes too.
-
-*/
 GameObject* GooseGame::AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass)
 {
 	GameObject* sphere = new GameObject("Sphere");
@@ -818,9 +816,19 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	return cube;
 }
 
-GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, float elasticity, float stiffness)
+GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, bool isWall, float elasticity, float stiffness)
 {
-	GameObject* cube = new GameObject("Cube");
+	GameObject* cube;
+
+	if(isWall)
+	{
+		cube = new GameObject("Wall");
+
+	}
+	else
+	{
+		cube = new GameObject("Floor");
+	}
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
@@ -834,7 +842,14 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(elasticity);
 	cube->GetPhysicsObject()->SetStiffness(stiffness);
-	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE);
+	if(isWall)
+	{
+		cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::SPRING);
+	}
+	else
+	{
+		cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE);
+	}
 	cube->GetPhysicsObject()->InitCubeInertia();
 	cube->GetPhysicsObject()->SetGravityUsage(false);
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
@@ -872,12 +887,12 @@ PlayerObject* GooseGame::AddGooseToWorld(const Vector3& position)
 	return goose;
 }
 
-GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position)
+GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable)
 {
 	float meshSize = 4.0f;
-	float inverseMass = 0.5f;
+	float inverseMass = 1.f / 4.f;
 
-	GameObject* keeper = new GameObject("Park Keeper");
+	BasicAIObject* keeper = new BasicAIObject(position, 1, "AI");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	keeper->SetBoundingVolume((CollisionVolume*)volume);
@@ -899,6 +914,11 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position)
 
 	world->AddGameObject(keeper);
 
+	keeper->SetNavigationGrid(navGrid);
+	keeper->SetNavigationTable(navTable);
+
+	farmerAIObject = keeper; //todo: change this to an array of farmers?
+	
 	return keeper;
 }
 

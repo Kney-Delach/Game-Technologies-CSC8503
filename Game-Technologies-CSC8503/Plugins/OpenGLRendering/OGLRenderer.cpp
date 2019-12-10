@@ -302,7 +302,7 @@ void OGLRenderer::DrawDebugCircles()
 {
 	circleMesh->SetPrimitiveType(GeometryPrimitive::Lines);
 	circleMesh->UploadToGPU();
-	BindMesh(&(*circleMesh));
+	BindMesh(circleMesh);
 	
 	BindTextureToShader(nullptr, "mainTex", 0);
 

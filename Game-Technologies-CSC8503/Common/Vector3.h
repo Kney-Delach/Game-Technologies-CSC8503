@@ -36,13 +36,14 @@ namespace NCL {
 
 			~Vector3(void) {}
 
-			Vector3 Normalised() const {
+			Vector3 Normalised() const
+			{
 				Vector3 temp(x, y, z);
 				temp.Normalise();
 				return temp;
 			}
 
-			void			Normalise() {
+			void Normalise() {
 				float length = Length();
 
 				if (length != 0.0f) {

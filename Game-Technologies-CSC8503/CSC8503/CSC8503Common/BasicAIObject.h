@@ -22,6 +22,7 @@ namespace NCL
 	namespace CSC8503
 	{
 		class NavigationGrid;
+		class NavigationTable;
 
 		enum AIType { BASIC = 1 };
 		
@@ -29,7 +30,7 @@ namespace NCL
 		{
 		public:
 			BasicAIObject(const Vector3& spawnPos, const int type = 1, const std::string name = "Basic AI");
-			virtual ~BasicAIObject() = default;
+			virtual ~BasicAIObject();
 			
 			virtual void OnCollisionBegin(GameObject* other) override;
 			
@@ -38,17 +39,23 @@ namespace NCL
 			int GetObjectID() const { return objectID; }
 			void SetObjectID(const unsigned int id) { objectID = id; }
 			
-			void ReturnHome();
-			void TargetPlayer(GameObject* player);
-
 			void SetNavigationGrid(NavigationGrid* grid) { navigationGrid = grid; }
-			NavigationGrid* GetNavigationGrid() const { return navigationGrid; }
+			void SetNavigationTable(NavigationTable* table) { navigationTable = table; }
+
+			void Move();
+			void ReturnHome();
+
+			void DebugDraw();
+			
+			void SetTarget(GameObject* other);
+			void ClearTarget() { target = nullptr; }
 		protected:
-			GameObject* parent;
+			GameObject* target;
 			unsigned int objectID;
 			int aiType;
 			Vector3 spawnPosition;
-			NavigationGrid* navigationGrid; 
+			NavigationGrid* navigationGrid;
+			NavigationTable* navigationTable;
 		};
 	}
 }
