@@ -15,6 +15,7 @@
 #include "StateMachine.h"
 #include "State.h"
 #include "StateTransition.h"
+#include <iostream>
 
 namespace NCL
 {

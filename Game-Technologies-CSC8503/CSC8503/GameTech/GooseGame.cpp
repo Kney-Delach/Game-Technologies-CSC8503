@@ -230,8 +230,8 @@ void GooseGame::UpdateGame(float dt)
 	}	
 
 	farmerAIObject->DebugDraw(); 
-	farmerAIObject->Move(); 
-	//farmerAIObject->Update(); //todo: verify this works 
+	//farmerAIObject->Move(); 
+	farmerAIObject->Update(); //todo: verify this works 
 	
 	if (useGravity)	
 		Debug::Print("(G)ravity on", Vector2(10, 40));	

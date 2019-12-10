@@ -32,6 +32,7 @@ namespace NCL
 		BasicAIObject::BasicAIObject(const Vector3& spawnPos, const int type, const std::string name)
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
 		{
+			moveTowardsTarget = false;
 			InitStateMachine();
 		} 
 
@@ -87,14 +88,14 @@ namespace NCL
 			//
 			//GenericState* stateA = new GenericState(stateFunctionA, static_cast<void*>(&data));
 			//
-			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(data));
-			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(data));
+			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(this));
+			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(this));
 
 			stateMachine->AddState(stateIdle);
 			stateMachine->AddState(stateMoving);
 
-			GenericTransition<GameObject*, GameObject*>* transitionA = new GenericTransition<GameObject*, GameObject*>(GenericTransition<GameObject*, GameObject*>::NotEqualsTransition, target, nullptr, stateIdle, stateMoving);
-			GenericTransition<GameObject*, GameObject*>* transitionB = new GenericTransition<GameObject*, GameObject*>(GenericTransition<GameObject*, GameObject*>::EqualsTransition, target, nullptr, stateMoving, stateIdle);
+			GenericTransition<bool&, bool>* transitionA = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, moveTowardsTarget,true, stateIdle, stateMoving);
+			GenericTransition<bool&, bool>* transitionB = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, moveTowardsTarget, false, stateMoving, stateIdle);
 
 			stateMachine->AddTransition(transitionA);
 			stateMachine->AddTransition(transitionB);
@@ -155,6 +156,7 @@ namespace NCL
 
 		void BasicAIObject::Move() //todo: change this with state machine 
 		{
+			int returnHome = -1;
 			if(target && navigationTable)
 			{
 				NavTableNode** table = navigationTable->GetNavTable();
@@ -193,13 +195,20 @@ namespace NCL
 					direction.Normalise();
 					physicsObject->AddForce(direction * 150.f);
 				}
+				returnHome = nextNodeIndex;
 			}
-			else
+			
+			if(target == nullptr)
 			{
-				if (GetConstTransform().GetWorldPosition() == spawnPosition)
+				const Vector3 check = GetTransform().GetLocalPosition() - spawnPosition;
+				if ((-1.f < check.x < 1.f) && (-1.f < check.y < 1.f) && (-1.f < check.z < 1.f))
 				{
+					moveTowardsTarget = false;
 					return;
 				}
+			}
+			if(returnHome == -1)
+			{				
 				if(navigationTable)
 				{
 					NavTableNode** table = navigationTable->GetNavTable();

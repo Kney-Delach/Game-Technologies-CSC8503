@@ -43,7 +43,11 @@ namespace NCL
 			void SetObjectID(const unsigned int id) { objectID = id; }			
 			void SetNavigationGrid(NavigationGrid* grid) { navigationGrid = grid; }
 			void SetNavigationTable(NavigationTable* table) { navigationTable = table; }	
-			void SetTarget(GameObject* other) { target = other; }
+			void SetTarget(GameObject* other)
+			{
+				target = other;
+				moveTowardsTarget = true;
+			}
 			void ClearTarget() { target = nullptr; }
 		protected:
 			GameObject* target;
@@ -53,6 +57,7 @@ namespace NCL
 			NavigationGrid* navigationGrid;
 			NavigationTable* navigationTable;
 			StateMachine* stateMachine;
+			bool moveTowardsTarget;
 		};
 	}
 }

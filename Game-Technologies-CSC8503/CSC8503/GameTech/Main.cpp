@@ -137,7 +137,7 @@ int main()
 		return -1;
 
 	//todo: implement main menu through pushdown automata
-	TestStateMachine(); // this funciton displays the outcome of the simple state machine initialized in this file (located above)
+	//TestStateMachine(); // this funciton displays the outcome of the simple state machine initialized in this file (located above)
 	//TestNetworking();
 	//TestPathfinding();
 	
