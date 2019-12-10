@@ -229,7 +229,8 @@ void GooseGame::UpdateGame(float dt)
 		DebugObjectMovement(); // move selected object 
 	}	
 
-	farmerAIObject->DebugDraw(); //todo: add movement
+	farmerAIObject->DebugDraw(); 
+	farmerAIObject->Move(); 
 
 	
 	if (useGravity)	

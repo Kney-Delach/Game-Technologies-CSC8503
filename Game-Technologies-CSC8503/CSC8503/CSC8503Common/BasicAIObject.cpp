@@ -47,6 +47,8 @@ namespace NCL
 			if(other->GetName() == "Goose")
 			{
 				((PlayerObject*)other)->DropItems();
+				target = nullptr;
+				//todo: implement homing 
 			}
 		}
 
@@ -60,14 +62,14 @@ namespace NCL
 			{
 				NavTableNode** table = navigationTable->GetNavTable();
 
-				const Vector3 fromPos = GetConstTransform().GetWorldPosition();
+				const Vector3 startPos = GetConstTransform().GetWorldPosition();
 				const Vector3 targetPos = target->GetConstTransform().GetWorldPosition();
 
-				const int targetX = targetPos.x / navigationGrid->GetNodeSize();
-				const int targetZ = targetPos.z / navigationGrid->GetNodeSize();
+				const int targetX = (targetPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+				const int targetZ = (targetPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
 
-				const int startX = fromPos.x / navigationGrid->GetNodeSize();
-				const int startZ = fromPos.z / navigationGrid->GetNodeSize();
+				const int startX = (startPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+				const int startZ = (startPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
 
 				if (startX < 0 || startX > navigationGrid->GetWidth() - 1 || startZ < 0 || startZ > navigationGrid->GetHeight() - 1)
 				{
@@ -93,7 +95,7 @@ namespace NCL
 
 					Debug::DrawCircle(startNode->position, 1.f, Vector4(1.f, 0.f, 0.f, 1.f));
 					Debug::DrawCircle(nextNode->position, 1.f, Vector4(1.f, 1.f, 1.f, 1.f));
-					Debug::DrawLine(fromPos, nextNode->position, Vector4(1, 1, 0, 1));
+					Debug::DrawLine(startPos, nextNode->position, Vector4(1, 1, 0, 1));
 				}
 			}
 		}
@@ -105,8 +107,44 @@ namespace NCL
 
 		void BasicAIObject::Move()
 		{
-			if(target)
+			if(target && navigationTable)
 			{
+				NavTableNode** table = navigationTable->GetNavTable();
+
+				const Vector3 startPos = GetConstTransform().GetWorldPosition();
+				const Vector3 targetPos = target->GetConstTransform().GetWorldPosition();
+
+				const int targetX = (targetPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+				const int targetZ = (targetPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+
+				const int startX = (startPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+				const int startZ = (startPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+
+				if (startX < 0 || startX > navigationGrid->GetWidth() - 1 || startZ < 0 || startZ > navigationGrid->GetHeight() - 1)
+				{
+					return;
+				}
+
+				if (targetX < 0 || targetX > navigationGrid->GetWidth() - 1 || targetZ < 0 || targetZ > navigationGrid->GetHeight() - 1)
+				{
+					return;
+				}
+
+				GridNode* allNodes = navigationGrid->GetNodes();
+				GridNode* startNode = &allNodes[(startZ * navigationGrid->GetWidth()) + startX];
+				GridNode* endNode = &allNodes[(targetZ * navigationGrid->GetWidth()) + targetX];
+
+				const int startIndex = startNode->nodeID;
+				const int endIndex = endNode->nodeID;
+				const int nextNodeIndex = table[startIndex][endIndex].nearestNodeID;
+
+				if (nextNodeIndex != -1)
+				{
+					GridNode* nextNode = &allNodes[nextNodeIndex];
+					Vector3 direction = nextNode->position - GetConstTransform().GetWorldPosition();
+					direction.Normalise();
+					physicsObject->AddForce(direction * 150.f);
+				}
 			}
 		}
 	}
