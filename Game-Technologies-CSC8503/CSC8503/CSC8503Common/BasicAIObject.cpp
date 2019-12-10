@@ -33,8 +33,8 @@ namespace NCL
 
 		BasicAIObject::~BasicAIObject()
 		{
-			delete[] navigationGrid;
-			delete[] navigationTable;
+			delete navigationGrid;
+			delete navigationTable;
 		}
 
 		void BasicAIObject::OnCollisionBegin(GameObject* other)
@@ -47,8 +47,9 @@ namespace NCL
 			if(other->GetName() == "Goose")
 			{
 				((PlayerObject*)other)->DropItems();
-				target = nullptr;
-				//todo: implement homing 
+				if(other == target) // this way if the farmer hits a different player's goose, it still makes the goose drop its items, but keeps chasing its taget
+					target = nullptr;
+				//todo: change state to homing 
 			}
 		}
 
@@ -58,7 +59,7 @@ namespace NCL
 
 		void BasicAIObject::DebugDraw()
 		{
-			if(navigationTable)
+			if(target && navigationTable)
 			{
 				NavTableNode** table = navigationTable->GetNavTable();
 
@@ -105,7 +106,7 @@ namespace NCL
 			target = other;
 		}
 
-		void BasicAIObject::Move()
+		void BasicAIObject::Move() //todo: change this with state machine 
 		{
 			if(target && navigationTable)
 			{
@@ -144,6 +145,52 @@ namespace NCL
 					Vector3 direction = nextNode->position - GetConstTransform().GetWorldPosition();
 					direction.Normalise();
 					physicsObject->AddForce(direction * 150.f);
+				}
+			}
+			else
+			{
+				if (GetConstTransform().GetWorldPosition() == spawnPosition)
+				{
+					return;
+				}
+				if(navigationTable)
+				{
+					NavTableNode** table = navigationTable->GetNavTable();
+
+					const Vector3 startPos = GetConstTransform().GetWorldPosition();
+					const Vector3 targetPos = spawnPosition;
+
+					const int targetX = (targetPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+					const int targetZ = (targetPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+
+					const int startX = (startPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+					const int startZ = (startPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
+
+					if (startX < 0 || startX > navigationGrid->GetWidth() - 1 || startZ < 0 || startZ > navigationGrid->GetHeight() - 1)
+					{
+						return;
+					}
+
+					if (targetX < 0 || targetX > navigationGrid->GetWidth() - 1 || targetZ < 0 || targetZ > navigationGrid->GetHeight() - 1)
+					{
+						return;
+					}
+
+					GridNode* allNodes = navigationGrid->GetNodes();
+					GridNode* startNode = &allNodes[(startZ * navigationGrid->GetWidth()) + startX];
+					GridNode* endNode = &allNodes[(targetZ * navigationGrid->GetWidth()) + targetX];
+
+					const int startIndex = startNode->nodeID;
+					const int endIndex = endNode->nodeID;
+					const int nextNodeIndex = table[startIndex][endIndex].nearestNodeID;
+
+					if (nextNodeIndex != -1)
+					{
+						GridNode* nextNode = &allNodes[nextNodeIndex];
+						Vector3 direction = nextNode->position - GetConstTransform().GetWorldPosition();
+						direction.Normalise();
+						physicsObject->AddForce(direction * 150.f);
+					}
 				}
 			}
 		}

@@ -2,13 +2,13 @@
 12
 12
 1
-6 3 2
+9 3 3
 xxxxxxxxxxxx
 xxxxxxxxxxxx
 xxa.......xx
 xx.......sxx
-xxlll.xxxxxx
-xxlcl.....xx
+xx....xxxxxx
+xx.c......xx
 xxxxxxx...xx
 xxh.....xxxx
 xx..xxxxxxxx

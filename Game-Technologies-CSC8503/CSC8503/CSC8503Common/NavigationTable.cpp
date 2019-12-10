@@ -22,8 +22,8 @@ namespace NCL
 	namespace CSC8503
 	{
 		NavigationTable::NavigationTable(int numNodes, NavigationGrid* grid)
-			: numberOfNodes(numNodes)
 		{
+			numberOfNodes = numNodes;
 			navigationTable = new NavTableNode*[numberOfNodes];
 			for (int i = 0; i < numberOfNodes; ++i)
 			{

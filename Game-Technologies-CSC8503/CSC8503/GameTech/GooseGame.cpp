@@ -543,6 +543,12 @@ void GooseGame::InitCamera()
 
 void GooseGame::InitWorld()
 {
+	farmerAIObject = nullptr;
+	playerGameObject = nullptr;
+	selectionObject = nullptr;
+	selectionObjectFront = nullptr;
+	SelectionObjectBack = nullptr;
+	lockedObject = nullptr;
 	world->ClearAndErase();
 	physics->Clear();
 
