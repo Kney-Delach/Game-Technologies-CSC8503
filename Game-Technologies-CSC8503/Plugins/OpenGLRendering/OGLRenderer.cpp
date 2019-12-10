@@ -71,6 +71,7 @@ OGLRenderer::OGLRenderer(Window& w) : RendererBase(w)	{
 	forceValidDebugState = false;
 
 	circleMesh = new OGLMesh("sphere.msh");
+	circleMesh->UploadToGPU();
 }
 
 OGLRenderer::~OGLRenderer()	{
@@ -245,6 +246,9 @@ void OGLRenderer::DrawDebugData() {
 		glEnable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
+
+	debugLines.clear();
+	debugCircles.clear();
 }
 
 void OGLRenderer::DrawDebugStrings() {
@@ -294,14 +298,11 @@ void OGLRenderer::DrawDebugLines() {
 	BindMesh(&lineMesh);
 	BindTextureToShader(nullptr, "mainTex", 0);
 	DrawBoundMesh();
-
-	debugLines.clear();
 }
 
 void OGLRenderer::DrawDebugCircles()
 {
 	circleMesh->SetPrimitiveType(GeometryPrimitive::Lines);
-	circleMesh->UploadToGPU();
 	BindMesh(circleMesh);
 	
 	BindTextureToShader(nullptr, "mainTex", 0);
@@ -318,8 +319,6 @@ void OGLRenderer::DrawDebugCircles()
 		glUniform4fv(colorLocation,1, (float*)&c.colour);
 		DrawBoundMesh();
 	}
-
-	debugCircles.clear();
 }
 
 #ifdef _WIN32

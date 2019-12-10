@@ -21,7 +21,9 @@
 #include "NavigationGrid.h"
 #include "NavigationTable.h"
 #include "PlayerObject.h"
-
+#include "StateMachine.h"
+#include "State.h"
+#include "StateTransition.h"
 
 namespace NCL
 {
@@ -29,12 +31,15 @@ namespace NCL
 	{
 		BasicAIObject::BasicAIObject(const Vector3& spawnPos, const int type, const std::string name)
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
-		{} 
+		{
+			InitStateMachine();
+		} 
 
 		BasicAIObject::~BasicAIObject()
 		{
 			delete navigationGrid;
 			delete navigationTable;
+			delete stateMachine;
 		}
 
 		void BasicAIObject::OnCollisionBegin(GameObject* other)
@@ -51,6 +56,53 @@ namespace NCL
 					target = nullptr;
 				//todo: change state to homing 
 			}
+		}
+
+		void BasicAIObject::InitStateMachine()
+		{
+			stateMachine = new StateMachine();
+
+			// setup state specific update functions
+			void* data = this;
+
+			StateFunction idleState = [](void* data)
+			{
+				BasicAIObject* obj = (BasicAIObject*)(data);
+				obj->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+			};
+			StateFunction moveState = [](void* data)
+			{
+				BasicAIObject* obj = (BasicAIObject*)(data);
+				obj->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+				obj->Move();
+			};
+
+			//todo: implement the following state
+			//StateFunction homingState = [](void* data)
+			//{
+			//	BasicAIObject* obj = (BasicAIObject*)(data);
+			//	obj->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+			//	obj->Move();
+			//};
+			//
+			//GenericState* stateA = new GenericState(stateFunctionA, static_cast<void*>(&data));
+			//
+			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(data));
+			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(data));
+
+			stateMachine->AddState(stateIdle);
+			stateMachine->AddState(stateMoving);
+
+			GenericTransition<GameObject*, GameObject*>* transitionA = new GenericTransition<GameObject*, GameObject*>(GenericTransition<GameObject*, GameObject*>::NotEqualsTransition, target, nullptr, stateIdle, stateMoving);
+			GenericTransition<GameObject*, GameObject*>* transitionB = new GenericTransition<GameObject*, GameObject*>(GenericTransition<GameObject*, GameObject*>::EqualsTransition, target, nullptr, stateMoving, stateIdle);
+
+			stateMachine->AddTransition(transitionA);
+			stateMachine->AddTransition(transitionB);
+		}
+
+		void BasicAIObject::Update()
+		{
+			stateMachine->Update();
 		}
 
 		void BasicAIObject::ReturnHome()
@@ -99,11 +151,6 @@ namespace NCL
 					Debug::DrawLine(startPos, nextNode->position, Vector4(1, 1, 0, 1));
 				}
 			}
-		}
-
-		void BasicAIObject::SetTarget(GameObject* other)
-		{
-			target = other;
 		}
 
 		void BasicAIObject::Move() //todo: change this with state machine 
