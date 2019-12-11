@@ -161,11 +161,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			}
 		}
 	}
-	//todo: move this from here to post stealing event
-	//if(farmerAIObject && hat)
-	//{
-	//	hat->SetAIOwner(farmerAIObject);
-	//}
 }
 
 GooseGame::GooseGame()
@@ -339,31 +334,31 @@ void GooseGame::UpdateKeys()
 
 void GooseGame::PlayerMovement()
 {
-	//Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
-	//Matrix4 camWorld = view.Inverse();
-	//Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
-
-	//Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
-
-	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
-	//{
-	//	playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
-	//}
-	//
-	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
-	//{
-	//	playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
-	//}
-
-	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
-	//{
-	//	playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
-	//}
-	//
-	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
-	//{
-	//	playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
-	//}
+//	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
+//	Matrix4 camWorld = view.Inverse();
+//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
+//
+//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+//
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
+//	{
+//		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
+//	}
+//	
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
+//	{
+//		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
+//	}
+//
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
+//	{
+//		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
+//	}
+//	
+//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
+//	{
+//		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
+//	}
 }
 
 void  GooseGame::PlayerCameraMovement()

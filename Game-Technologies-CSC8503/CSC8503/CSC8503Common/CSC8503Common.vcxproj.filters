@@ -28,6 +28,12 @@
     <Filter Include="Data">
       <UniqueIdentifier>{2836e985-c0a2-43ea-b403-de7bf6fc5560}</UniqueIdentifier>
     </Filter>
+    <Filter Include="States">
+      <UniqueIdentifier>{732b9b78-9607-4e52-80a2-b9531df2b026}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Leaderboard">
+      <UniqueIdentifier>{b391940f-9e68-4327-a9d8-5b44704f4af7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionDetection.h">

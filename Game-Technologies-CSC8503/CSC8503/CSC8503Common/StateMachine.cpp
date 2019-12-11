@@ -61,7 +61,7 @@ namespace NCL
 					if (i->second->CanTransition())
 					{
 						State* newState = i->second->GetDestinationState();
-						activeState = newState;	
+						activeState = newState;
 					}
 				}
 			}

@@ -50,7 +50,7 @@ void Debug::FlushRenderables()
 	}
 	for (const auto& i : stringEntries) 
 	{
-		renderer->DrawString(i.data, i.position);
+		renderer->DrawString(i.data, i.position, i.colour);
 	}
 
 	for (const auto& i : lineEntries) 

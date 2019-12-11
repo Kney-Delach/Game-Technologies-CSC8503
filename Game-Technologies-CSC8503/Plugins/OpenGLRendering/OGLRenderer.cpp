@@ -219,6 +219,11 @@ void OGLRenderer::DrawCircle(const Vector3& position, float radius, const Vector
 	debugCircles.emplace_back(c);
 }
 
+void OGLRenderer::SetAsActiveContext()
+{
+	wglMakeCurrent(deviceContext, renderContext);
+}
+
 void OGLRenderer::DrawDebugData() {
 	if (debugStrings.empty() && debugLines.empty() && debugCircles.empty()) {
 		return; //don't mess with OGL state if there's no point!
