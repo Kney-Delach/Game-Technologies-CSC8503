@@ -64,7 +64,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		infile >> posX;
 		infile >> posY;
 		infile >> posZ;
-		playerGameObject = AddGooseToWorld(Vector3(posX * nodeSize, posY, posZ * nodeSize)); //todo: make this an array of player objects
+		playerCollection.push_back(AddGooseToWorld(Vector3(posX * nodeSize, posY, posZ * nodeSize)));
 	}
 	
 	// adds the water to the entire world 
@@ -94,6 +94,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		}
 	}
 
+	int playerIslandCount = 0;
 	for (int z = 0; z < gridHeight; ++z) 
 	{
 		for (int x = 0; x < gridWidth; ++x) 
@@ -115,8 +116,11 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			}
 			if (terrainMap[x + z * gridWidth] == 's')
 			{
-				position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 1.f, -cubeDims.z + (z * 2 * cubeDims.z));
-				AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1));
+				if(playerIslandCount < (int)playerCollection.size())
+				{
+					position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 1.f, -cubeDims.z + (z * 2 * cubeDims.z));
+					AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1) , 0.8f, playerIslandCount);
+				}
 			}
 		}
 	}
@@ -227,9 +231,6 @@ void GooseGame::UpdateGame(float dt)
 {
 	if (!inSelectionMode)
 		world->GetMainCamera()->UpdateCamera(dt);
-	
-	playerGameObject->DrawInventoryToUI(); //todo: move this from here
-	playerGameObject->UpdateInventoryTransformations(dt); //todo: move this from here, updates inventory object transforms
 
 	UpdateKeys(); // check if pressed any keys 
 
@@ -246,14 +247,18 @@ void GooseGame::UpdateGame(float dt)
 		DebugObjectMovement(); // move selected object 
 	}
 
+	for (int i = 0; i < playerCollection.size(); i++)
+	{
+		//todo: make the following functions be called in an update function
+		playerCollection[i]->DrawInventoryToUI();
+		playerCollection[i]->UpdateInventoryTransformations(dt);
+	}
+
 	for (int i = 0; i < farmerCollection.size(); ++i)
 	{
 		farmerCollection[i]->DebugDraw();
 		farmerCollection[i]->Update();
 	}
-	//farmerAIObject->DebugDraw(); 
-	////farmerAIObject->Move(); 
-	//farmerAIObject->Update(); //todo: verify this works 
 	
 	if (useGravity)	
 		Debug::Print("(G)ravity on", Vector2(10, 40));	
@@ -306,11 +311,6 @@ void GooseGame::UpdateKeys()
 		useGravity = !useGravity;
 		physics->UseGravity(useGravity);
 	}
-
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::M)) // drop all items 
-	{
-		playerGameObject->DropItems();
-	}
 	//Running certain physics updates in a consistent order might cause some
 	//bias in the calculations - the same objects might keep 'winning' the constraint
 	//allowing the other one to stretch too much etc. Shuffling the order so that it
@@ -339,48 +339,48 @@ void GooseGame::UpdateKeys()
 
 void GooseGame::PlayerMovement()
 {
-	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
-	Matrix4 camWorld = view.Inverse();
-	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
+	//Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
+	//Matrix4 camWorld = view.Inverse();
+	//Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
 
-	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+	//Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
-	{
-		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
-	}
-	
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
-	{
-		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
-	}
+	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
+	//{
+	//	playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
+	//}
+	//
+	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
+	//{
+	//	playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
+	//}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
-	{
-		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
-	}
-	
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
-	{
-		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
-	}
+	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
+	//{
+	//	playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
+	//}
+	//
+	//if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
+	//{
+	//	playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
+	//}
 }
 
 void  GooseGame::PlayerCameraMovement()
 {	
-	Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
-	Vector3 camPos = objPos + lockedOffset;
+	//Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
+	//Vector3 camPos = objPos + lockedOffset;
 
-	Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+	//Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
 
-	Matrix4 modelMat = temp.Inverse();
+	//Matrix4 modelMat = temp.Inverse();
 
-	Quaternion q(modelMat);
-	Vector3 angles = q.ToEuler(); //nearly there now!
+	//Quaternion q(modelMat);
+	//Vector3 angles = q.ToEuler(); //nearly there now!
 
-	world->GetMainCamera()->SetPosition(camPos);
-	world->GetMainCamera()->SetPitch(angles.x);
-	world->GetMainCamera()->SetYaw(angles.y);
+	//world->GetMainCamera()->SetPosition(camPos);
+	//world->GetMainCamera()->SetPitch(angles.x);
+	//world->GetMainCamera()->SetYaw(angles.y);
 	
 }
 
@@ -565,7 +565,6 @@ void GooseGame::InitCamera()
 
 void GooseGame::InitWorld()
 {
-	playerGameObject = nullptr;
 	selectionObject = nullptr;
 	selectionObjectFront = nullptr;
 	SelectionObjectBack = nullptr;
@@ -573,127 +572,12 @@ void GooseGame::InitWorld()
 	world->ClearAndErase();
 	physics->Clear();
 	farmerCollection.clear();
-
+	playerCollection.clear();
 	LoadWorldFromFile();
 	
 	//InitGooseGameWorld();
 }
 
-//todo: move _LoadWorldFromFile to this location
-
-void GooseGame::InitGooseGameWorld()
-{
-	//todo: initialize ground level terrain
-	playerGameObject = AddGooseToWorld(Vector3(0.f, 1.f, 0.f));
-
-	InitGroundLevelTerrain();
-	InitBoundaries();
-	InitCollectables();
-	InitJumpPads();
-	
-	//todo: create initialize player character functionality
-	//todo: create collectable objects init
-	//todo: create DumbAI init function (atleast 1 for each collectable zone) 
-	//todo: create SmartAI init function, spawn new ones every x seconds, these should be able to swim 
-}
-
-void GooseGame::InitGroundLevelTerrain()
-{
-	// 1. add water terrain (curently a blue square)
-	AddFloorToWorld(Vector3(0, -5, 0), ObjectCollisionType::SPRING,Vector3(500, 4, 500), Vector4(0, 0, 1, 1), 300.f); //water
-	AddFloorToWorld(Vector3(0, -4.f, 0), ObjectCollisionType::IMPULSE, Vector3(500, 1, 500), Vector4(1, 0, 0, 1), 2.2f); // lower water boundary
-	 
-	// sky
-	AddFloorToWorld(Vector3(0, 450.f, 0), ObjectCollisionType::IMPULSE, Vector3(500, 1, 500), Vector4(1, 1, 1, 1), 1.f);
-
-	// 2. add spawn land terrain	
-	// player 1 island
-	AddPlayerIslandToWorld(Vector3(-12.5f, -5.f, -12.5f), ObjectCollisionType::IMPULSE, Vector3(12.5, 4.5, 12.5), Vector4(1, 1, 1, 1));
-
-	//todo: update the island creation function to be dynamically assignable
-	// player 2 island
-	AddPlayerIslandToWorld(Vector3(12.5f, -5.f, 12.5f), ObjectCollisionType::IMPULSE, Vector3(12.5,4.5,12.5), Vector4(1,1,1,1));
-
-	// 3. add playable terrains (areas with collectables and AI)
-	// red world
-	AddFloorToWorld(Vector3(0, -5, 200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1));
-	AddFloorToWorld(Vector3(0, 100, 200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(1, 0, 0, 1)); // red roof
-	AddFloorToWorld(Vector3(0, -5, 400), ObjectCollisionType::IMPULSE, Vector3(300, 5.5, 100), Vector4(1, 0, 0, 1));
-
-	// green world 
-	AddFloorToWorld(Vector3(0, -5, -200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1));
-	AddFloorToWorld(Vector3(0, 100.f, -200), ObjectCollisionType::IMPULSE, Vector3(50, 5.5, 100), Vector4(0, 1, 0, 1)); // green roof
-	AddFloorToWorld(Vector3(0, -5, -400), ObjectCollisionType::IMPULSE, Vector3(300, 5.5, 100), Vector4(0, 1, 0, 1));
-
-	// yellow world
-	AddFloorToWorld(Vector3(200, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1));
-	AddFloorToWorld(Vector3(200, 100.f, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(1, 1, 0, 1)); // yellow roof
-	AddFloorToWorld(Vector3(400, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 300), Vector4(1, 1, 0, 1));
-
-	// light blue world
-	AddFloorToWorld(Vector3(-200, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1));
-	AddFloorToWorld(Vector3(-200, 100.f, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 50), Vector4(0, 1, 1, 1)); // light blue roof
-	AddFloorToWorld(Vector3(-400, -5, 0), ObjectCollisionType::IMPULSE, Vector3(100, 5.5, 300), Vector4(0, 1, 1, 1));
-}
-
-void GooseGame::InitBoundaries()
-{
-	// 0. boundaries around 
-	// 1. red world boundaries
-	AddFloorToWorld(Vector3(-50.f, 50, 200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(1, 0, 0, 1));
-	AddFloorToWorld(Vector3(50.f, 50, 200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(1, 0, 0, 1));
-
-
-	// 2. green world boundaries
-	AddFloorToWorld(Vector3(-50.f, 50, -200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(0, 1, 0, 1));
-	AddFloorToWorld(Vector3(50.f, 50, -200), ObjectCollisionType::IMPULSE, Vector3(1.f, 55.f, 100.f), Vector4(0, 1, 0, 1));
-
-	// 3. yellow world
-	AddFloorToWorld(Vector3(200.f, 50, -50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(1, 1, 0, 1));
-	AddFloorToWorld(Vector3(200.f, 50, 50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(1, 1, 0, 1));
-
-	// 4. light blue world 
-	AddFloorToWorld(Vector3(-200.f, 50, -50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(0, 1, 1, 1));
-	AddFloorToWorld(Vector3(-200.f, 50, 50), ObjectCollisionType::IMPULSE, Vector3(100.f, 55.f, 1.f), Vector4(0, 1, 1, 1));
-
-	// add surrounding world walls boundary
-
-	// red world boundary
-	AddFloorToWorld(Vector3(0.f, 200.f, 500.f), ObjectCollisionType::IMPULSE, Vector3(500.f, 250.f, 1.f), Vector4(1, 0, 0, 1));
-
-	// green world boundaries
-	AddFloorToWorld(Vector3(0.f, 200.f, -500.f), ObjectCollisionType::IMPULSE, Vector3(500.f, 250.f, 1.f), Vector4(0, 1, 0, 1));
-
-	// yellow world boundary
-	AddFloorToWorld(Vector3(500.f, 200.f, 0.f), ObjectCollisionType::IMPULSE, Vector3(1.f, 250.f, 500.f), Vector4(1, 1, 0, 1));
-
-	// light blue world boundary
-	AddFloorToWorld(Vector3(-500.f, 200.f, 0.f), ObjectCollisionType::IMPULSE, Vector3(1.f, 250.f, 500.f), Vector4(0, 1, 1, 1));
-}
-
-void GooseGame::InitCollectables()
-{
-	// apples
-	AddAppleToWorld(Vector3(0.f, 20.f ,0.f));
-	AddAppleToWorld(Vector3(450.f, 10.f, 0));
-	AddAppleToWorld(Vector3(-450.f, 10.f, 0));
-	AddAppleToWorld(Vector3(0.f, 10.f, 450.f));
-	AddAppleToWorld(Vector3(0.f, 10.f, -450.f));
-
-	// corn
-	AddCornToWorld(Vector3(0.f, 10.f, 0.f));
-
-	// farmers hats
-	AddHatToWorld(Vector3(0.f, 15.f, 0.f));
-}
-
-void GooseGame::InitJumpPads()
-{
-	AddJumpPadToWorld(Vector3(450.f, 2.f, 0), Vector3(10.0, 1.0, 10.0));
-	AddJumpPadToWorld(Vector3(-450.f, 2.f, 0), Vector3(10.0, 1.0, 10.0));
-	AddJumpPadToWorld(Vector3(0.f, 2.f, 450.f), Vector3(10.0, 1.0, 10.0));
-	AddJumpPadToWorld(Vector3(0.f, 2.f, -450.f), Vector3(10.0,1.0,10.0));
-}
 
 
 //todo: fix the way collisions are resolved here
@@ -745,7 +629,7 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	return floor;
 }
 
-GameObject* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness)
+GameObject* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness, int playerIndex)
 {
 	PlayerIsland* island = new PlayerIsland("Player Island");
 
@@ -768,7 +652,7 @@ GameObject* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int
 
 	island->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
 
-	island->SetParent(playerGameObject); //todo: make this more dynamic and usable for multiplayer capabilities
+	island->SetParent(playerCollection[playerIndex]);
 	world->AddGameObject(island);
 
 	return island;

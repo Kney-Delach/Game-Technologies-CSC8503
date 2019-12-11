@@ -249,7 +249,9 @@ namespace NCL
 				}
 			}
 			if(returnHome == -1)
-			{				
+			{
+				if (target)
+					target = nullptr;
 				if(navigationTable)
 				{
 					NavTableNode** table = navigationTable->GetNavTable();

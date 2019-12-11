@@ -2,9 +2,9 @@
 12
 12
 xxxxxxxxxxxx
-x.....xxxxxx
-xxx...xxxxxx
-x.....xxxxxx
+xxxxxxxxxxxx
+xxxxxxxxxxxx
+xxx..x..xxxx
 x.........xx
 x..xxxx...xx
 xx......x.xx
