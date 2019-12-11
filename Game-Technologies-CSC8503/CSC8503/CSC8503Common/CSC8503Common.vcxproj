@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AABBVolume.h" />
+    <ClInclude Include="BasicAIObject.h" />
     <ClInclude Include="BoundingAABB.h" />
     <ClInclude Include="BoundingOOBB.h" />
     <ClInclude Include="BoundingSphere.h" />
@@ -143,6 +144,7 @@
     <ClInclude Include="NavigationMap.h" />
     <ClInclude Include="NavigationMesh.h" />
     <ClInclude Include="NavigationPath.h" />
+    <ClInclude Include="NavigationTable.h" />
     <ClInclude Include="NetworkObject.h" />
     <ClInclude Include="NetworkState.h" />
     <ClInclude Include="OBBVolume.h" />
@@ -174,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AABBVolume.cpp" />
+    <ClCompile Include="BasicAIObject.cpp" />
     <ClCompile Include="BoundingAABB.cpp" />
     <ClCompile Include="BoundingOOBB.cpp" />
     <ClCompile Include="BoundingSphere.cpp" />
@@ -187,6 +190,7 @@
     <ClCompile Include="GameWorld.cpp" />
     <ClCompile Include="NavigationGrid.cpp" />
     <ClCompile Include="NavigationMesh.cpp" />
+    <ClCompile Include="NavigationTable.cpp" />
     <ClCompile Include="NetworkBase.cpp" />
     <ClCompile Include="NetworkObject.cpp" />
     <ClCompile Include="NetworkState.cpp" />

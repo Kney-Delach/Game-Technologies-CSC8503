@@ -15,7 +15,7 @@
 #pragma once
 #include "CollectableObject.h"
 #include "PlayerObject.h"
-
+#include "BasicAIObject.h"
 #include "../../Common/Assets.h" // for sound effects
 
 namespace NCL
@@ -25,6 +25,7 @@ namespace NCL
 		CollectableObject::CollectableObject(const int collType, const std::string name)
 			: GameObject(name), objectID(0), collectableType(collType)
 		{
+			//ownerAI = nullptr;
 		}
 
 		CollectableObject::~CollectableObject()
@@ -45,11 +46,15 @@ namespace NCL
 				if(name == "Apple")
 				{
 					// play apple sound effect
-					PlaySound(TEXT("../../Assets/Audio/CollectApple.wav") , NULL, SND_FILENAME  | SND_ASYNC );
+					//PlaySound(TEXT("../../Assets/Audio/CollectApple.wav") , NULL, SND_FILENAME  | SND_ASYNC );
 				}
 				else if(name == "Hat")
 				{
-					//todo: add more sound effects for other objects
+					//PlaySound(TEXT("../../Assets/Audio/CollectApple.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					//if (ownerAI)
+					//{
+					//	ownerAI->SetTarget(other);
+					//}
 				}
 			}
 		}
@@ -59,7 +64,7 @@ namespace NCL
 			this->GetTransform().SetWorldPosition(spawnPosition);
 			parent = nullptr;
 			objectID = 0;
-			PlaySound(TEXT("../../Assets/Audio/DropItems.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			//PlaySound(TEXT("../../Assets/Audio/DropItems.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
 		}
 	}

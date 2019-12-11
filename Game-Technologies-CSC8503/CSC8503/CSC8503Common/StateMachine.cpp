@@ -15,6 +15,7 @@
 #include "StateMachine.h"
 #include "State.h"
 #include "StateTransition.h"
+#include <iostream>
 
 namespace NCL
 {
@@ -60,7 +61,7 @@ namespace NCL
 					if (i->second->CanTransition())
 					{
 						State* newState = i->second->GetDestinationState();
-						activeState = newState;	
+						activeState = newState;
 					}
 				}
 			}

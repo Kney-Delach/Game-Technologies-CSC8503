@@ -1,0 +1,88 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include "Leaderboard.h"
+
+namespace NCL
+{
+	namespace CSC8503
+	{
+		class GooseGame;
+		
+		class GameState
+		{
+		public:
+			GameState(int id = 0, const std::string& stateName = "State") : stateID(id), m_Name(stateName) {}
+			virtual ~GameState() = default;
+		public:
+			std::string& GetName() { return m_Name; }
+			virtual void OnAwake() {};
+			virtual void OnSleep() {};
+			virtual int Update(float dt);
+			int GetID() const { return stateID; }
+		protected:
+			std::string m_Name;
+			int stateID;
+		};
+
+		class MainMenuState : public GameState
+		{
+		public:
+			MainMenuState(int id = 0,int maximumChoices = 3) : GameState(id,"Main Menu"), selectedChoice(0), maxChoices(maximumChoices) {}
+			virtual ~MainMenuState() = default;
+			virtual int Update(float dt);
+		private:
+			void RenderMenu();
+		private:
+			int selectedChoice;
+			int maxChoices;
+		};
+
+		class SinglePlayerState : public GameState
+		{
+		public:
+			SinglePlayerState(int id = 1, int maximumChoices = 2) : GameState(id, "Single Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) { singlePlayerGame = nullptr; }
+			virtual ~SinglePlayerState() = default;
+			virtual int Update(float dt);
+			virtual void OnAwake();
+			virtual void OnSleep();
+		private:
+			void RenderMenu();
+		private:
+			int selectedChoice;
+			int maxChoices;
+			GooseGame* singlePlayerGame;
+		};
+
+
+		class MultiPlayerState : public GameState
+		{
+		public:
+			MultiPlayerState(int id = 2, int maximumChoices = 2) : GameState(id, "Multi-Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) {}
+			virtual ~MultiPlayerState() = default;
+			virtual int Update(float dt);
+		private:
+			void RenderMenu();
+		private:
+			int selectedChoice;
+			int maxChoices;
+		};
+
+		//todo: add state for game complete
+		class LeaderboardsState : public GameState
+		{
+		public:
+			LeaderboardsState(int id = 3, int maximumChoices = 1) : GameState(id, "Leaderboard"), selectedChoice(0), maxChoices(maximumChoices) {}
+			virtual ~LeaderboardsState() = default;
+			virtual int Update(float dt);
+		public:
+			static Leaderboard s_Leaderboard;
+		private:
+			void RenderMenu();
+		private:
+			int selectedChoice;
+			int maxChoices;
+		};
+	}
+}

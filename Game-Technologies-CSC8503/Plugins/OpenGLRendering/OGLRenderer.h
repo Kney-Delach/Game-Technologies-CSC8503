@@ -58,6 +58,7 @@ namespace NCL {
 			void DrawLine(const Vector3& start, const Vector3& end, const Vector4& colour);
 			void DrawCircle(const Vector3& position, float radius, const Vector4& colour = Vector4(0.75f, 0.75f, 0.75f, 1));
 
+			void SetAsActiveContext();
 			virtual void SetupDebugMatrix(OGLShader*s) {
 
 			}

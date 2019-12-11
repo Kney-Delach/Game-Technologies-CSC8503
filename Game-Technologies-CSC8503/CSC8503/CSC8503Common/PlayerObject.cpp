@@ -24,6 +24,7 @@ namespace NCL
 		PlayerObject::PlayerObject(const std::string name)
 			: GameObject(name)
 		{
+			isCarryingBonusItem = false;
 		}
 
 		PlayerObject::~PlayerObject()
@@ -32,32 +33,75 @@ namespace NCL
 
 		unsigned int PlayerObject::AddObjectToInventory(GameObject* object)
 		{
-			inventory.push_back(object);
-			return inventory.size() - 1;
+			CollectableObject* obj = (CollectableObject*)object;
+			switch (obj->GetCollectableType())
+			{
+				case CollectableType::APPLE:
+				{
+					collectedApples.push_back(object);
+					return collectedApples.size() - 1;
+				}
+				case CollectableType::CORN:
+				{
+					isCarryingBonusItem = true;
+					collectedCorn.push_back(object);
+					return collectedCorn.size() - 1;
+				}
+				case CollectableType::HAT:
+				{
+					isCarryingBonusItem = true;
+					collectedHats.push_back(object);
+					return collectedHats.size() - 1;
+				}
+			}
 		}
 
 		void PlayerObject::UpdateInventoryTransformations(const float dt) const
 		{
-			for (unsigned int i = 0; i < inventory.size(); i++)
+			int count = 1;
+			for (unsigned int i = 0; i < collectedApples.size(); i++)
 			{
-				inventory[i]->UpdateObjectPosition(dt, GetConstTransform().GetWorldPosition(),i + 1);
+				collectedApples[i]->UpdateObjectPosition(dt, GetConstTransform().GetWorldPosition(),count++);
+			}
+			for (unsigned int i = 0; i < collectedCorn.size(); i++)
+			{
+				collectedCorn[i]->UpdateObjectPosition(dt, GetConstTransform().GetWorldPosition(), count++);
+			}
+			for (unsigned int i = 0; i < collectedHats.size(); i++)
+			{
+				collectedHats[i]->UpdateObjectPosition(dt, GetConstTransform().GetWorldPosition(), count++);
 			}
 		}
 
 		//todo: add an option to drop items to different locations on the map rather than all to their initial spawn point
 		void PlayerObject::DropItems() 
 		{
-			for(unsigned int i = 0; i < inventory.size(); i++)
+			isCarryingBonusItem = false;
+			for(unsigned int i = 0; i < collectedApples.size(); i++)
 			{
-				dynamic_cast<CollectableObject*>(inventory[i])->DropToInitialSpawn();
+				dynamic_cast<CollectableObject*>(collectedApples[i])->DropToInitialSpawn();
 			}
-			inventory.clear();
+			for (unsigned int i = 0; i < collectedCorn.size(); i++)
+			{
+				dynamic_cast<CollectableObject*>(collectedCorn[i])->DropToInitialSpawn();
+			}
+			for (unsigned int i = 0; i < collectedHats.size(); i++)
+			{
+				dynamic_cast<CollectableObject*>(collectedHats[i])->DropToInitialSpawn();
+			}
+			collectedApples.clear();
+			collectedCorn.clear();
+			collectedHats.clear();
 		}
 
 		void PlayerObject::DrawInventoryToUI() const
 		{
-			const std::string out = std::string("Collected Items in Inventory Count: ") + std::to_string(inventory.size());
+			const std::string out = std::string("Apples in Bag: ") + std::to_string(collectedApples.size());
 			Debug::Print(out.c_str(), Vector2(10.f,1000.f));
+			const std::string outCorn = std::string("Corn in Bag: ") + std::to_string(collectedCorn.size());
+			Debug::Print(outCorn.c_str(), Vector2(10.f, 950.f));
+			const std::string outHats = std::string("Farmer Hats in Bag: ") + std::to_string(collectedHats.size());
+			Debug::Print(outHats.c_str(), Vector2(10.f, 900.f));
 		}
 	}
 }

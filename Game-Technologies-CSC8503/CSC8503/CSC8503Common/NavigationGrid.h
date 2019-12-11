@@ -31,6 +31,7 @@ namespace NCL
 			float f; // distance traveled to get to the current node 
 			float g; // heuristic of how far this node is from the destination (manhattan)
 			int type;
+			int nodeID; 
 
 			//todo: initialize position?
 			GridNode() : parent(nullptr), position(Vector3(1.f, 1.f, 1.f)), f(0), g(0), type(0)
@@ -53,6 +54,11 @@ namespace NCL
 			NavigationGrid(const std::string&filename);
 			~NavigationGrid();
 			bool FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) override;
+
+			GridNode* GetNodes() const { return allNodes; }
+			int GetNodeSize() const { return nodeSize; }
+			int GetWidth() const { return gridWidth; }
+			int GetHeight() const { return gridHeight; }
 		protected:
 			bool NodeInList(GridNode* node, std::vector<GridNode*>& nodeList) const; //todo: make static?
 			GridNode* RemoveBestNode(std::vector<GridNode*>& nodeList) const; //todo: make static?

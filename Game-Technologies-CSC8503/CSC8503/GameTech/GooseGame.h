@@ -22,6 +22,10 @@ namespace NCL
 {
 	namespace CSC8503 
 	{
+		class NavigationTable;
+		class NavigationGrid;
+		class BasicAIObject;
+		
 		class GooseGame
 		{
 		public:
@@ -39,15 +43,8 @@ namespace NCL
 			// 8.12.2019
 			// used to load a world from a file 
 			void LoadWorldFromFile(const std::string& filePath = "SinglePlayerWorld.goose");
-			
-			// 3.12.19
-			// goose level world initialization
-			void InitGooseGameWorld();
-			void InitGroundLevelTerrain();
-			void InitBoundaries();
-			void InitCollectables();
-			void InitJumpPads();
-			
+
+			//todo: remove the following function
 			void AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions);
 
 			/*
@@ -73,10 +70,10 @@ namespace NCL
 			void GameObjectMovement();
 			
 			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f);
-			GameObject* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f);
+			GameObject* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
-			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, float elasticity = 0.01f, float stiffness = 8.f);
+			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, bool isWall = false, float elasticity = 0.01f, float stiffness = 8.f);
 
 			// 6.12.2019 - adds a player to the world 
 			PlayerObject* AddGooseToWorld(const Vector3& position);
@@ -85,7 +82,7 @@ namespace NCL
 			GameObject* AddCornToWorld(const Vector3& position);
 			GameObject* AddHatToWorld(const Vector3& position);
 
-			GameObject* AddParkKeeperToWorld(const Vector3& position);
+			GameObject* AddParkKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
 			GameObject* AddCharacterToWorld(const Vector3& position);
 			
 			GameTechRenderer*	renderer;
@@ -126,7 +123,7 @@ namespace NCL
 
 			// 6.12.2019
 			// player controllers (currently only 1 but make this 2 in the multiplayer version)
-			PlayerObject* playerGameObject = nullptr;
+			//PlayerObject* playerGameObject = nullptr;
 
 		protected:
 			// 8.12.2019
@@ -134,6 +131,13 @@ namespace NCL
 			int nodeSize;
 			int gridWidth;
 			int gridHeight;
+
+			// 9.12.2019
+			// pathfinding related variables
+			//BasicAIObject* farmerAIObject = nullptr;
+			std::vector<BasicAIObject*> farmerCollection;
+			std::vector<PlayerObject*> playerCollection;
+			// 
 		};
 	}
 }
