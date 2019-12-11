@@ -91,7 +91,7 @@ void GameObject::UpdateIslandStoredObjectPosition(const Vector3& parentPosition,
 // 28.11.2019 
 void GameObject::DrawDebug(const Vector4& color)
 {
-	renderObject->SetColour(color);
+	//renderObject->SetColour(color);
 }
 
 void GameObject::DrawDebugVolume()
@@ -119,4 +119,9 @@ void GameObject::DrawDebugVolume()
 void GameObject::DrawLineBetweenObjects(const GameObject* from, const GameObject* to)
 {
 	Debug::DrawLine(from->GetConstTransform().GetWorldPosition(), to->GetConstTransform().GetWorldPosition(), to->GetRenderObject()->GetColour());
+}
+
+void GameObject::DrawLineBetweenObjectsOffset(const Vector3& offset, const GameObject* from, const GameObject* to)
+{
+	Debug::DrawLine(from->GetConstTransform().GetWorldPosition() + offset, to->GetConstTransform().GetWorldPosition(), to->GetRenderObject()->GetColour());
 }

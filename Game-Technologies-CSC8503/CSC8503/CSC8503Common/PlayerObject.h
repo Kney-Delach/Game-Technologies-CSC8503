@@ -27,15 +27,31 @@ namespace NCL
 			
 			unsigned int AddObjectToInventory(GameObject* object);
 			
-			int GetInventorySize() const { return inventory.size(); }
-			std::vector<GameObject*>& GetInventory() { return inventory; }
+			//int GetInventorySize() const { return inventory.size(); }
+			//std::vector<GameObject*>& GetInventory() { return inventory; }
+
+			// collectable refactor
+			int GetInventoryAppleSize() const { return collectedApples.size(); }
+			std::vector<GameObject*>& GetInventoryApples() { return collectedApples; }
+			
+			int GetInventoryCornSize() const { return collectedCorn.size(); }
+			std::vector<GameObject*>& GetInventoryCorn() { return collectedCorn; }
+			
+			int GetInventoryHatSize() const { return collectedHats.size(); }
+			std::vector<GameObject*>& GetInventoryHat() { return collectedHats; }
 			
 			void UpdateInventoryTransformations(const float dt) const;
 
 			void DropItems();
-			void DrawInventoryToUI() const; 
+			void DrawInventoryToUI() const;
+			void SetBonusItemStatus(bool val) { isCarryingBonusItem = false; }
+			bool GetBonusItemStatus() const { return isCarryingBonusItem; }
 		protected:
-			std::vector<GameObject*> inventory; 
+			//std::vector<GameObject*> inventory;
+			std::vector<GameObject*> collectedApples;
+			std::vector<GameObject*> collectedCorn;
+			std::vector<GameObject*> collectedHats;
+			bool isCarryingBonusItem;
 		};
 	}
 }

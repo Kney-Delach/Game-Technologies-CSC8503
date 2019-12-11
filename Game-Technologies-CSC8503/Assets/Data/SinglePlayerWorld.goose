@@ -7,8 +7,8 @@ xxxxxxxxxxxx
 xxxxxxxxxxxx
 xxa.......xx
 xx.......sxx
-xx....xxxxxx
-xx.c......xx
+xxlll.xxxxxx
+xxlcl.....xx
 xxxxxxx...xx
 xxh.....xxxx
 xx..xxxxxxxx

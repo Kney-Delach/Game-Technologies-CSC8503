@@ -15,7 +15,7 @@
 #pragma once
 #include "CollectableObject.h"
 #include "PlayerObject.h"
-
+#include "BasicAIObject.h"
 #include "../../Common/Assets.h" // for sound effects
 
 namespace NCL
@@ -25,6 +25,7 @@ namespace NCL
 		CollectableObject::CollectableObject(const int collType, const std::string name)
 			: GameObject(name), objectID(0), collectableType(collType)
 		{
+			//ownerAI = nullptr;
 		}
 
 		CollectableObject::~CollectableObject()
@@ -49,7 +50,11 @@ namespace NCL
 				}
 				else if(name == "Hat")
 				{
-					//todo: add more sound effects for other objects
+					PlaySound(TEXT("../../Assets/Audio/CollectApple.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					//if (ownerAI)
+					//{
+					//	ownerAI->SetTarget(other);
+					//}
 				}
 			}
 		}

@@ -21,6 +21,7 @@ namespace NCL
 {
 	namespace CSC8503
 	{
+		class GameWorld;
 		class StateMachine;
 		class NavigationGrid;
 		class NavigationTable;
@@ -34,7 +35,8 @@ namespace NCL
 			virtual ~BasicAIObject();
 			virtual void OnCollisionBegin(GameObject* other) override;
 			void InitStateMachine();
-			void Update(); 
+			void SetWorld(GameWorld* gameWorld) { world = gameWorld; }
+			void Update();
 			void Move();
 			void ReturnHome();
 			void DebugDraw();
@@ -49,6 +51,8 @@ namespace NCL
 				moveTowardsTarget = true;
 			}
 			void ClearTarget() { target = nullptr; }
+		private:
+			bool FindTarget(const Vector3& offset, const Vector3& direction);
 		protected:
 			GameObject* target;
 			unsigned int objectID;
@@ -58,6 +62,7 @@ namespace NCL
 			NavigationTable* navigationTable;
 			StateMachine* stateMachine;
 			bool moveTowardsTarget;
+			GameWorld* world;
 		};
 	}
 }

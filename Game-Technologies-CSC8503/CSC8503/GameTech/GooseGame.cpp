@@ -84,6 +84,8 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			dataMap.push_back(entity);
 		}
 	}
+
+	CollectableObject* hat = nullptr; //todo: move this from here
 	
 	for (int z = 0; z < gridHeight; ++z) 
 	{
@@ -125,7 +127,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if (dataMap[x + z * gridWidth] == 'h')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
-				AddHatToWorld(position);
+				hat = (CollectableObject*) AddHatToWorld(position);
 			}
 
 			if (dataMap[x + z * gridWidth] == 'r')
@@ -141,10 +143,10 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	}
 
 	//todo: move this from here to post stealing event
-	if(farmerAIObject && playerGameObject)
-	{
-		farmerAIObject->SetTarget(playerGameObject);
-	}
+	//if(farmerAIObject && hat)
+	//{
+	//	hat->SetAIOwner(farmerAIObject);
+	//}
 }
 
 GooseGame::GooseGame()
@@ -920,7 +922,7 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	keeper->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING);// | ObjectCollisionType::JUMP_PAD);
 
 	world->AddGameObject(keeper);
-
+	keeper->SetWorld(world);
 	keeper->SetNavigationGrid(navGrid);
 	keeper->SetNavigationTable(navTable);
 

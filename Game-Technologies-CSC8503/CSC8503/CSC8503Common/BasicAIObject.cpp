@@ -24,6 +24,8 @@
 #include "StateMachine.h"
 #include "State.h"
 #include "StateTransition.h"
+#include "GameWorld.h"
+#include <random>
 
 namespace NCL
 {
@@ -32,6 +34,7 @@ namespace NCL
 		BasicAIObject::BasicAIObject(const Vector3& spawnPos, const int type, const std::string name)
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
 		{
+			world = nullptr;
 			moveTowardsTarget = false;
 			InitStateMachine();
 		} 
@@ -48,11 +51,11 @@ namespace NCL
 			//todo: add force away from wall if interacts with one....
 			if(other->GetName() == "Wall")
 			{
-				std::cout << "Collided with wall, add force here!\n";
 			}
 			if(other->GetName() == "Goose")
 			{
 				((PlayerObject*)other)->DropItems();
+				other->GetPhysicsObject()->AddForce(-(other->GetPhysicsObject()->GetLinearVelocity()) * 500.f);
 				if(other == target) // this way if the farmer hits a different player's goose, it still makes the goose drop its items, but keeps chasing its taget
 					target = nullptr;
 				//todo: change state to homing 
@@ -78,16 +81,6 @@ namespace NCL
 				obj->Move();
 			};
 
-			//todo: implement the following state
-			//StateFunction homingState = [](void* data)
-			//{
-			//	BasicAIObject* obj = (BasicAIObject*)(data);
-			//	obj->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
-			//	obj->Move();
-			//};
-			//
-			//GenericState* stateA = new GenericState(stateFunctionA, static_cast<void*>(&data));
-			//
 			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(this));
 			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(this));
 
@@ -95,7 +88,7 @@ namespace NCL
 			stateMachine->AddState(stateMoving);
 
 			GenericTransition<bool&, bool>* transitionA = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, moveTowardsTarget,true, stateIdle, stateMoving);
-			GenericTransition<bool&, bool>* transitionB = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, moveTowardsTarget, false, stateMoving, stateIdle);
+			GenericTransition<bool&, bool>* transitionB = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::NotEqualsTransition, moveTowardsTarget,true, stateMoving, stateIdle);
 
 			stateMachine->AddTransition(transitionA);
 			stateMachine->AddTransition(transitionB);
@@ -103,7 +96,47 @@ namespace NCL
 
 		void BasicAIObject::Update()
 		{
+			if (target == nullptr)
+			{
+				const float halfSize = ((AABBVolume*)boundingVolume)->GetHalfDimensions().y/2.f;
+				// if no target currently then raycast for a target with a bonus item
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, 1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, -1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 0));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
+			}
+			else if(!((PlayerObject*)target)->GetBonusItemStatus())
+			{
+				target = nullptr;
+			}
 			stateMachine->Update();
+		}
+
+		bool BasicAIObject::FindTarget(const Vector3& offset, const Vector3& direction)
+		{
+			Ray objectForwardRay = BuildRayFromDirectionOffset(offset, direction);
+			RayCollision closestObjectCollision;
+			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
+			{
+				GameObject* obj = (GameObject*)closestObjectCollision.node;
+				GameObject::DrawLineBetweenObjectsOffset(offset,this, obj);
+
+				if(obj->GetName() == "Goose")
+				{
+					PlayerObject* player = (PlayerObject*)obj;
+					if(player->GetBonusItemStatus())
+					{
+						target = obj;
+						moveTowardsTarget = true;
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 
 		void BasicAIObject::ReturnHome()
@@ -201,7 +234,9 @@ namespace NCL
 			if(target == nullptr)
 			{
 				const Vector3 check = GetTransform().GetLocalPosition() - spawnPosition;
-				if ((-1.f < check.x < 1.f) && (-1.f < check.y < 1.f) && (-1.f < check.z < 1.f))
+				const float n1 = -(float)navigationGrid->GetNodeSize();
+				const float n2 = (float)navigationGrid->GetNodeSize();
+				if ((n1 < check.x  && check.x < n2) && (n1 < check.z) && (check.z < n2))
 				{
 					moveTowardsTarget = false;
 					return;

@@ -19,6 +19,8 @@ namespace NCL
 {
 	namespace CSC8503
 	{
+		class BasicAIObject;
+		
 		enum CollectableType { APPLE = 1, CORN = 2, HAT = 4};
 		
 		class CollectableObject : public GameObject
@@ -39,11 +41,15 @@ namespace NCL
 
 			void DropToInitialSpawn();
 
+			//void SetAIOwner(BasicAIObject* owner) { ownerAI = owner; }
+			//BasicAIObject* GetAIOwner() const { return ownerAI; }
+
 		protected:
 			GameObject* parent;
 			unsigned int objectID;
 			int collectableType;
 			Vector3 spawnPosition;
+			//BasicAIObject* ownerAI;
 		};
 	}
 }
