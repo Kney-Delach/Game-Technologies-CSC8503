@@ -121,6 +121,12 @@ void GameObject::DrawLineBetweenObjects(const GameObject* from, const GameObject
 	Debug::DrawLine(from->GetConstTransform().GetWorldPosition(), to->GetConstTransform().GetWorldPosition(), to->GetRenderObject()->GetColour());
 }
 
+void GameObject::DrawLineInDirection(const GameObject* from, const Vector3& direction, const Vector3& offset)
+{
+	Debug::DrawLine(from->GetConstTransform().GetWorldPosition() + offset, from->GetConstTransform().GetWorldPosition() + offset + direction, Vector4(0.f,1.f,0.f,1.f));
+
+}
+
 void GameObject::DrawLineBetweenObjectsOffset(const Vector3& offset, const GameObject* from, const GameObject* to)
 {
 	Debug::DrawLine(from->GetConstTransform().GetWorldPosition() + offset, to->GetConstTransform().GetWorldPosition(), to->GetRenderObject()->GetColour());

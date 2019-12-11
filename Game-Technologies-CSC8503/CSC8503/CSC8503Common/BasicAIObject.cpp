@@ -55,9 +55,6 @@ namespace NCL
 			if(other->GetName() == "Goose")
 			{
 				((PlayerObject*)other)->DropItems();
-				Vector3 force = other->GetPhysicsObject()->GetLinearVelocity() - GetPhysicsObject()->GetLinearVelocity() * 500.f;
-				force.y = 0.f;
-				other->GetPhysicsObject()->AddForce(force);
 				if(other == target) // this way if the farmer hits a different player's goose, it still makes the goose drop its items, but keeps chasing its taget
 					target = nullptr;
 			}
@@ -105,10 +102,10 @@ namespace NCL
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, -1));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 0));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 1));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
 			}
 			else if(!((PlayerObject*)target)->GetBonusItemStatus())
 			{
@@ -124,7 +121,8 @@ namespace NCL
 			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
 			{
 				GameObject* obj = (GameObject*)closestObjectCollision.node;
-				GameObject::DrawLineBetweenObjectsOffset(offset,this, obj);
+				GameObject::DrawLineInDirection(this, direction * 5.f, offset);
+				GameObject::DrawLineBetweenObjectsOffset(offset, this, obj);
 
 				if(obj->GetName() == "Goose")
 				{
@@ -229,14 +227,21 @@ namespace NCL
 					direction.Normalise();
 					physicsObject->AddForce(direction * 150.f);
 				}
+				if(nextNodeIndex == startIndex)
+				{
+					Vector3 direction = targetPos - GetConstTransform().GetWorldPosition();
+					direction.Normalise();
+					physicsObject->AddForce(direction * 150.f);
+				}
+				
 				returnHome = nextNodeIndex;
 			}
 			
 			if(target == nullptr)
 			{
 				const Vector3 check = GetTransform().GetLocalPosition() - spawnPosition;
-				const float n1 = -(float)navigationGrid->GetNodeSize();
-				const float n2 = (float)navigationGrid->GetNodeSize();
+				const float n1 = -(float)navigationGrid->GetNodeSize()/2.f;
+				const float n2 = (float)navigationGrid->GetNodeSize()/2.f;
 				if ((n1 < check.x  && check.x < n2) && (n1 < check.z) && (check.z < n2))
 				{
 					moveTowardsTarget = false;

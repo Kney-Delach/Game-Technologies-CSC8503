@@ -186,6 +186,16 @@ void PhysicsSystem::BasicCollisionDetection()
 						ResolveJumpPadCollision(*info.a, *info.b, info.point);
 						break;
 					}
+					case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING:
+					{
+						if (info.a->GetName() == "AI" && info.b->GetName() == "AI")
+						{
+							ResolveSpringCollision(*info.a, *info.b, info.point);
+							break;
+						}
+						ImpulseResolveCollision(*info.a, *info.b, info.point);
+						break;
+					}
 					case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD:
 					{
 						ImpulseResolveCollision(*info.a, *info.b, info.point);
@@ -304,8 +314,10 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	const float impulseJ = (-(1.0f + restitutionCoefficient) * impulseForce) / (totalMass + angularEffect);
 
 	// full impulse 
-	const Vector3 fullImpulse = p.normal * impulseJ;
-	
+	Vector3 fullImpulse = p.normal * impulseJ;
+
+	if (a.GetName() == "AI" && b.GetName() == "AI" || a.GetName() == "AI" && b.GetName() == "Goose" || a.GetName() == "Goose" && b.GetName() == "AI")
+		fullImpulse.y = 0.f;
 	////////////////////////////////////////////////////////////////////////////////////
 	//// Apply linear and angular impulses to both objects (in opposite directions) ////
 	////////////////////////////////////////////////////////////////////////////////////
@@ -332,13 +344,14 @@ void PhysicsSystem::ResolveSpringCollision(GameObject& a, GameObject& b, Collisi
 	const Vector3 springExtensionDirection = p.normal;
 	const float springExtensionLength = p.penetration;
 
-	const Vector3 springExtension = springExtensionDirection * springExtensionLength;
-	
+	Vector3 springExtension = springExtensionDirection * springExtensionLength;
+	if (a.GetName() == "AI" && b.GetName() == "AI" || a.GetName() == "AI" && b.GetName() == "Goose" || a.GetName() == "Goose" && b.GetName() == "AI")
+		springExtension.y = 0.f;
 	// 3. apply force proportional to penetration distance, at collision point on each object, in direction of collision normal.
 	//    -> outputs acceleration and torque (like when applied force at specific point during raycasting)
-	const Vector3 forceOnObjectA = -springExtension * physicsObjectB->GetStiffness();
+	const Vector3 forceOnObjectA = -springExtension * (physicsObjectB->GetStiffness());
 	physicsObjectA->AddForceAtRelativePosition(forceOnObjectA, springPositionA);
-	const Vector3 forceOnObjectB = springExtension * physicsObjectA->GetStiffness();
+	const Vector3 forceOnObjectB = springExtension * (physicsObjectA->GetStiffness());
 	physicsObjectB->AddForceAtRelativePosition(forceOnObjectB, springPositionB);
 }
 
@@ -427,6 +440,16 @@ void PhysicsSystem::NarrowPhase()
 				case ObjectCollisionType::JUMP_PAD:
 				{
 					ResolveJumpPadCollision(*info.a, *info.b, info.point);
+					break;
+				}
+				case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING:
+				{
+					if (info.a->GetName() == "AI" && info.b->GetName() == "AI")
+					{
+						ResolveSpringCollision(*info.a, *info.b, info.point);
+						break;
+					}	
+					ImpulseResolveCollision(*info.a, *info.b, info.point);
 					break;
 				}
 				case ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD:

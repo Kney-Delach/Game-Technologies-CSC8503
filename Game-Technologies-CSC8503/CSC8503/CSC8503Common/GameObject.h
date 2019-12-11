@@ -146,6 +146,7 @@ namespace NCL
 		public:
 			// 28.11.2019 
 			static void DrawLineBetweenObjects(const GameObject* from, const GameObject* to);
+			static void DrawLineInDirection(const GameObject* from, const Vector3& direction, const Vector3& offset = Vector3(0.f,0.f,0.f));
 			static void DrawLineBetweenObjectsOffset(const Vector3& offset, const GameObject* from, const GameObject* to);
 		protected:
 			Transform transform;

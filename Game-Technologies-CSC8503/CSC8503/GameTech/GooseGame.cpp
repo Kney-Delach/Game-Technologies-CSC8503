@@ -74,14 +74,23 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	Vector3 position;
 
 	// add the world data from the file to a vector
-	vector<int> dataMap;
+	vector<int> terrainMap;
 	char entity;
 	for (int z = 0; z < gridHeight; ++z) 
 	{
 		for (int x = 0; x < gridWidth; ++x) 
 		{
 			infile >> entity;
-			dataMap.push_back(entity);
+			terrainMap.push_back(entity);
+		}
+	}
+	vector<int> objectMap;
+	for (int z = 0; z < gridHeight; ++z)
+	{
+		for (int x = 0; x < gridWidth; ++x)
+		{
+			infile >> entity;
+			objectMap.push_back(entity);
 		}
 	}
 
@@ -89,57 +98,65 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	{
 		for (int x = 0; x < gridWidth; ++x) 
 		{
-			if (dataMap[x + z * gridWidth] == '.')
+			if (terrainMap[x + z * gridWidth] == '.')
 			{
 				continue;
 			}
-			if(dataMap[x + z * gridWidth] == 'x')
+			if(terrainMap[x + z * gridWidth] == 'x')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
 				AddStaticCubeToWorld(position, Vector3(((float)nodeSize)/2.f, 5, ((float)nodeSize)/2.f), 0.f, true, 1.f, 10000.f);
 			}
-			if (dataMap[x + z * gridWidth] == 'l') // walkable land
+			if (terrainMap[x + z * gridWidth] == 'l') // walkable land
 			{
 				position = Vector3(x * 2 * cubeDims.x, 0.25f, z * 2 * cubeDims.z);
 				GameObject* cube = AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 1.f, ((float)nodeSize) / 2.f), 0.f);
-				cube->GetRenderObject()->SetColour(Vector4(1.f, 1.f, 0.f, 0.f));
+				cube->GetRenderObject()->SetColour(Vector4(0.f, 0.5f, 0.5f, 0.f));
 			}
-			if (dataMap[x + z * gridWidth] == 's')
+			if (terrainMap[x + z * gridWidth] == 's')
 			{
 				position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 1.f, -cubeDims.z + (z * 2 * cubeDims.z));
 				AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1));
 			}
+		}
+	}
 
-			if (dataMap[x + z * gridWidth] == 'a')
+	for (int z = 0; z < gridHeight; ++z)
+	{
+		for (int x = 0; x < gridWidth; ++x)
+		{
+			if (terrainMap[x + z * gridWidth] == '.' || terrainMap[x + z * gridWidth] == 'x')
+			{
+				continue;
+			}
+			if (objectMap[x + z * gridWidth] == 'a')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
 				AddAppleToWorld(position);
 			}
-			
-			if (dataMap[x + z * gridWidth] == 'c')
+
+			if (objectMap[x + z * gridWidth] == 'c')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
 				AddCornToWorld(position);
 			}
 
-			if (dataMap[x + z * gridWidth] == 'h')
+			if (objectMap[x + z * gridWidth] == 'h')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
 				AddHatToWorld(position);
 			}
 
-			if (dataMap[x + z * gridWidth] == 'r')
+			if (objectMap[x + z * gridWidth] == 'r')
 			{
-				position = Vector3(x * 2 * cubeDims.x, 4.f, z * 2 * cubeDims.z);
+				position = Vector3(x * 2 * cubeDims.x, 6.f, z * 2 * cubeDims.z);
 				//todo: abstract this from here
 				NavigationGrid* dumbAiNavGrid = new NavigationGrid("TestingGrid.txt");
 				NavigationTable* navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid);
 				farmerCollection.push_back((BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable));
 			}
-			//todo: add capabilities to add additional obstacles to the level
 		}
 	}
-
 	//todo: move this from here to post stealing event
 	//if(farmerAIObject && hat)
 	//{

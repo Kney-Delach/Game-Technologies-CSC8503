@@ -20,7 +20,7 @@ using namespace NCL::Maths;
 
 namespace NCL
 {
-	enum ObjectCollisionType { IMPULSE = 1, SPRING = 2, COLLECTABLE = 4, JUMP_PAD = 8 };
+	enum ObjectCollisionType { IMPULSE = 1, SPRING = 2, COLLECTABLE = 4, JUMP_PAD = 8};
 	
 	class CollisionVolume;
 	

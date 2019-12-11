@@ -46,11 +46,11 @@ namespace NCL
 				if(name == "Apple")
 				{
 					// play apple sound effect
-					PlaySound(TEXT("../../Assets/Audio/CollectApple.wav") , NULL, SND_FILENAME  | SND_ASYNC );
+					//PlaySound(TEXT("../../Assets/Audio/CollectApple.wav") , NULL, SND_FILENAME  | SND_ASYNC );
 				}
 				else if(name == "Hat")
 				{
-					PlaySound(TEXT("../../Assets/Audio/CollectApple.wav"), NULL, SND_FILENAME | SND_ASYNC);
+					//PlaySound(TEXT("../../Assets/Audio/CollectApple.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					//if (ownerAI)
 					//{
 					//	ownerAI->SetTarget(other);
@@ -64,7 +64,7 @@ namespace NCL
 			this->GetTransform().SetWorldPosition(spawnPosition);
 			parent = nullptr;
 			objectID = 0;
-			PlaySound(TEXT("../../Assets/Audio/DropItems.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			//PlaySound(TEXT("../../Assets/Audio/DropItems.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
 		}
 	}
