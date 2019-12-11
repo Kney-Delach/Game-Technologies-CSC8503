@@ -2,8 +2,8 @@
 12
 12
 2
-9 3 2
 1 3 2
+9 3 2
 xxxxxxxxxxxx
 x.........xx
 x.s......sxx

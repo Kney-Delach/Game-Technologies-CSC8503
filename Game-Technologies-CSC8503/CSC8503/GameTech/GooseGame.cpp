@@ -119,7 +119,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				if(playerIslandCount < (int)playerCollection.size())
 				{
 					position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 1.f, -cubeDims.z + (z * 2 * cubeDims.z));
-					AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1) , 0.8f, playerIslandCount);
+					AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1) , 0.8f, playerIslandCount++);
 				}
 			}
 		}
