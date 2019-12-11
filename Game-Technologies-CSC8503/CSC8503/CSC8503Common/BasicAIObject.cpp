@@ -102,10 +102,10 @@ namespace NCL
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, -1));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 0));
-				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
-				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
-				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 1));
-				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0.99));
+				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
 			}
 			else if(!((PlayerObject*)target)->GetBonusItemStatus())
 			{
