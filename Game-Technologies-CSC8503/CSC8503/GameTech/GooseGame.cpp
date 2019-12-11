@@ -205,8 +205,9 @@ void GooseGame::InitialiseAssets()
 	InitCamera();
 
 	// this fixes a bug, I don't know why its a bug....
-	InitWorld();
 	//InitWorld();
+	InitWorld();
+	BridgeConstraintTest();
 }
 
 GooseGame::~GooseGame()
@@ -997,7 +998,7 @@ void GooseGame::BridgeConstraintTest()
 	float	maxDistance	= 30;
 	float	cubeDistance = 20;
 
-	Vector3 startPos = Vector3(500, 1000, 500);
+	Vector3 startPos = Vector3(0.f, 10.f, 0.f);
 
 	GameObject* start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
 
@@ -1005,7 +1006,8 @@ void GooseGame::BridgeConstraintTest()
 
 	GameObject* previous = start;
 
-	for (int i = 0; i < numLinks; ++i) {
+	for (int i = 0; i < numLinks; ++i) 
+	{
 		GameObject* block = AddCubeToWorld(startPos + Vector3((i + 1) * cubeDistance, 0, 0), cubeSize, invCubeMass);
 		PositionConstraint* constraint = new PositionConstraint(previous, block, maxDistance);
 		world->AddConstraint(constraint);

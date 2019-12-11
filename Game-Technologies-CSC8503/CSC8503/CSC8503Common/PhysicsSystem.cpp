@@ -123,7 +123,7 @@ void PhysicsSystem::Update(float dt)
 
 		for (int i = 0; i < constraintIterationCount; ++i)
 {
-			UpdateConstraints(constraintDt);	
+			UpdateConstraints(constraintDt);
 		}
 		
 		IntegrateVelocity(iterationDt); //update positions from new velocity changes
@@ -415,7 +415,7 @@ and work out if they are truly colliding, and if so, add them into the main coll
 */
 void PhysicsSystem::NarrowPhase()
 {
-	for (std::set < CollisionDetection::CollisionInfo >::iterator i = broadphaseCollisions.begin(); i != broadphaseCollisions.end(); ++i) 
+	for (std::set<CollisionDetection::CollisionInfo>::iterator i = broadphaseCollisions.begin(); i != broadphaseCollisions.end(); ++i) 
 	{
 		CollisionDetection::CollisionInfo info = *i;
 		if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) 

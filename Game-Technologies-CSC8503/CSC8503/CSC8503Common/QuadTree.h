@@ -87,7 +87,7 @@ namespace NCL
 				else // 3. add object ot its own list of stored objects, as currently in a leaf node 
 				{ 
 					contents.push_back(QuadTreeEntry<T>(object, objectPos, objectSize));
-					if (static_cast<int>(contents.size()) > maxSize && depthLeft > 0) // reached maximum node contents size, split up the node (if not reached maximum tree depth)
+					if ((int)contents.size() > maxSize && depthLeft > 0) // reached maximum node contents size, split up the node (if not reached maximum tree depth)
 					{
 						if (!children) 
 						{

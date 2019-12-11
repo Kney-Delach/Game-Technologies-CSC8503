@@ -87,8 +87,6 @@ namespace NCL
 			// setup state specific update functions 
 			StateFunction idleState = [](void* data) // next state selected is -1
 			{
-				// draw active menu? 
-				std::cout << "Current State Manager State: Idle\n";
 			};
 
 			StateFunction pushState = [](void* data) // next state selected is >=0
@@ -101,6 +99,7 @@ namespace NCL
 			StateFunction popState = [](void* data) // next state selected is -2
 			{
 				StateManager* stateManager = ((StateManager*)data);
+				std::cout << "Poping state from the stack\n";
 				stateManager->PopMenuStack();
 			};
 
