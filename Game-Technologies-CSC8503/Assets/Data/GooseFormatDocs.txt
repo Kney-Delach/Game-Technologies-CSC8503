@@ -1,2 +1,5 @@
+// node size 
+// grid nodes across
+// grid nodes down
 Number of human players 
 for each player, insert x y z spawn positions -> 1 2 3

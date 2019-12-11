@@ -55,10 +55,11 @@ namespace NCL
 			if(other->GetName() == "Goose")
 			{
 				((PlayerObject*)other)->DropItems();
-				other->GetPhysicsObject()->AddForce(-(other->GetPhysicsObject()->GetLinearVelocity()) * 500.f);
+				Vector3 force = other->GetPhysicsObject()->GetLinearVelocity() - GetPhysicsObject()->GetLinearVelocity() * 500.f;
+				force.y = 0.f;
+				other->GetPhysicsObject()->AddForce(force);
 				if(other == target) // this way if the farmer hits a different player's goose, it still makes the goose drop its items, but keeps chasing its taget
 					target = nullptr;
-				//todo: change state to homing 
 			}
 		}
 

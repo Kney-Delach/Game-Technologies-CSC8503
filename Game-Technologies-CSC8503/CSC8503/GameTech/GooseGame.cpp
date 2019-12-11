@@ -85,8 +85,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		}
 	}
 
-	CollectableObject* hat = nullptr; //todo: move this from here
-	
 	for (int z = 0; z < gridHeight; ++z) 
 	{
 		for (int x = 0; x < gridWidth; ++x) 
@@ -127,7 +125,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if (dataMap[x + z * gridWidth] == 'h')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
-				hat = (CollectableObject*) AddHatToWorld(position);
+				AddHatToWorld(position);
 			}
 
 			if (dataMap[x + z * gridWidth] == 'r')
@@ -136,7 +134,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				//todo: abstract this from here
 				NavigationGrid* dumbAiNavGrid = new NavigationGrid("TestingGrid.txt");
 				NavigationTable* navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid);
-				AddParkKeeperToWorld(position, dumbAiNavGrid, navTable);
+				farmerCollection.push_back((BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable));
 			}
 			//todo: add capabilities to add additional obstacles to the level
 		}
@@ -229,11 +227,16 @@ void GooseGame::UpdateGame(float dt)
 	else
 	{
 		DebugObjectMovement(); // move selected object 
-	}	
+	}
 
-	farmerAIObject->DebugDraw(); 
-	//farmerAIObject->Move(); 
-	farmerAIObject->Update(); //todo: verify this works 
+	for (int i = 0; i < farmerCollection.size(); ++i)
+	{
+		farmerCollection[i]->DebugDraw();
+		farmerCollection[i]->Update();
+	}
+	//farmerAIObject->DebugDraw(); 
+	////farmerAIObject->Move(); 
+	//farmerAIObject->Update(); //todo: verify this works 
 	
 	if (useGravity)	
 		Debug::Print("(G)ravity on", Vector2(10, 40));	
@@ -545,7 +548,6 @@ void GooseGame::InitCamera()
 
 void GooseGame::InitWorld()
 {
-	farmerAIObject = nullptr;
 	playerGameObject = nullptr;
 	selectionObject = nullptr;
 	selectionObjectFront = nullptr;
@@ -553,6 +555,7 @@ void GooseGame::InitWorld()
 	lockedObject = nullptr;
 	world->ClearAndErase();
 	physics->Clear();
+	farmerCollection.clear();
 
 	LoadWorldFromFile();
 	
@@ -926,7 +929,7 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	keeper->SetNavigationGrid(navGrid);
 	keeper->SetNavigationTable(navTable);
 
-	farmerAIObject = keeper; //todo: change this to an array of farmers?
+	//farmerAIObject = keeper; //todo: change this to an array of farmers?
 	
 	return keeper;
 }

@@ -141,7 +141,8 @@ namespace NCL
 
 			// 9.12.2019
 			// pathfinding related variables
-			BasicAIObject* farmerAIObject = nullptr;
+			//BasicAIObject* farmerAIObject = nullptr;
+			std::vector<BasicAIObject*> farmerCollection;
 			// 
 		};
 	}
