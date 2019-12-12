@@ -15,13 +15,14 @@
 #include "PlayerIsland.h"
 #include "CollectableObject.h"
 #include "BasicAIObject.h"
+#include "Debug.h"
 
 namespace NCL
 {
 	namespace CSC8503
 	{
 		PlayerIsland::PlayerIsland(const std::string name)
-			: GameObject(name)
+			: GameObject(name), score(0)
 		{
 		}
 
@@ -41,6 +42,7 @@ namespace NCL
 					collectedApples.push_back(object);
 					obj->SetObjectID(collectedApples.size() - 1);
 					object->UpdateIslandStoredObjectPosition(GetConstTransform().GetWorldPosition(), 0, collectedApples.size() - 1); // apples are in 0th row
+					score++;
 				}
 
 				for (GameObject*& object : ((PlayerObject*)other)->GetInventoryCorn())
@@ -50,6 +52,7 @@ namespace NCL
 					collectedCorn.push_back(object);
 					obj->SetObjectID(collectedCorn.size() - 1);
 					object->UpdateIslandStoredObjectPosition(GetConstTransform().GetWorldPosition(), 1, collectedCorn.size() - 1); // corn is in 1st row
+					score += 5;
 				}
 
 				for (GameObject*& object : ((PlayerObject*)other)->GetInventoryHat())
@@ -59,6 +62,7 @@ namespace NCL
 					collectedHats.push_back(object);
 					obj->SetObjectID(collectedHats.size() - 1);
 					object->UpdateIslandStoredObjectPosition(GetConstTransform().GetWorldPosition(), 2, collectedHats.size() - 1); // hats are in 2nd row
+					score += 10;
 				}
 
 				// empty player inventory
@@ -70,8 +74,26 @@ namespace NCL
 			}
 		}
 
-		void PlayerIsland::DrawCollectedObjectsToUI() const
+		void PlayerIsland::DrawPlayerScore() const
 		{
-		}//todo: implement me || maybe make this a debug draw override?
+			static const Vector4 green(0, 1, 0, 1);
+			
+			static const Vector2 scorePos(5, 150);
+			static const Vector2 appleCollectedPos(5, 125);
+			static const Vector2 cornCollectedPos(5, 100);
+			static const Vector2 hatsCollectedPos(5, 75);
+
+			const std::string sc = "Score: " + std::to_string(score);
+			const std::string apples = "Apples: " + std::to_string(collectedApples.size());
+			const std::string corn = "Farmer's Corn: " + std::to_string(collectedCorn.size());
+			const std::string hats = "Farmer's Items: " + std::to_string(collectedHats.size());
+
+			Debug::Print(sc, scorePos, green);
+			Debug::Print(apples, appleCollectedPos, green);
+			Debug::Print(corn, cornCollectedPos, green);
+			Debug::Print(hats, hatsCollectedPos, green);
+
+			
+		}
 	}
 }

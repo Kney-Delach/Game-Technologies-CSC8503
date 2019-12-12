@@ -26,13 +26,20 @@ namespace NCL
 			PlayerIsland(const std::string name = "Player Island");
 			virtual ~PlayerIsland();
 			virtual void OnCollisionBegin(GameObject* other) override;
-			void DrawCollectedObjectsToUI() const;
+			void DrawPlayerScore() const;
 			void SetParent(PlayerObject* player) { parentPlayer = player; }
+			int GetScore() const { return score; }
 		protected:
 			PlayerObject* parentPlayer = nullptr;
 			std::vector<GameObject*> collectedApples;
 			std::vector<GameObject*> collectedCorn;
 			std::vector<GameObject*> collectedHats;
+			int score;
 		};
 	}
 }
+
+//todo: make global world collection data 
+//todo:	- available apple count
+//todo: - available extras count
+//todo: - total number of each collectable to start with 

@@ -135,7 +135,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				if (playerIslandCount < (int)playerCollection.size())
 				{
 					position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 2.f, -cubeDims.z + (z * 2 * cubeDims.z));
-					AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1), 0.8f, playerIslandCount++);
+					islandCollection.push_back(AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1), 0.8f, playerIslandCount++));
 				}
 			}
 		}
@@ -171,9 +171,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if (objectMap[k + j * gridWidth] == 'r')
 			{
 				position = Vector3(k * 2 * cubeDims.x, 6.f, j * 2 * cubeDims.z);
-				//todo: abstract this from here
 				const std::string gridFile = Assets::DATADIR + "NavigationGridSP.Pathfinding";
-
 				NavigationGrid* dumbAiNavGrid = new NavigationGrid(gridFile);
 				NavigationTable* navTable;
 				const std::string navTableFile = Assets::DATADIR + "NavigationTableSP.Pathfinding"; 
@@ -251,7 +249,6 @@ GooseGame::~GooseGame()
 	delete physics;
 	delete renderer;
 	delete world;
-
 }
 
 void GooseGame::UpdateGame(float dt)
@@ -274,6 +271,10 @@ void GooseGame::UpdateGame(float dt)
 		DebugObjectMovement(); // move selected object 
 	}
 
+	for (int i = 0; i < islandCollection.size(); ++i)
+	{
+		islandCollection[i]->DrawPlayerScore();
+	}
 	for (int i = 0; i < playerCollection.size(); i++)
 	{
 		//todo: make the following functions be called in an update function
@@ -287,10 +288,10 @@ void GooseGame::UpdateGame(float dt)
 		farmerCollection[i]->Update();
 	}
 	
-	if (useGravity)	
-		Debug::Print("(G)ravity on", Vector2(10, 40));	
-	else 	
-		Debug::Print("(G)ravity off", Vector2(10, 40));
+	//if (useGravity)	
+	//	Debug::Print("(G)ravity on", Vector2(10, 40));	
+	//else 	
+	//	Debug::Print("(G)ravity off", Vector2(10, 40));
 
 	SelectObject();
 
@@ -600,6 +601,7 @@ void GooseGame::InitWorld()
 	physics->Clear();
 	farmerCollection.clear();
 	playerCollection.clear();
+	islandCollection.clear();
 	LoadWorldFromFile();
 	
 	//InitGooseGameWorld();
@@ -656,7 +658,7 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	return floor;
 }
 
-GameObject* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness, int playerIndex)
+PlayerIsland* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness, int playerIndex)
 {
 	PlayerIsland* island = new PlayerIsland("Player Island");
 

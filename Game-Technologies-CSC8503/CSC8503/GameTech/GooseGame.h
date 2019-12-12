@@ -25,6 +25,7 @@ namespace NCL
 		class NavigationTable;
 		class NavigationGrid;
 		class BasicAIObject;
+		class PlayerIsland;
 		
 		class GooseGame
 		{
@@ -70,7 +71,7 @@ namespace NCL
 			void GameObjectMovement();
 			
 			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f);
-			GameObject* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
+			PlayerIsland* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
 			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, bool isWall = false, float elasticity = 0.01f, float stiffness = 8.f);
@@ -138,7 +139,7 @@ namespace NCL
 			//BasicAIObject* farmerAIObject = nullptr;
 			std::vector<BasicAIObject*> farmerCollection;
 			std::vector<PlayerObject*> playerCollection;
-			// 
+			std::vector<PlayerIsland*> islandCollection;
 		};
 	}
 }
