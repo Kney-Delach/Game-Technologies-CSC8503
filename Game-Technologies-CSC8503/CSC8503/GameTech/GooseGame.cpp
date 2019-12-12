@@ -34,6 +34,7 @@
 #include "../CSC8503Common/HingeConstraint.h"
 
 #include <sstream>
+#include <algorithm>
 
 //todo: move this function
 template <typename T>
@@ -326,8 +327,8 @@ GooseGame::~GooseGame()
 
 void GooseGame::UpdateGame(float dt)
 {	
-	//if (!inSelectionMode)
-	//	world->GetMainCamera()->UpdateCamera(dt);
+	if (!inSelectionMode)
+		world->GetMainCamera()->UpdateCamera(dt);
 
 	UpdateKeys();
 
@@ -1070,7 +1071,7 @@ void GooseGame::SimpleGJKTest()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+//todo: add yaw and roll
 void GooseGame::TPPlayerUpdate(float dt)
 {
 	//renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
@@ -1111,16 +1112,16 @@ void GooseGame::TPPlayerUpdate(float dt)
 
 	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::SPACE) && playerCollection[thisPlayerIndex]->IsGrounded())
 	{
-		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(Vector3(0, 2, 0) * forceMagnitude);
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(Vector3(0, 3, 0) * forceMagnitude);
 	}
 }
 
 // third person camera update
 void GooseGame::TPCameraUpdate()
 {
-	Vector3 objPos = playerCollection[thisPlayerIndex]->GetTransform().GetWorldPosition();
-	Vector3 camPos = objPos + playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * lockedOffset;
-	Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos + Vector3(0, 5, 0), Vector3(0, 1, 0));
+	const Vector3 objPos = playerCollection[thisPlayerIndex]->GetTransform().GetWorldPosition();
+	const Vector3 camPos = objPos + playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * lockedOffset;
+	const Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos + Vector3(0, 5, 0), Vector3(0, 1, 0));
 
 	Matrix4 modelMat = temp.Inverse();
 	Quaternion q(modelMat);
@@ -1130,6 +1131,14 @@ void GooseGame::TPCameraUpdate()
 	world->GetMainCamera()->SetPitch(angles.x);
 	world->GetMainCamera()->SetYaw(angles.y);
 
+	//todo: make a nicer camera controller 
+	//float newPitch = world->GetMainCamera()->GetPitch() - Window::GetMouse()->GetRelativePosition().y;
+	////Bounds check the pitch, to be between straight up and straight down ;)
+	//newPitch = min(newPitch, 45.0f);
+	//newPitch = max(newPitch, -45.0f);
+
+	////Update the mouse by how much
+	//world->GetMainCamera()->SetPitch(newPitch);
 }
 
 // move selected gameobjects with keyboard presses
