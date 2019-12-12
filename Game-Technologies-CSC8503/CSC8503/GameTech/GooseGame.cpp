@@ -646,7 +646,8 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	floor->GetPhysicsObject()->SetElasticity(stiffness);
 	floor->GetPhysicsObject()->SetStiffness(stiffness);
 	floor->GetPhysicsObject()->InitCubeInertia();
-	
+	floor->GetPhysicsObject()->SetStatic(2);
+
 	floor->GetPhysicsObject()->SetCollisionType(collisionType);
 	
 	floor->GetRenderObject()->SetColour(colour);
@@ -680,6 +681,7 @@ PlayerIsland* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const i
 	island->GetRenderObject()->SetColour(colour);
 
 	island->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	island->GetPhysicsObject()->SetStatic(2);
 
 	island->SetParent(playerCollection[playerIndex]);
 	world->AddGameObject(island);
@@ -718,6 +720,7 @@ GameObject* GooseGame::AddSphereToWorld(const Vector3& position, float radius, b
 	sphere->GetPhysicsObject()->SetElasticity(1.f); // highly elastic material (like a rubber ball) 
 	sphere->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
 	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
+	sphere->GetPhysicsObject()->SetStatic(2);
 
 	world->AddGameObject(sphere);
 
@@ -752,7 +755,8 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
-	
+	cube->GetPhysicsObject()->SetStatic(2);
+
 	world->AddGameObject(cube);
 
 	return cube;
@@ -795,6 +799,8 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 	cube->GetPhysicsObject()->InitCubeInertia();
 	cube->GetPhysicsObject()->SetGravityUsage(false);
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
+	
+	cube->GetPhysicsObject()->SetStatic(2);
 
 	world->AddGameObject(cube);
 
@@ -818,6 +824,8 @@ GameObject* GooseGame::AddStaticOBBCubeToWorld(const Vector3& position, const Ve
 	cube->GetPhysicsObject()->SetInverseMass(0);
 	cube->GetPhysicsObject()->InitCubeInertia();
 	cube->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+	cube->GetPhysicsObject()->SetStatic(2);
+
 	world->AddGameObject(cube);
 	return cube;
 }
@@ -921,6 +929,7 @@ GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
 	
 	// set temporary color (for debugging)
 	character->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+	
 	world->AddGameObject(character);
 
 	return character;
@@ -950,7 +959,8 @@ GameObject* GooseGame::AddAppleToWorld(const Vector3& position)
 	 // apples aren't affected by gravity and should only collide with collectable collisions types (i.e player controlled characters)
 	apple->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	apple->GetPhysicsObject()->SetGravityUsage(false);
-	
+	apple->GetPhysicsObject()->SetStatic(2);
+
 	world->AddGameObject(apple);
 
 	return apple;
@@ -979,6 +989,7 @@ GameObject* GooseGame::AddCornToWorld(const Vector3& position)
 
 	corn->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	corn->GetPhysicsObject()->SetGravityUsage(false);
+	corn->GetPhysicsObject()->SetStatic(2);
 
 	world->AddGameObject(corn);
 
@@ -1008,6 +1019,7 @@ GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 
 	hat->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	hat->GetPhysicsObject()->SetGravityUsage(false);
+	hat->GetPhysicsObject()->SetStatic(2);
 
 	world->AddGameObject(hat);
 

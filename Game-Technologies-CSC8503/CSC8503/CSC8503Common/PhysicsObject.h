@@ -85,6 +85,11 @@ namespace NCL
 			void InitCubeInertia();
 			void InitSphereInertia(bool isHollow = false);
 			void UpdateInertiaTensor();
+
+
+			// 12.12.2019
+			int IsStatic() const { return isStatic; }
+			void SetStatic(int value) { isStatic = value; }
 		protected:
 			const CollisionVolume* volume;
 			Transform* transform;
@@ -110,6 +115,7 @@ namespace NCL
 			int bitCollisionType;
 
 			bool usesGravity;
+			int isStatic;
 		};
 	}
 }

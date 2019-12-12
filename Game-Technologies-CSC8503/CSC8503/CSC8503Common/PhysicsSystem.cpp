@@ -59,60 +59,6 @@ void PhysicsSystem::Clear()
 	allCollisions.clear();
 }
 
-/*
-
-This is the core of the physics engine update
-
-*/
-//void PhysicsSystem::Update(float dt)
-//{
-//	GameTimer testTimer;
-//	testTimer.GetTimeDeltaSeconds();
-//
-//	frameDT = dt;
-//
-//	dTOffset += dt; //We accumulate time delta here - there might be remainders from previous frame!
-//
-//	float iterationDt = 1.0f / 120.0f; //Ideally we'll have 120 physics updates a second 
-//
-//	int constraintIterationCount = 10;
-//
-//	if (useBroadPhase)
-//	{
-//		UpdateObjectAABBs();
-//	}
-//
-//	while(dTOffset > iterationDt *0.5)
-//	{
-//		IntegrateAccel(iterationDt); //Update accelerations from external forces
-//		if (useBroadPhase)
-//		{
-//			BroadPhase();
-//			NarrowPhase();
-//		}
-//		else
-//		{
-//			BasicCollisionDetection();
-//		}
-//
-//		//This is our simple iterative solver - 
-//		//we just run things multiple times, slowly moving things forward
-//		//and then rechecking that the constraints have been met		
-//		float constraintDt = iterationDt /  (float)constraintIterationCount;
-//
-//		for (int i = 0; i < constraintIterationCount; ++i)
-//{
-//			UpdateConstraints(constraintDt);
-//		}
-//		
-//		IntegrateVelocity(iterationDt); //update positions from new velocity changes
-//		dTOffset -= iterationDt;
-//	}
-//	ClearForces();	//Once we've finished with the forces, reset them to zero
-//
-//	UpdateCollisionList(); //Remove any old collisions
-//}
-
 int constraintIterationCount = 5;
 
 void PhysicsSystem::Update(float dt)
@@ -408,15 +354,6 @@ void PhysicsSystem::ResolveJumpPadCollision(GameObject& a, GameObject& b, Collis
 	dynamicPhysicsObject->AddForceAtRelativePosition(Vector3(0, 200.f, 0) * dynamicPhysicsObject->GetStiffness(), p.localA);
 }
 
-/*
-
-Later, we replace the BasicCollisionDetection method with a broadphase
-and a narrowphase collision detection method. In the broad phase, we
-split the world up using an acceleration structure, so that we can only
-compare the collisions that we absolutely need to. 
-
-*/
-
 void PhysicsSystem::BroadPhase()
 {
 	broadphaseCollisions.clear();
@@ -446,6 +383,10 @@ void PhysicsSystem::BroadPhase()
 					// if the same pair is in another quadtree node together etc
 					info.a = min((*i).object, (*j).object);
 					info.b = max((*i).object, (*j).object);
+					if (info.a->GetPhysicsObject()->IsStatic() & info.b->GetPhysicsObject()->IsStatic()) 
+					{
+						continue;
+					}
 					broadphaseCollisions.insert(info);
 				}			}
 		});
