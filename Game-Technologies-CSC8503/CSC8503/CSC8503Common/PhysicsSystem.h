@@ -63,8 +63,8 @@ namespace NCL
 			float	frameDT;
 
 			std::set<CollisionDetection::CollisionInfo> allCollisions;
-			std::set<CollisionDetection::CollisionInfo>		broadphaseCollisions;
-			std::vector<CollisionDetection::CollisionInfo>	broadphaseCollisionsVec;
+			std::set<CollisionDetection::CollisionInfo> broadphaseCollisions;
+			std::vector<CollisionDetection::CollisionInfo> broadphaseCollisionsVec;
 			bool useBroadPhase		= true;
 			int numCollisionFrames	= 5;
 		};

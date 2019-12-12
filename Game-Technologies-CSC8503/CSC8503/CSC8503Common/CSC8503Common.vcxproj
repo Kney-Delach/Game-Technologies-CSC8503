@@ -139,6 +139,9 @@
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="BoundingVolume.h" />
     <ClInclude Include="CollectableObject.h" />
+    <ClInclude Include="FileManager.h" />
+    <ClInclude Include="HeightConstraint.h" />
+    <ClInclude Include="HingeConstraint.h" />
     <ClInclude Include="Layer.h" />
     <ClInclude Include="NavigationGrid.h" />
     <ClInclude Include="NavigationMap.h" />
@@ -188,6 +191,8 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameWorld.cpp" />
+    <ClCompile Include="HeightConstraint.cpp" />
+    <ClCompile Include="HingeConstraint.cpp" />
     <ClCompile Include="NavigationGrid.cpp" />
     <ClCompile Include="NavigationMesh.cpp" />
     <ClCompile Include="NavigationTable.cpp" />

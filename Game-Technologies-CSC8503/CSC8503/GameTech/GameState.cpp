@@ -11,7 +11,6 @@ namespace NCL
 	{
 		int GameState::Update(float dt)
 		{
-			std::cout << "" << m_Name << "\n";
 			return -1;
 		}
 
@@ -20,8 +19,6 @@ namespace NCL
 		////////////////////////////////
 		int MainMenuState::Update(float dt)
 		{
-			std::cout << "Main Menu State\n";
-
 			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::UP))
 			{
 				if (selectedChoice > 0)
@@ -155,7 +152,6 @@ namespace NCL
 
 		int LeaderboardsState::Update(float dt)
 		{
-			std::cout << "Leaderboards State\n";
 			RenderMenu();
 			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::RETURN))
 			{

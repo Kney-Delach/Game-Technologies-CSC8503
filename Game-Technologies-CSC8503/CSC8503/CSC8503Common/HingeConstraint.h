@@ -7,19 +7,17 @@ namespace NCL
 	{
 		class GameObject;
 
-		class PositionConstraint : public Constraint
+		class HingeConstraint : public Constraint
 		{
 		public:
-			PositionConstraint(GameObject* a, GameObject* b, float d);
-			~PositionConstraint();
+			HingeConstraint(GameObject* a, GameObject* b);
+			~HingeConstraint();
 
 			void UpdateConstraint(float dt) override;
 
 		protected:
 			GameObject* objectA;
 			GameObject* objectB;
-
-			float distance;
 		};
 	}
 }
