@@ -2,7 +2,7 @@
 24
 24
 1
-1 10 1
+1 16 1
 mmmmmmmmmmmmmmmmmmmmmmmm
 m..wwwwwwwwwwwwwwwwwwwwm
 m.swwwwwwwwwwwwwwwwwwwwm

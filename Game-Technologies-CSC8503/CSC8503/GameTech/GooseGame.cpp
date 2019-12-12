@@ -55,12 +55,8 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 
 	// add human players
 	int numberOfHumanPlayers = 0;
-	if (!(infile >> numberOfHumanPlayers))
-	{
-		std::cout << "Invalid file format [Number Of Human Players], please read the attached documentation for the correct format\n";
-		return;
-	}
-
+	infile >> numberOfHumanPlayers;
+	std::cout << "Number of human players: " << numberOfHumanPlayers << "\n";
 	for (int i = 0; i < numberOfHumanPlayers; ++i)
 	{
 		float posX, posY, posZ;
@@ -68,7 +64,8 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		infile >> posX;
 		infile >> posY;
 		infile >> posZ;
-		playerCollection.push_back(AddGooseToWorld(Vector3(posX * nodeSize, posY, posZ * nodeSize)));
+		std::cout << posX << posY << posZ << "\n";
+		playerCollection.push_back(AddGooseToWorld(Vector3(posX * (float) nodeSize, posY, posZ * (float)nodeSize)));
 	}
 	
 	// adds the water to the entire world 
@@ -290,7 +287,7 @@ void GooseGame::UpdateGame(float dt)
 	{
 		islandCollection[i]->DrawPlayerScore();
 	}
-	for (int i = 0; i < playerCollection.size(); i++)
+	for (unsigned i = 0; i < playerCollection.size(); i++)
 	{
 		//todo: make the following functions be called in an update function
 		playerCollection[i]->DrawInventoryToUI();
@@ -858,6 +855,7 @@ PlayerObject* GooseGame::AddGooseToWorld(const Vector3& position)
 
 	goose->GetTransform().SetWorldScale(Vector3(size,size,size));
 	goose->GetTransform().SetWorldPosition(position);
+	goose->GetTransform().SetLocalPosition(position);
 
 	goose->SetRenderObject(new RenderObject(&goose->GetTransform(), gooseMesh, nullptr, basicShader));
 	goose->SetPhysicsObject(new PhysicsObject(&goose->GetTransform(), goose->GetBoundingVolume()));
