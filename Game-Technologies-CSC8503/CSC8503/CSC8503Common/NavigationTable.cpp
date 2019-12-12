@@ -79,27 +79,6 @@ namespace NCL
 					}
 				}
 			}
-
-			//todo: remove this section
-			// output the navigation table to cmd (testing)
-			for (int i = 0; i < navWidth * navHeight; ++i)
-			{
-				std::cout << i << ",";
-			}
-			std::cout << "\n";
-			std::cout << "------------------------------------------------------\n";
-			for (int i = 0; i < navWidth * navHeight; ++i)
-			{
-				std::cout << i << "|";
-				for (int k = 0; k < navWidth * navHeight; ++k)
-				{
-					if (navigationTable[i][k].nearestNodeID == -1)
-						std::cout << ".,";
-					else
-						std::cout << navigationTable[i][k].nearestNodeID << ",";
-				}
-				std::cout << "\n";
-			}
 		}
 
 		// writer 

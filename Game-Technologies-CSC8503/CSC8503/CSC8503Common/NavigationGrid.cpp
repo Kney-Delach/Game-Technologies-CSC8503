@@ -37,7 +37,7 @@ NavigationGrid::NavigationGrid()
 
 NavigationGrid::NavigationGrid(const std::string&filename) : NavigationGrid()
 {
-	std::ifstream infile(Assets::DATADIR + filename);
+	std::ifstream infile(filename);
 
 	infile >> nodeSize;
 	infile >> gridWidth;

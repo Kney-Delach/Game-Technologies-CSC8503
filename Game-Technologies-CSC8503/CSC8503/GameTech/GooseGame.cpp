@@ -70,7 +70,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	}
 	
 	// adds the water to the entire world 
-	AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -2.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 2.f, static_cast<float>(gridHeight)* nodeSize) / 2.f, Vector4(0.f,0.f,1.f,0.f), 300.f);
+	//AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -2.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 2.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
 
 	const Vector3 cubeDims = Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2);
 	Vector3 position;
@@ -95,73 +95,97 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			objectMap.push_back(entity);
 		}
 	}
-
+	
 	int playerIslandCount = 0;
-	for (int z = 0; z < gridHeight; ++z) 
+	for (int z = 0; z < gridHeight; ++z)
 	{
-		for (int x = 0; x < gridWidth; ++x) 
+		for (int x = 0; x < gridWidth; ++x)
 		{
 			if (terrainMap[x + z * gridWidth] == '.')
 			{
 				continue;
 			}
-			if(terrainMap[x + z * gridWidth] == 'x')
+			if (terrainMap[x + z * gridWidth] == 'x')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
-				AddStaticCubeToWorld(position, Vector3(((float)nodeSize)/2.f, 5, ((float)nodeSize)/2.f), 0.f, true, 1.f, 10000.f);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 5, ((float)nodeSize) / 2.f), 0.f, true, 1.f, 10000.f);
 			}
-			if (terrainMap[x + z * gridWidth] == 'l') // walkable land
+			if (terrainMap[x + z * gridWidth] == 'm')
 			{
-				position = Vector3(x * 2 * cubeDims.x, 0.25f, z * 2 * cubeDims.z);
-				GameObject* cube = AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 1.f, ((float)nodeSize) / 2.f), 0.f);
+				position = Vector3(x * 2 * cubeDims.x, 6.f, z * 2 * cubeDims.z);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 10, ((float)nodeSize) / 2.f), 0.f, true, 1.f, 10000.f);
+			}
+			if (terrainMap[x + z * gridWidth] == 'l') //todo: move this to encompass entire world
+			{
+				//position = Vector3(x * 2 * cubeDims.x, 0.25f, z * 2 * cubeDims.z);
+				//GameObject* cube = AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 1.f, ((float)nodeSize) / 2.f), 0.f);
+				GameObject* cube = AddStaticCubeToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize , -4.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, Vector3(static_cast<float>(gridWidth) * nodeSize, 1.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, 0.f);
 				cube->GetRenderObject()->SetColour(Vector4(0.f, 0.5f, 0.5f, 0.f));
+			}
+			if(terrainMap[x + z * gridWidth] == 'w')
+			{
+				position = Vector3(x * 2 * cubeDims.x, 0.f, z * 2 * cubeDims.z);
+				AddFloorToWorld(position, ObjectCollisionType::SPRING, Vector3(((float)nodeSize) / 2.f, 2.f, ((float)nodeSize) / 2.f), Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
 			}
 			if (terrainMap[x + z * gridWidth] == 's')
 			{
-				if(playerIslandCount < (int)playerCollection.size())
+				if (playerIslandCount < (int)playerCollection.size())
 				{
-					position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 1.f, -cubeDims.z + (z * 2 * cubeDims.z));
-					AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1) , 0.8f, playerIslandCount++);
+					position = Vector3(-cubeDims.x + (x * 2 * cubeDims.x), 2.f, -cubeDims.z + (z * 2 * cubeDims.z));
+					AddPlayerIslandToWorld(position, ObjectCollisionType::IMPULSE, Vector3(((float)nodeSize), 1.f, ((float)nodeSize)), Vector4(0, 1, 1, 1), 0.8f, playerIslandCount++);
 				}
 			}
 		}
 	}
 	int aiCount = 0;
-	for (int z = 0; z < gridHeight; ++z)
+	bool newPathfindingData = false;
+	for (int j = 0; j < gridHeight; ++j)
 	{
-		for (int x = 0; x < gridWidth; ++x)
+		for (int k = 0; k < gridWidth; ++k)
 		{
-			if (terrainMap[x + z * gridWidth] == '.' || terrainMap[x + z * gridWidth] == 'x')
+			if (objectMap[k + j * gridWidth] == '.' || objectMap[k + j * gridWidth] == 'x')
 			{
 				continue;
 			}
-			if (objectMap[x + z * gridWidth] == 'a')
+			if (objectMap[k + j * gridWidth] == 'a')
 			{
-				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 3.f, j * 2 * cubeDims.z);
 				AddAppleToWorld(position);
 			}
 
-			if (objectMap[x + z * gridWidth] == 'c')
+			if (objectMap[k + j * gridWidth] == 'c')
 			{
-				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 3.f, j * 2 * cubeDims.z);
 				AddCornToWorld(position);
 			}
 
-			if (objectMap[x + z * gridWidth] == 'h')
+			if (objectMap[k + j * gridWidth] == 'h')
 			{
-				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 3.f, j * 2 * cubeDims.z);
 				AddHatToWorld(position);
 			}
 
-			if (objectMap[x + z * gridWidth] == 'r')
+			if (objectMap[k + j * gridWidth] == 'r')
 			{
-				position = Vector3(x * 2 * cubeDims.x, 6.f, z * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 6.f, j * 2 * cubeDims.z);
 				//todo: abstract this from here
-				NavigationGrid* dumbAiNavGrid = new NavigationGrid("TestingGrid.txt");
-				NavigationTable* navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid, true);
-				const std::string filename = "NavigationTable_" + std::to_string(aiCount) + ".GAI";
-				FileManager<NavigationTable>::Loader(filename, *navTable);
+				const std::string gridFile = Assets::DATADIR + "NavigationGridSP.Pathfinding";
+
+				NavigationGrid* dumbAiNavGrid = new NavigationGrid(gridFile);
+				NavigationTable* navTable;
+				const std::string navTableFile = Assets::DATADIR + "NavigationTableSP.Pathfinding"; 
+				if(newPathfindingData)
+				{
+					navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid, false);
+					FileManager<NavigationTable>::Writer(navTableFile, *navTable);
+				}
+				else
+				{
+					navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid, true);
+					FileManager<NavigationTable>::Loader(navTableFile, *navTable);
+				}
 				aiCount++;
+				newPathfindingData = false;
 				farmerCollection.push_back((BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable));
 			}
 		}
@@ -210,9 +234,8 @@ void GooseGame::InitialiseAssets()
 	InitCamera();
 
 	// this fixes a bug, I don't know why its a bug....
-	//InitWorld();
 	InitWorld();
-	BridgeConstraintTest();
+	//BridgeConstraintTest();
 }
 
 GooseGame::~GooseGame()
