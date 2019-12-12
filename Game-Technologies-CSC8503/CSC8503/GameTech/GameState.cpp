@@ -4,7 +4,8 @@
 #include "../../Common/Window.h"
 #include "../CSC8503Common/Debug.h"
 
-#include "../GameTech/GooseGame.h"
+#include "GooseGame.h"
+
 namespace NCL
 {
 	namespace CSC8503
@@ -17,6 +18,7 @@ namespace NCL
 		////////////////////////////////
 		//// Main Menu
 		////////////////////////////////
+
 		int MainMenuState::Update(float dt)
 		{
 			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::UP))
@@ -89,20 +91,36 @@ namespace NCL
 
 		int SinglePlayerState::Update(float dt)
 		{
-			if(singlePlayerGame)
+			if (singlePlayerGame)
 			{
-				singlePlayerGame->UpdateGame(dt);
-				RenderMenu();
+				if (gameResult == 0)
+				{
+					singlePlayerGame->UpdateGame(dt);
+					RenderMenu();
+					gameResult = singlePlayerGame->GameStatusUpdate(dt);
+					if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE))
+					{
+						return -2;
+					}
+				}
+
+				if (gameResult != 0)
+				{
+					if (singlePlayerGame->VictoryScreenUpdate(dt, gameResult) <= 0)
+					{
+						// update leaderboards data here
+						return -2;
+					}
+				}
+				return -1;
 			}
-			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE))
-			{
+			else
 				return -2;
-			}
-			return -1;
 		}
 
 		void SinglePlayerState::OnAwake()
 		{
+			gameResult = 0;
 			singlePlayerGame = new GooseGame();
 		}
 

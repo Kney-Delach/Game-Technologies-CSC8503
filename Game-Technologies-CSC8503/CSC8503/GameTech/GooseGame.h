@@ -129,11 +129,29 @@ namespace NCL
 			//PlayerObject* playerGameObject = nullptr;
 
 		protected:
+
+			// 12.12.2019
+			// game completion related data
+			float gameTimer;
+			int appleCollectableCount;
+			int cornCollectableCount;
+			int hatCollectableCount;
+			bool gameComplete = false;
+		public:
+			int GameStatusUpdate(float dt);
+			float VictoryScreenUpdate(float dt, int gameResult);
+		protected:
 			// 8.12.2019
 			// load from file specific world data
 			int nodeSize;
 			int gridWidth;
 			int gridHeight;
+
+			// muiltiplayer stuff
+			int thisPlayerIndex;
+		public:
+			void SetThisPlayerIndex(int index = 0) { thisPlayerIndex = index; }
+		protected:
 
 			// 9.12.2019
 			// pathfinding related variables
@@ -141,6 +159,8 @@ namespace NCL
 			std::vector<BasicAIObject*> farmerCollection;
 			std::vector<PlayerObject*> playerCollection;
 			std::vector<PlayerIsland*> islandCollection;
+
+
 		};
 	}
 }

@@ -33,12 +33,31 @@
 #include "../CSC8503Common/HeightConstraint.h"
 #include "../CSC8503Common/HingeConstraint.h"
 
+#include <sstream>
+
+//todo: move this function
+template <typename T>
+std::string TimeToString(const T a_value, const int n = 2)
+{
+	std::ostringstream out;
+	out.precision(n);
+	out << std::fixed << a_value;
+	return out.str();
+}
+
 using namespace NCL;
 using namespace CSC8503;
 
-//todo: this function is currently doesn't contain any error checking functionality (due to cw time constraints, fix this eventually)
 void GooseGame::LoadWorldFromFile(const std::string& filePath)
 {
+	SetThisPlayerIndex(0); //todo: move this to multiplayer stuff
+	
+	gameTimer = 180.f;
+	appleCollectableCount = 0;
+	cornCollectableCount = 0;
+	hatCollectableCount = 0;
+	gameComplete = false;
+	
 	if (filePath.empty())
 	{
 		std::cout << "Cannot load game world with empty path\n";
@@ -163,18 +182,24 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			{
 				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddAppleToWorld(position);
+				appleCollectableCount++;
+				continue;
 			}
 
 			if (objectMap[k + j * gridWidth] == 'c')
 			{
 				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddCornToWorld(position);
+				cornCollectableCount++;
+				continue;
 			}
 
 			if (objectMap[k + j * gridWidth] == 'h')
 			{
 				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddHatToWorld(position);
+				hatCollectableCount++;
+				continue;
 			}
 
 			if (objectMap[k + j * gridWidth] == 'r')
@@ -199,25 +224,37 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				BasicAIObject* farmer = (BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable);
 				farmer->SetPlayerObjectCollection(&playerCollection);
 				farmerCollection.push_back(farmer);
-				
 			}
 		}
 	}
+
+	for (PlayerIsland* p : islandCollection)
+	{
+		p->SetMaxCollectables(appleCollectableCount, cornCollectableCount, hatCollectableCount);
+	}
 }
+
+#pragma region INITIALIZATION
 
 GooseGame::GooseGame()
 {
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
+	renderer->SetAsActiveContext();
+
 	physics		= new PhysicsSystem(*world);
-		
+
+	gameTimer = 180.f;
+	appleCollectableCount = 0;
+	cornCollectableCount = 0;
+	hatCollectableCount = 0;
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
 	inSelectionMode = false;
 
 	// debug toggles
 	displayBoundingVolumes = false;
-
+	
 	Debug::SetRenderer(renderer);
 
 	InitialiseAssets();
@@ -245,10 +282,31 @@ void GooseGame::InitialiseAssets()
 	basicShader = new OGLShader("GameTechVert.glsl", "GameTechFrag.glsl");
 
 	InitCamera();
-
-	// this fixes a bug, I don't know why its a bug....
 	InitWorld();
-	//BridgeConstraintTest();
+}
+
+void GooseGame::InitCamera()
+{
+	world->GetMainCamera()->SetNearPlane(0.5f);
+	world->GetMainCamera()->SetFarPlane(2000.0f);
+	world->GetMainCamera()->SetPitch(-15.0f);
+	world->GetMainCamera()->SetYaw(315.0f);
+	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
+	lockedObject = nullptr;
+}
+
+void GooseGame::InitWorld()
+{
+	selectionObject = nullptr;
+	selectionObjectFront = nullptr;
+	SelectionObjectBack = nullptr;
+	lockedObject = nullptr;
+	world->ClearAndErase();
+	physics->Clear();
+	farmerCollection.clear();
+	playerCollection.clear();
+	islandCollection.clear();
+	LoadWorldFromFile();
 }
 
 GooseGame::~GooseGame()
@@ -263,8 +321,12 @@ GooseGame::~GooseGame()
 	delete world;
 }
 
+#pragma endregion INITIALIZATION
+
+#pragma region UPDATE
+
 void GooseGame::UpdateGame(float dt)
-{
+{	
 	if (!inSelectionMode)
 		world->GetMainCamera()->UpdateCamera(dt);
 
@@ -377,248 +439,104 @@ void GooseGame::UpdateKeys()
 	}
 }
 
-void GooseGame::PlayerMovement()
+//todo: do something with the scores.
+int GooseGame::GameStatusUpdate(float dt) //todo: clean this up
 {
-//	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
-//	Matrix4 camWorld = view.Inverse();
-//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
-//
-//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
-//	}
-//	
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
-//	}
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
-//	}
-//	
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
-//	}
-}
+	int totalApples = 0;
+	for (PlayerIsland* island : islandCollection)
+	{
+		totalApples += island->GetApplesCount();
+	}
 
-void  GooseGame::PlayerCameraMovement()
-{	
-	//Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
-	//Vector3 camPos = objPos + lockedOffset;
+	if(totalApples == appleCollectableCount)
+	{
+		gameTimer = 10.f; // set timer for victory screen
 
-	//Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+		// somebody won
+		if(islandCollection.size() > 1)
+		{
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(true);
+			// check who won (compare scores)
+			return 2; // 2 is winner
+			return 1; // 1 is lost
+		}
+		else
+		{
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(true);
 
-	//Matrix4 modelMat = temp.Inverse();
-
-	//Quaternion q(modelMat);
-	//Vector3 angles = q.ToEuler(); //nearly there now!
-
-	//world->GetMainCamera()->SetPosition(camPos);
-	//world->GetMainCamera()->SetPitch(angles.x);
-	//world->GetMainCamera()->SetYaw(angles.y);
+			// single player victory royale!
+			return 2;
+		}
+	}
 	
-}
-
-// move selected gameobjects with keyboard presses
-void GooseGame::DebugObjectMovement()
-{
-	if (inSelectionMode && selectionObject) 
+	if(gameTimer <= 0)
 	{
-		GameObjectMovement();
-	}
-}
-
-/*
-
-Every frame, this code will let you perform a raycast, to see if there's an object
-underneath the cursor, and if so 'select it' into a pointer, so that it can be
-manipulated later. Pressing Q will let you toggle between this behaviour and instead
-letting you move the camera around.
-
-*/
-bool GooseGame::SelectObject()
-{
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R)) 
-	{
-		inSelectionMode = !inSelectionMode;
-		if (inSelectionMode) 
+		gameTimer = 10.f; // set timer for victory screen
+		// lost
+		if (islandCollection.size() > 1)
 		{
-			Window::GetWindow()->ShowOSPointer(true);
-			Window::GetWindow()->LockMouseToWindow(false);
+			// see who has the highest score
+			//todo: implement these
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(false);
+			return 1; // 1 is lost
+			return 2; // 2 is winner
 		}
-		else 
+		else
 		{
-			Window::GetWindow()->ShowOSPointer(false);
-			Window::GetWindow()->LockMouseToWindow(true);
+			// single player WASTED
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(false);
+			return 1; // 1 is lost
 		}
 	}
-	if (inSelectionMode) 
-	{
-		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
-
-		if(selectionObject)
-		{
-			if (selectionObjectFront)
-			{
-				selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				selectionObjectFront = nullptr;
-			}
-			if (SelectionObjectBack)
-			{
-				SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				SelectionObjectBack = nullptr;
-			}
-			
-			// getting object IN-FRONT of selected object
-			Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
-			RayCollision closestObjectCollision;
-			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
-			{
-				selectionObjectFront = (GameObject*)closestObjectCollision.node;
-				selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
-				GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
-			}
-
-			// getting object BEHIND selected object
-			Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
-			RayCollision closestBehindCollision;
-			if (world->Raycast(objectDownRay, closestBehindCollision, true))
-			{
-				SelectionObjectBack = (GameObject*)closestBehindCollision.node;
-				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
-				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
-			}
-		}
-		
-		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) 
-		{
-			if (selectionObject) 
-			{	//set colour to deselected;
-				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				selectionObject = nullptr;
-				if(selectionObjectFront)
-				{
-					selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-					selectionObjectFront = nullptr;
-				}
-				if (SelectionObjectBack) 
-				{
-					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-					SelectionObjectBack = nullptr;
-				}
-			}
-
-			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
-			RayCollision closestCollision;
-			if (world->Raycast(ray, closestCollision, true))  // object has been selected 
-			{
-				selectionObject = (GameObject*)closestCollision.node;
-				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
-				return true;
-			}
-			return false;
-		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) 
-		{
-			if (selectionObject) 
-			{
-				if (lockedObject == selectionObject) 
-					lockedObject = nullptr;
-				else 
-					lockedObject = selectionObject;
-			}
-		}
-	}
-	else 	
-		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));	
-	return false;
+	gameTimer -= dt;
+	static const Vector4 green(1, 0, 0, 1);
+	static const Vector2 pos(5, 175);
+	const std::string sc = "Time: " + TimeToString<float>(gameTimer, 2);
+	Debug::Print(sc, pos, green);
+	return 0; // 0 is GAME NOT OVER
 }
 
-//todo: Add keys to modify position of selected object using forces
-// 28.11.2019 - linear motion
-// If an object has been clicked, it can be pushed with the right mouse button, by an amount determined by the scroll wheel.
-void GooseGame::MoveSelectedObject()
+float GooseGame::VictoryScreenUpdate(float dt, int gameResult)
 {
-	renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
-	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+	gameTimer -= dt;
+	static const Vector4 green(1, 0, 1, 1);
+	static const Vector2 pos(5, 1000);
+	const std::string sc = "Back To Lobby In: " + TimeToString<float>(gameTimer, 2);
+	Debug::Print(sc, pos, green);
+
+	// game has ended, 1 is lost, 2 is won, create a timer to go to the menu in X seconds and update leaderboard files
+	if (gameResult == 1)
+	{
+		// WASTED
+		static const Vector4 green(1, 0, 0, 1);
+		static const Vector2 pos(960, 540);
+		Debug::Print("WASTED", pos, green);
+	}
+	if (gameResult == 2)
+	{
+		// VICTORY ROYALE
+		static const Vector4 green(0, 1, 0, 1);
+		static const Vector2 pos(960, 540);
+		Debug::Print("VICTORY ROYALE!", pos, green);
+	}
+
+	int index = 0;
+	for (PlayerIsland* island : islandCollection)
+	{
+		island->DrawFinalScore(index++);
+	}
 	
-	if (!selectionObject) // No object has been selected!
-		return;
+	renderer->Update(dt);
+	Debug::FlushRenderables();
+	renderer->Render();
 
-	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) 
-	{
-		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());	
-		RayCollision closestCollision;
-		if(world->Raycast(ray, closestCollision, true)) 
-		{
-			if (closestCollision.node == selectionObject)
-				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
-		}
-	}
+	return gameTimer;
 }
 
-void GooseGame::GameObjectMovement()
-{
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) // up
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, forceMagnitude, 0));
-	}
+#pragma endregion UPDATE
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -forceMagnitude, 0));
-	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(-forceMagnitude, 0, 0));
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(forceMagnitude, 0, 0));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -forceMagnitude));
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, forceMagnitude));
-	}
-}
-
-void GooseGame::InitCamera()
-{
-	world->GetMainCamera()->SetNearPlane(0.5f);
-	world->GetMainCamera()->SetFarPlane(2000.0f);
-	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(315.0f);
-	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
-	lockedObject = nullptr;
-}
-
-void GooseGame::InitWorld()
-{
-	selectionObject = nullptr;
-	selectionObjectFront = nullptr;
-	SelectionObjectBack = nullptr;
-	lockedObject = nullptr;
-	world->ClearAndErase();
-	physics->Clear();
-	farmerCollection.clear();
-	playerCollection.clear();
-	islandCollection.clear();
-	LoadWorldFromFile();
-	
-	//InitGooseGameWorld();
-}
-
+#pragma region ADD_OBJECTS
 
 
 //todo: fix the way collisions are resolved here
@@ -1102,6 +1020,9 @@ void GooseGame::AddMultiDirectionalGate(const Vector3& startPosition, const Vect
 
 }
 
+#pragma endregion ADD_OBJECTS
+
+#pragma region UNUSED 
 
 void GooseGame::BridgeConstraintTest()
 {
@@ -1148,3 +1069,230 @@ void GooseGame::SimpleGJKTest()
 
 }
 
+
+#pragma endregion UNUSED
+
+#pragma region MOVEMENT
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// MOVEMENT RELATED STUFF
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void GooseGame::PlayerMovement()
+{
+	//	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
+	//	Matrix4 camWorld = view.Inverse();
+	//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
+	//
+	//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+	//
+	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
+	//	{
+	//		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
+	//	}
+	//	
+	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
+	//	{
+	//		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
+	//	}
+	//
+	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
+	//	{
+	//		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
+	//	}
+	//	
+	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
+	//	{
+	//		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
+	//	}
+}
+
+void  GooseGame::PlayerCameraMovement()
+{
+	//Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
+	//Vector3 camPos = objPos + lockedOffset;
+
+	//Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+
+	//Matrix4 modelMat = temp.Inverse();
+
+	//Quaternion q(modelMat);
+	//Vector3 angles = q.ToEuler(); //nearly there now!
+
+	//world->GetMainCamera()->SetPosition(camPos);
+	//world->GetMainCamera()->SetPitch(angles.x);
+	//world->GetMainCamera()->SetYaw(angles.y);
+
+}
+
+// move selected gameobjects with keyboard presses
+void GooseGame::DebugObjectMovement()
+{
+	if (inSelectionMode && selectionObject)
+	{
+		GameObjectMovement();
+	}
+}
+
+/*
+
+Every frame, this code will let you perform a raycast, to see if there's an object
+underneath the cursor, and if so 'select it' into a pointer, so that it can be
+manipulated later. Pressing Q will let you toggle between this behaviour and instead
+letting you move the camera around.
+
+*/
+bool GooseGame::SelectObject()
+{
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
+	{
+		inSelectionMode = !inSelectionMode;
+		if (inSelectionMode)
+		{
+			Window::GetWindow()->ShowOSPointer(true);
+			Window::GetWindow()->LockMouseToWindow(false);
+		}
+		else
+		{
+			Window::GetWindow()->ShowOSPointer(false);
+			Window::GetWindow()->LockMouseToWindow(true);
+		}
+	}
+	if (inSelectionMode)
+	{
+		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
+
+		if (selectionObject)
+		{
+			if (selectionObjectFront)
+			{
+				selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				selectionObjectFront = nullptr;
+			}
+			if (SelectionObjectBack)
+			{
+				SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				SelectionObjectBack = nullptr;
+			}
+
+			// getting object IN-FRONT of selected object
+			Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
+			RayCollision closestObjectCollision;
+			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
+			{
+				selectionObjectFront = (GameObject*)closestObjectCollision.node;
+				selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
+				GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
+			}
+
+			// getting object BEHIND selected object
+			Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
+			RayCollision closestBehindCollision;
+			if (world->Raycast(objectDownRay, closestBehindCollision, true))
+			{
+				SelectionObjectBack = (GameObject*)closestBehindCollision.node;
+				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
+				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
+			}
+		}
+
+		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT))
+		{
+			if (selectionObject)
+			{	//set colour to deselected;
+				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				selectionObject = nullptr;
+				if (selectionObjectFront)
+				{
+					selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+					selectionObjectFront = nullptr;
+				}
+				if (SelectionObjectBack)
+				{
+					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+					SelectionObjectBack = nullptr;
+				}
+			}
+
+			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
+			RayCollision closestCollision;
+			if (world->Raycast(ray, closestCollision, true))  // object has been selected 
+			{
+				selectionObject = (GameObject*)closestCollision.node;
+				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+				return true;
+			}
+			return false;
+		}
+		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L))
+		{
+			if (selectionObject)
+			{
+				if (lockedObject == selectionObject)
+					lockedObject = nullptr;
+				else
+					lockedObject = selectionObject;
+			}
+		}
+	}
+	else
+		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));
+	return false;
+}
+
+//todo: Add keys to modify position of selected object using forces
+// 28.11.2019 - linear motion
+// If an object has been clicked, it can be pushed with the right mouse button, by an amount determined by the scroll wheel.
+void GooseGame::MoveSelectedObject()
+{
+	renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
+	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+
+	if (!selectionObject) // No object has been selected!
+		return;
+
+	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT))
+	{
+		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
+		RayCollision closestCollision;
+		if (world->Raycast(ray, closestCollision, true))
+		{
+			if (closestCollision.node == selectionObject)
+				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
+		}
+	}
+}
+
+void GooseGame::GameObjectMovement()
+{
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) // up
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, forceMagnitude, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -forceMagnitude, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(-forceMagnitude, 0, 0));
+	}
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(forceMagnitude, 0, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -forceMagnitude));
+	}
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
+	{
+		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, forceMagnitude));
+	}
+}
+
+#pragma endregion MOVEMENT

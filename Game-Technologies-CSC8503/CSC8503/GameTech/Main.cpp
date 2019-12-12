@@ -71,10 +71,8 @@ int main()
 			renderer->Update(dt);
 			renderer->Render();
 		}
-
 		w->SetTitle("CSC8503 | Physics | Networking | AI | FPS:" + std::to_string(1.0f / dt));
 	}
-	
 	delete world;
 	delete renderer;
 	delete stateManager;
