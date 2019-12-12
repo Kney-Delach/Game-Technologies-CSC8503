@@ -29,6 +29,8 @@
 #include "../CSC8503Common/NavigationTable.h"
 #include "../CSC8503Common/BasicAIObject.h"
 
+#include "../CSC8503Common/FileManager.h"
+
 using namespace NCL;
 using namespace CSC8503;
 
@@ -124,7 +126,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			}
 		}
 	}
-
+	int aiCount = 0;
 	for (int z = 0; z < gridHeight; ++z)
 	{
 		for (int x = 0; x < gridWidth; ++x)
@@ -156,7 +158,10 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				position = Vector3(x * 2 * cubeDims.x, 6.f, z * 2 * cubeDims.z);
 				//todo: abstract this from here
 				NavigationGrid* dumbAiNavGrid = new NavigationGrid("TestingGrid.txt");
-				NavigationTable* navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid);
+				NavigationTable* navTable = new NavigationTable((int)(dumbAiNavGrid->GetWidth() * dumbAiNavGrid->GetHeight()), dumbAiNavGrid, true);
+				const std::string filename = "NavigationTable_" + std::to_string(aiCount) + ".GAI";
+				FileManager<NavigationTable>::Loader(filename, *navTable);
+				aiCount++;
 				farmerCollection.push_back((BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable));
 			}
 		}
@@ -994,21 +999,21 @@ void GooseGame::BridgeConstraintTest()
 	Vector3 cubeSize = Vector3(8, 8, 8);
 
 	float	invCubeMass = 5;
-	int		numLinks	= 25;
-	float	maxDistance	= 30;
+	int		numLinks	= 3;
+	float	maxDistance	= 25;
 	float	cubeDistance = 20;
 
-	Vector3 startPos = Vector3(0.f, 10.f, 0.f);
+	Vector3 startPos = Vector3(0.f, 20.f, 0.f);
 
-	GameObject* start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
+	GameObject* start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 1,0);
 
-	GameObject* end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 0);
+	GameObject* end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 1, 0);
 
 	GameObject* previous = start;
 
 	for (int i = 0; i < numLinks; ++i) 
 	{
-		GameObject* block = AddCubeToWorld(startPos + Vector3((i + 1) * cubeDistance, 0, 0), cubeSize, invCubeMass);
+		GameObject* block = AddCubeToWorld(startPos + Vector3((i + 1) * cubeDistance, 0, 0), cubeSize, 1, invCubeMass);
 		PositionConstraint* constraint = new PositionConstraint(previous, block, maxDistance);
 		world->AddConstraint(constraint);
 		previous = block;

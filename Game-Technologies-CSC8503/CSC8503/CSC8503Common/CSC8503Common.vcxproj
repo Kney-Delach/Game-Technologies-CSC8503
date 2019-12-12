@@ -139,6 +139,7 @@
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="BoundingVolume.h" />
     <ClInclude Include="CollectableObject.h" />
+    <ClInclude Include="FileManager.h" />
     <ClInclude Include="Layer.h" />
     <ClInclude Include="NavigationGrid.h" />
     <ClInclude Include="NavigationMap.h" />

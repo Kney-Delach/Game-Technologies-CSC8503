@@ -159,6 +159,9 @@
     <ClInclude Include="NavigationTable.h">
       <Filter>Pathfinding</Filter>
     </ClInclude>
+    <ClInclude Include="FileManager.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionDetection.cpp">

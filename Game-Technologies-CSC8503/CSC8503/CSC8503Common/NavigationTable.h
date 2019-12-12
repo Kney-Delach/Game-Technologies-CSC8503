@@ -24,20 +24,24 @@ namespace NCL
 		struct NavTableNode
 		{
 			int nearestNodeID;
-			Maths::Vector3 position;
 		};
 		
 		class NavigationTable
 		{
 		public:
-			NavigationTable(int numNodes, NavigationGrid* grid);
+			NavigationTable(int numNodes, NavigationGrid* grid, bool loadTableFromFile = false);
 			~NavigationTable();
 			NavTableNode** GetNavTable() const { return navigationTable; }
+			friend std::ostream& operator<<(std::ostream& out, const NavigationTable& navTable);
+			friend std::istream& operator>>(std::istream& in, NavigationTable& navTable);
+
 		private:
 			void CalculateTable(NavigationGrid* grid);
 		private:
 			NavTableNode** navigationTable;
 			int numberOfNodes;
+			int tableWidth;
+			int tableHeight;
 		};
 	}
 }

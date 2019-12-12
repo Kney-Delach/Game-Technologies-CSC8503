@@ -13,7 +13,6 @@
 /___\ /___\
 ***************************************************************************/
 #include "NavigationTable.h"
-
 #include "NavigationGrid.h"
 #include "NavigationPath.h"
 
@@ -21,7 +20,7 @@ namespace NCL
 {
 	namespace CSC8503
 	{
-		NavigationTable::NavigationTable(int numNodes, NavigationGrid* grid)
+		NavigationTable::NavigationTable(int numNodes, NavigationGrid* grid, bool loadTableFromFile)
 		{
 			numberOfNodes = numNodes;
 			navigationTable = new NavTableNode*[numberOfNodes];
@@ -29,7 +28,8 @@ namespace NCL
 			{
 				navigationTable[i] = new NavTableNode[numberOfNodes];
 			}
-			CalculateTable(grid);
+			if(!loadTableFromFile)
+				CalculateTable(grid);
 		}
 
 		NavigationTable::~NavigationTable()
@@ -45,6 +45,8 @@ namespace NCL
 		{
 			const int navWidth = grid->GetWidth();
 			const int navHeight = grid->GetHeight();
+			tableWidth = navWidth;
+			tableHeight = navHeight;
 
 			GridNode* allNavigationNodes = grid->GetNodes();
 			
@@ -54,7 +56,6 @@ namespace NCL
 				{
 					if (&allNavigationNodes[start] == &allNavigationNodes[end])
 					{
-						navigationTable[start][end].position = allNavigationNodes[end].position;
 						navigationTable[start][end].nearestNodeID = end;
 					}
 					else
@@ -64,10 +65,6 @@ namespace NCL
 						if(found)
 						{
 							Vector3 position; 
-							if(path.RemoveWaypoint(position))
-							{
-								navigationTable[start][end].position = position;
-							}
 							int id = 0;
 							if(path.RemoveWaypointID(id))
 							{
@@ -78,7 +75,6 @@ namespace NCL
 						{
 							// not reachable
 							navigationTable[start][end].nearestNodeID = -1;
-							navigationTable[start][end].position = Vector3(-1.f,-1.f,-1.f);
 						}
 					}
 				}
@@ -104,6 +100,51 @@ namespace NCL
 				}
 				std::cout << "\n";
 			}
+		}
+
+		// writer 
+		std::ostream& operator<<(std::ostream& out, const NavigationTable& navTable)
+		{
+			// 1. need to know number of nodes
+			// 2. need to know navigation table width
+			// 3. need to know navigation table height
+			out << navTable.numberOfNodes << "\n";
+			out << navTable.tableWidth << "\n";
+			out << navTable.tableHeight << "\n";
+			
+			for (int i = 0; i < navTable.tableWidth * navTable.tableHeight; ++i)
+			{
+				for (int k = 0; k < navTable.tableWidth * navTable.tableHeight; ++k)
+				{
+					out << navTable.navigationTable[i][k].nearestNodeID << " ";
+				}
+				out << "\n";
+			}
+			return out;
+		}
+
+		// reader
+		std::istream& operator>>(std::istream& in, NavigationTable& navTable)
+		{
+			int temp;
+			in >> temp;
+			std::cout << temp << "\n";
+			if (temp != navTable.numberOfNodes)
+				std::cout << "Invalid Navigation Table File Loaded: Number of nodes: " << temp << " versus assigned: " << navTable.numberOfNodes << "\n";
+			in >> temp;
+			navTable.tableWidth = temp;
+			in >> temp;
+			navTable.tableHeight = temp;
+			std::cout << "Loading navigation table with width: " << navTable.tableWidth << " and height: " << navTable.tableHeight << "\n";
+
+			for (int i = 0; i < navTable.tableWidth * navTable.tableHeight; ++i)
+			{
+				for (int k = 0; k < navTable.tableWidth * navTable.tableHeight; ++k)
+				{
+					in >> navTable.navigationTable[i][k].nearestNodeID;
+				}
+			}
+			return in;
 		}
 	}
 }
