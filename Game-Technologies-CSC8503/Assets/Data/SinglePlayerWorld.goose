@@ -33,10 +33,10 @@ xx........xxxxxxxxxxxxxx
 xxx.......xxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxx
 x..c.....r.............x
-x..xxxx...............ax
+x..xxxx................x
 xxh.....x.......r......x
 xr..xxx.x..............x
-x.x.a................a.x
+x.x..................a.x
 x...xx.r...............x
 xax...x..a.............x
 x.....................rx
@@ -50,5 +50,5 @@ x......................x
 x......................x
 x......................x
 x...r..................x
-xa....c....a.a....c...ax
+xa....c......a....c...ax
 xxxxxxxxxxxxxxxxxxxxxxxx

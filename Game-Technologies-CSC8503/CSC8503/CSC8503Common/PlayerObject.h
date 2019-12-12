@@ -24,11 +24,11 @@ namespace NCL
 		public:
 			PlayerObject(const std::string name = "Player Object");
 			virtual ~PlayerObject();
+
+			virtual void OnCollisionBegin(GameObject* other) override;
+			virtual void OnCollisionEnd(GameObject* other) override;
 			
 			unsigned int AddObjectToInventory(GameObject* object);
-			
-			//int GetInventorySize() const { return inventory.size(); }
-			//std::vector<GameObject*>& GetInventory() { return inventory; }
 
 			// collectable refactor
 			int GetInventoryAppleSize() const { return collectedApples.size(); }
@@ -46,12 +46,14 @@ namespace NCL
 			void DrawInventoryToUI() const;
 			void SetBonusItemStatus(bool val) { isCarryingBonusItem = false; }
 			bool GetBonusItemStatus() const { return isCarryingBonusItem; }
+
+			bool IsGrounded() const { return isGrounded; }
 		protected:
-			//std::vector<GameObject*> inventory;
 			std::vector<GameObject*> collectedApples;
 			std::vector<GameObject*> collectedCorn;
 			std::vector<GameObject*> collectedHats;
 			bool isCarryingBonusItem;
+			bool isGrounded;
 		};
 	}
 }

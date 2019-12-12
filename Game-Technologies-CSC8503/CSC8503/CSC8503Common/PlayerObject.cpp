@@ -22,13 +22,28 @@ namespace NCL
 	namespace CSC8503
 	{
 		PlayerObject::PlayerObject(const std::string name)
-			: GameObject(name)
+			: GameObject(name), isCarryingBonusItem(false), isGrounded(false)
 		{
-			isCarryingBonusItem = false;
 		}
 
 		PlayerObject::~PlayerObject()
 		{
+		}
+
+		void PlayerObject::OnCollisionBegin(GameObject* other)
+		{
+			if (other->GetName() == "Ground")
+			{
+				isGrounded = true;
+			}
+		}
+
+		void PlayerObject::OnCollisionEnd(GameObject* other)
+		{
+			if (other->GetName() == "Ground")
+			{
+				isGrounded = false;
+			}
 		}
 
 		unsigned int PlayerObject::AddObjectToInventory(GameObject* object)

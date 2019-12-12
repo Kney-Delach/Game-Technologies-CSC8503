@@ -125,16 +125,16 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if (terrainMap[x + z * gridWidth] == 'x')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
-				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 5, ((float)nodeSize) / 2.f), 0.f, true, 1.f, 10000.f);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 5, ((float)nodeSize) / 2.f), 0.f, "Wall", 1.f, 10000.f);
 			}
 			if (terrainMap[x + z * gridWidth] == 'm')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 6.f, z * 2 * cubeDims.z);
-				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 10, ((float)nodeSize) / 2.f), 0.f, true, 1.f, 10000.f);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 10, ((float)nodeSize) / 2.f), 0.f, "Wall", 1.f, 10000.f);
 			}
-			if (terrainMap[x + z * gridWidth] == 'l') //todo: move this to encompass entire world
+			if (terrainMap[x + z * gridWidth] == 'l') //todo: move this to encompass entire world (MAKE SURE ONLY ONE OF THESE CAN BE ADDED)
 			{
-				GameObject* cube = AddStaticCubeToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize , -4.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, Vector3(static_cast<float>(gridWidth) * nodeSize, 1.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, 0.f);
+				GameObject* cube = AddStaticCubeToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize , -4.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, Vector3(static_cast<float>(gridWidth) * nodeSize, 1.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, 0.f, "Ground");
 				cube->GetRenderObject()->SetColour(Vector4(0.f, 0.5f, 0.5f, 0.f));
 			}
 			if(terrainMap[x + z * gridWidth] == 'w')
@@ -326,23 +326,26 @@ GooseGame::~GooseGame()
 
 void GooseGame::UpdateGame(float dt)
 {	
-	if (!inSelectionMode)
-		world->GetMainCamera()->UpdateCamera(dt);
+	//if (!inSelectionMode)
+	//	world->GetMainCamera()->UpdateCamera(dt);
 
-	UpdateKeys(); // check if pressed any keys 
+	UpdateKeys();
 
-	MoveSelectedObject();
+	TPCameraUpdate();
+	TPPlayerUpdate(dt);
 	
-	if (lockedObject)
-	{
-		PlayerMovement();
-		PlayerCameraMovement();
-		DebugObjectMovement();
-	}
-	else
-	{
-		DebugObjectMovement(); // move selected object 
-	}
+	//MoveSelectedObject();
+	//
+	//if (lockedObject)
+	//{
+	//	//PlayerMovement();
+	//	//PlayerCameraMovement();
+	//	DebugObjectMovement();
+	//}
+	//else
+	//{
+	//	DebugObjectMovement(); // move selected object 
+	//}
 
 	for (int i = 0; i < islandCollection.size(); ++i)
 	{
@@ -692,19 +695,9 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	return cube;
 }
 
-GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, bool isWall, float elasticity, float stiffness)
+GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, const std::string& name, float elasticity, float stiffness)
 {
-	GameObject* cube;
-
-	if(isWall)
-	{
-		cube = new GameObject("Wall");
-
-	}
-	else
-	{
-		cube = new GameObject("Floor");
-	}
+	GameObject* cube = new GameObject(name);
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
@@ -718,7 +711,7 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(elasticity);
 	cube->GetPhysicsObject()->SetStiffness(stiffness);
-	if(isWall)
+	if(name == "Wall")
 	{
 		cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::SPRING);
 	}
@@ -1078,50 +1071,64 @@ void GooseGame::SimpleGJKTest()
 
 
 
-void GooseGame::PlayerMovement()
+void GooseGame::TPPlayerUpdate(float dt)
 {
-	//	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
-	//	Matrix4 camWorld = view.Inverse();
-	//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
-	//
-	//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
-	//
-	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
-	//	{
-	//		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
-	//	}
-	//	
-	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
-	//	{
-	//		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
-	//	}
-	//
-	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
-	//	{
-	//		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
-	//	}
-	//	
-	//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
-	//	{
-	//		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
-	//	}
+	//renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
+	//forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+	static const float forceMagnitude = 220.f; 
+	static const float rotationSpeed = 90.f;
+	Vector3 pitchYawRoll = playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation().ToEuler();
+	
+	const Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
+	const Matrix4 camWorld = view.Inverse();
+	const Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
+
+	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, 1) * forceMagnitude);
+	}
+	
+	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::A))
+	{
+		pitchYawRoll.y += rotationSpeed * dt;
+		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
+		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, -1) * forceMagnitude);
+	}
+	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
+	{
+		pitchYawRoll.y -= rotationSpeed * dt;
+		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
+		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::SPACE) && playerCollection[thisPlayerIndex]->IsGrounded())
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(Vector3(0, 2, 0) * forceMagnitude);
+	}
 }
 
-void  GooseGame::PlayerCameraMovement()
+// third person camera update
+void GooseGame::TPCameraUpdate()
 {
-	//Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
-	//Vector3 camPos = objPos + lockedOffset;
+	Vector3 objPos = playerCollection[thisPlayerIndex]->GetTransform().GetWorldPosition();
+	Vector3 camPos = objPos + playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * lockedOffset;
+	Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos + Vector3(0, 5, 0), Vector3(0, 1, 0));
 
-	//Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+	Matrix4 modelMat = temp.Inverse();
+	Quaternion q(modelMat);
+	Vector3 angles = q.ToEuler();
 
-	//Matrix4 modelMat = temp.Inverse();
-
-	//Quaternion q(modelMat);
-	//Vector3 angles = q.ToEuler(); //nearly there now!
-
-	//world->GetMainCamera()->SetPosition(camPos);
-	//world->GetMainCamera()->SetPitch(angles.x);
-	//world->GetMainCamera()->SetYaw(angles.y);
+	world->GetMainCamera()->SetPosition(camPos);
+	world->GetMainCamera()->SetPitch(angles.x);
+	world->GetMainCamera()->SetYaw(angles.y);
 
 }
 
@@ -1134,14 +1141,6 @@ void GooseGame::DebugObjectMovement()
 	}
 }
 
-/*
-
-Every frame, this code will let you perform a raycast, to see if there's an object
-underneath the cursor, and if so 'select it' into a pointer, so that it can be
-manipulated later. Pressing Q will let you toggle between this behaviour and instead
-letting you move the camera around.
-
-*/
 bool GooseGame::SelectObject()
 {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))

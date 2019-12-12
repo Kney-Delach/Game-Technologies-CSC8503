@@ -59,14 +59,14 @@ namespace NCL
 			void BridgeConstraintTest();
 			void SimpleGJKTest();
 
+			//todo: Make these better.... only draw lines on ai when selected etc...
 			bool SelectObject();
 			void MoveSelectedObject();
 			void DebugObjectMovement();
 
-			// 8.12.2019 
-			// player movement
-			void PlayerMovement(); // used to move the player goose around
-			void PlayerCameraMovement();
+			// third person camera stuff
+			void TPPlayerUpdate(float dt);
+			void TPCameraUpdate();
 
 			void GameObjectMovement();
 			
@@ -74,7 +74,7 @@ namespace NCL
 			PlayerIsland* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f, const Vector4& color = Vector4(1,1,1,1));
-			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, bool isWall = false, float elasticity = 0.01f, float stiffness = 8.f);
+			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, const std::string& name = "Cube", float elasticity = 0.01f, float stiffness = 8.f);
 			GameObject* AddStaticOBBCubeToWorld(const Vector3& position, const Vector3& scale, const Vector3& rotation, const Vector4& color);
 			void AddMultiDirectionalGate(const Vector3& startPosition, const Vector3& dimensions, const Vector4& color, int numberOfLinks, int nodeSize);
 			
@@ -88,14 +88,14 @@ namespace NCL
 			GameObject* AddParkKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
 			GameObject* AddCharacterToWorld(const Vector3& position);
 			
-			GameTechRenderer*	renderer;
-			PhysicsSystem*		physics;
-			GameWorld*			world;
+			GameTechRenderer* renderer;
+			PhysicsSystem* physics;
+			GameWorld* world;
 
 			bool useGravity;
 			bool inSelectionMode;
 
-			float		forceMagnitude;
+			float forceMagnitude;
 
 			GameObject* selectionObject = nullptr;
 			GameObject* selectionObjectFront = nullptr;
@@ -113,9 +113,9 @@ namespace NCL
 			OGLMesh*	charA		= nullptr;
 			OGLMesh*	charB		= nullptr;
 
-			//Coursework Additional functionality	
+			//Coursework Additional functionality	PlayerMovement
 			GameObject* lockedObject	= nullptr;
-			Vector3 lockedOffset		= Vector3(0, 5, 20);
+			Vector3 lockedOffset		= Vector3(0, 5, -20);
 			void LockCameraToObject(GameObject* o) { lockedObject = o; }
 
 			// 1.12.19
@@ -123,13 +123,7 @@ namespace NCL
 			//// Debug functionality a ///////////////////////////////////
 			////////////////////////////////////////////////////////////////////
 			bool displayBoundingVolumes;
-
-			// 6.12.2019
-			// player controllers (currently only 1 but make this 2 in the multiplayer version)
-			//PlayerObject* playerGameObject = nullptr;
-
 		protected:
-
 			// 12.12.2019
 			// game completion related data
 			float gameTimer;
@@ -151,15 +145,9 @@ namespace NCL
 		public:
 			void SetThisPlayerIndex(int index = 0) { thisPlayerIndex = index; }
 		protected:
-
-			// 9.12.2019
-			// pathfinding related variables
-			//BasicAIObject* farmerAIObject = nullptr;
 			std::vector<BasicAIObject*> farmerCollection;
 			std::vector<PlayerObject*> playerCollection;
 			std::vector<PlayerIsland*> islandCollection;
-
-
 		};
 	}
 }
