@@ -137,7 +137,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				position = Vector3(x * 2 * cubeDims.x, -0.25f, z * 2 * cubeDims.z + 0.1f);
 				AddStaticOBBCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 0.25f, ((float)nodeSize) / 2.f), Vector3(-20, 0, 0), Vector4(0.f, 0.f, 1.f, 0.f));
 			}
-			if (terrainMap[x + z * gridWidth] == 'g') // constrainted gate
+			if (terrainMap[x + z * gridWidth] == 'g') // constrained multi directional gate
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
 				AddMultiDirectionalGate(position, Vector3(cubeDims.x, 5.f, cubeDims.z), Vector4(0.f, 0.f, 1.f, 0.f), 1, nodeSize);
