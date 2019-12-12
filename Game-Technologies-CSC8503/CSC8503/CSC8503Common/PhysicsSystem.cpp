@@ -383,7 +383,7 @@ void PhysicsSystem::BroadPhase()
 					// if the same pair is in another quadtree node together etc
 					info.a = min((*i).object, (*j).object);
 					info.b = max((*i).object, (*j).object);
-					if (info.a->GetPhysicsObject()->IsStatic() & info.b->GetPhysicsObject()->IsStatic()) 
+					if (info.a->GetPhysicsObject()->IsStatic() && info.b->GetPhysicsObject()->IsStatic()) 
 					{
 						continue;
 					}

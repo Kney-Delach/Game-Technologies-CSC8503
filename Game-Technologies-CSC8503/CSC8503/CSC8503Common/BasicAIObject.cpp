@@ -17,7 +17,6 @@
 
 #include "CollisionDetection.h"
 #include "Debug.h"
-
 #include "NavigationGrid.h"
 #include "NavigationTable.h"
 #include "PlayerObject.h"
@@ -96,8 +95,10 @@ namespace NCL
 		{
 			if (target == nullptr)
 			{
+				//todo: replace this with raycast towards goose's position
+				
 				const float halfSize = ((AABBVolume*)boundingVolume)->GetHalfDimensions().y/2.f;
-				// if no target currently then raycast for a target with a bonus item
+				//// if no target currently then raycast for a target with a bonus item
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, 1));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, -1));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0));
@@ -106,6 +107,12 @@ namespace NCL
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0.99));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
+				//todo: The following function should successfully hit the sphere of the goose when in direct line of sight, but doesn't for known reasons
+				//for (PlayerObject* g : *playerObjectCollection)
+				//{
+				//	const Vector3 gooseDirection = g->GetConstTransform().GetWorldPosition() - GetConstTransform().GetWorldPosition();
+				//	FindTarget(Vector3(0.f, -halfSize, 0.f), gooseDirection);
+				//}
 			}
 			else if(!((PlayerObject*)target)->GetBonusItemStatus())
 			{

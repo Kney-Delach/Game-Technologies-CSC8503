@@ -28,7 +28,7 @@ PhysicsObject::PhysicsObject(Transform* parentTransform, const CollisionVolume* 
 	elasticity	= 0.8f;
 	friction	= 0.8f;
 	stiffness	= 10.0f;
-	isStatic = 1;
+	isStatic = false;
 }
 
 PhysicsObject::~PhysicsObject()

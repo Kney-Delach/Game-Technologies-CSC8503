@@ -16,7 +16,6 @@ PositionConstraint::PositionConstraint(GameObject* a, GameObject* b, float d)
 
 PositionConstraint::~PositionConstraint()
 {
-
 }
 
 //a simple constraint that stops objects from being more than <distance> away

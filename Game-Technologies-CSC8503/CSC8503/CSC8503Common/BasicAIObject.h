@@ -21,6 +21,7 @@ namespace NCL
 {
 	namespace CSC8503
 	{
+		class PlayerObject;
 		class GameWorld;
 		class StateMachine;
 		class NavigationGrid;
@@ -50,6 +51,8 @@ namespace NCL
 				target = other;
 				moveTowardsTarget = true;
 			}
+			void SetPlayerObjectCollection(std::vector<PlayerObject*>* playerCollection) { playerObjectCollection = playerCollection; }
+			
 			void ClearTarget() { target = nullptr; }
 		private:
 			bool FindTarget(const Vector3& offset, const Vector3& direction);
@@ -63,6 +66,7 @@ namespace NCL
 			StateMachine* stateMachine;
 			bool moveTowardsTarget;
 			GameWorld* world;
+			std::vector<PlayerObject*>* playerObjectCollection = nullptr;
 		};
 	}
 }

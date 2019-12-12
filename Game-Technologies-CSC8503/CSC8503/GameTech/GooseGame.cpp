@@ -30,6 +30,8 @@
 #include "../CSC8503Common/BasicAIObject.h"
 
 #include "../CSC8503Common/FileManager.h"
+#include "../CSC8503Common/HeightConstraint.h"
+#include "../CSC8503Common/HingeConstraint.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -130,6 +132,16 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				position = Vector3(x * 2 * cubeDims.x, -0.25f, z * 2 * cubeDims.z-0.1f);
 				AddStaticOBBCubeToWorld(position,Vector3(((float)nodeSize) / 2.f, 0.25f, ((float)nodeSize) / 2.f), Vector3(20, 0, 0),Vector4(0.f, 0.f, 1.f, 0.f));
 			}
+			if (terrainMap[x + z * gridWidth] == 'p') // water ramp
+			{
+				position = Vector3(x * 2 * cubeDims.x, -0.25f, z * 2 * cubeDims.z + 0.1f);
+				AddStaticOBBCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 0.25f, ((float)nodeSize) / 2.f), Vector3(-20, 0, 0), Vector4(0.f, 0.f, 1.f, 0.f));
+			}
+			if (terrainMap[x + z * gridWidth] == 'g') // constrainted gate
+			{
+				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
+				AddMultiDirectionalGate(position, Vector3(cubeDims.x, 5.f, cubeDims.z), Vector4(0.f, 0.f, 1.f, 0.f), 1, nodeSize);
+			}
 			if (terrainMap[x + z * gridWidth] == 's')
 			{
 				if (playerIslandCount < (int)playerCollection.size())
@@ -152,25 +164,25 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			}
 			if (objectMap[k + j * gridWidth] == 'a')
 			{
-				position = Vector3(k * 2 * cubeDims.x, 3.f, j * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddAppleToWorld(position);
 			}
 
 			if (objectMap[k + j * gridWidth] == 'c')
 			{
-				position = Vector3(k * 2 * cubeDims.x, 3.f, j * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddCornToWorld(position);
 			}
 
 			if (objectMap[k + j * gridWidth] == 'h')
 			{
-				position = Vector3(k * 2 * cubeDims.x, 3.f, j * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddHatToWorld(position);
 			}
 
 			if (objectMap[k + j * gridWidth] == 'r')
 			{
-				position = Vector3(k * 2 * cubeDims.x, 6.f, j * 2 * cubeDims.z);
+				position = Vector3(k * 2 * cubeDims.x, 2.f, j * 2 * cubeDims.z);
 				const std::string gridFile = Assets::DATADIR + "NavigationGridSP.Pathfinding";
 				NavigationGrid* dumbAiNavGrid = new NavigationGrid(gridFile);
 				NavigationTable* navTable;
@@ -187,7 +199,10 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				}
 				aiCount++;
 				newPathfindingData = false;
-				farmerCollection.push_back((BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable));
+				BasicAIObject* farmer = (BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable);
+				farmer->SetPlayerObjectCollection(&playerCollection);
+				farmerCollection.push_back(farmer);
+				
 			}
 		}
 	}
@@ -540,7 +555,7 @@ void GooseGame::MoveSelectedObject()
 
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) 
 	{
-		Ray ray = CollisionDetection::BuildRayFromMouse(* world->GetMainCamera());	
+		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());	
 		RayCollision closestCollision;
 		if(world->Raycast(ray, closestCollision, true)) 
 		{
@@ -646,7 +661,7 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	floor->GetPhysicsObject()->SetElasticity(stiffness);
 	floor->GetPhysicsObject()->SetStiffness(stiffness);
 	floor->GetPhysicsObject()->InitCubeInertia();
-	floor->GetPhysicsObject()->SetStatic(2);
+	floor->GetPhysicsObject()->SetStatic(true);
 
 	floor->GetPhysicsObject()->SetCollisionType(collisionType);
 	
@@ -681,7 +696,7 @@ PlayerIsland* GooseGame::AddPlayerIslandToWorld(const Vector3& position, const i
 	island->GetRenderObject()->SetColour(colour);
 
 	island->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
-	island->GetPhysicsObject()->SetStatic(2);
+	island->GetPhysicsObject()->SetStatic(true);
 
 	island->SetParent(playerCollection[playerIndex]);
 	world->AddGameObject(island);
@@ -720,14 +735,14 @@ GameObject* GooseGame::AddSphereToWorld(const Vector3& position, float radius, b
 	sphere->GetPhysicsObject()->SetElasticity(1.f); // highly elastic material (like a rubber ball) 
 	sphere->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
 	sphere->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
-	sphere->GetPhysicsObject()->SetStatic(2);
+	sphere->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(sphere);
 
 	return sphere;
 }
 
-GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass)
+GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass, const Vector4& color)
 {
 	GameObject* cube = new GameObject("Cube");
 
@@ -747,6 +762,7 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 
 	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+	cube->GetRenderObject()->SetColour(color);
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(0.01f); // low elasticity material (like steel)
@@ -755,7 +771,7 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	cube->GetPhysicsObject()->InitCubeInertia();
 
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
-	cube->GetPhysicsObject()->SetStatic(2);
+	cube->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(cube);
 
@@ -800,7 +816,7 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 	cube->GetPhysicsObject()->SetGravityUsage(false);
 	cube->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 	
-	cube->GetPhysicsObject()->SetStatic(2);
+	cube->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(cube);
 
@@ -824,7 +840,7 @@ GameObject* GooseGame::AddStaticOBBCubeToWorld(const Vector3& position, const Ve
 	cube->GetPhysicsObject()->SetInverseMass(0);
 	cube->GetPhysicsObject()->InitCubeInertia();
 	cube->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
-	cube->GetPhysicsObject()->SetStatic(2);
+	cube->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(cube);
 	return cube;
@@ -959,7 +975,7 @@ GameObject* GooseGame::AddAppleToWorld(const Vector3& position)
 	 // apples aren't affected by gravity and should only collide with collectable collisions types (i.e player controlled characters)
 	apple->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	apple->GetPhysicsObject()->SetGravityUsage(false);
-	apple->GetPhysicsObject()->SetStatic(2);
+	apple->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(apple);
 
@@ -989,7 +1005,7 @@ GameObject* GooseGame::AddCornToWorld(const Vector3& position)
 
 	corn->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	corn->GetPhysicsObject()->SetGravityUsage(false);
-	corn->GetPhysicsObject()->SetStatic(2);
+	corn->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(corn);
 
@@ -1019,7 +1035,7 @@ GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 
 	hat->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	hat->GetPhysicsObject()->SetGravityUsage(false);
-	hat->GetPhysicsObject()->SetStatic(2);
+	hat->GetPhysicsObject()->SetStatic(true);
 
 	world->AddGameObject(hat);
 
@@ -1055,6 +1071,40 @@ void GooseGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, f
 	}
 }
 
+
+void GooseGame::AddMultiDirectionalGate(const Vector3& startPosition, const Vector3& dimensions, const Vector4& color, int numberOfLinks, int nodeSize)
+{
+
+	float	invCubeMass = 1 / 1.f;
+	float	maxDistance = (float)nodeSize;
+	float	cubeDistance = (float) nodeSize;
+
+	GameObject* start = AddCubeToWorld(startPosition + Vector3(0, 0, 0), Vector3(dimensions.x / 2.f, dimensions.y, dimensions.z/2.f), 0, 0, color);
+	HeightConstraint* heightConstraintStart = new HeightConstraint(start, startPosition.y);
+	world->AddConstraint(heightConstraintStart);
+	
+	GameObject* leftBlock = AddCubeToWorld(startPosition + Vector3((float)nodeSize * 1.4f, 0.f, 0), Vector3(dimensions.x * 2.f + 0.5f, dimensions.y, dimensions.z / 2.f), 0, invCubeMass, Vector4(0, 1, 0, 1));
+	HeightConstraint* heightConstraint = new HeightConstraint(leftBlock, startPosition.y);
+	HingeConstraint* hingeConstraint = new HingeConstraint(start, leftBlock);
+	PositionConstraint* constraint = new PositionConstraint(start, leftBlock, nodeSize*1.4f);
+	world->AddConstraint(heightConstraint);
+	world->AddConstraint(hingeConstraint);
+	world->AddConstraint(constraint);
+
+	GameObject* rightBlock = AddCubeToWorld(startPosition - Vector3((float)nodeSize * 1.4f, 0.f, 0), Vector3(dimensions.x * 2.f + 0.5f, dimensions.y, dimensions.z / 2.f), 0, invCubeMass, Vector4(1, 1, 0, 1));
+	HeightConstraint* heightConstraintRight = new HeightConstraint(rightBlock, startPosition.y);
+	HingeConstraint* hingeConstraintRight = new HingeConstraint(start, rightBlock);
+	PositionConstraint* constraintRight = new PositionConstraint(start, rightBlock, nodeSize * 1.4f);
+	world->AddConstraint(heightConstraintRight);
+	world->AddConstraint(hingeConstraintRight);
+	world->AddConstraint(constraintRight);
+
+	PositionConstraint* constraintRightAndLeft = new PositionConstraint(leftBlock, rightBlock, 2* nodeSize * 1.4f);
+	world->AddConstraint(constraintRightAndLeft);
+
+}
+
+
 void GooseGame::BridgeConstraintTest()
 {
 	Vector3 cubeSize = Vector3(8, 8, 8);
@@ -1068,7 +1118,7 @@ void GooseGame::BridgeConstraintTest()
 
 	GameObject* start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 1,0);
 
-	GameObject* end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 1, 0);
+	//GameObject* end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 1, 0);
 
 	GameObject* previous = start;
 
@@ -1080,8 +1130,8 @@ void GooseGame::BridgeConstraintTest()
 		previous = block;
 	}
 
-	PositionConstraint* constraint = new PositionConstraint(previous, end, maxDistance);
-	world->AddConstraint(constraint);
+	//PositionConstraint* constraint = new PositionConstraint(previous, end, maxDistance);
+	//world->AddConstraint(constraint);
 }
 
 void GooseGame::SimpleGJKTest()

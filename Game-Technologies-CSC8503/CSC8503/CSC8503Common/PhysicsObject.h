@@ -88,8 +88,8 @@ namespace NCL
 
 
 			// 12.12.2019
-			int IsStatic() const { return isStatic; }
-			void SetStatic(int value) { isStatic = value; }
+			bool IsStatic() const { return isStatic; }
+			void SetStatic(bool value) { isStatic = value; }
 		protected:
 			const CollisionVolume* volume;
 			Transform* transform;
@@ -115,7 +115,7 @@ namespace NCL
 			int bitCollisionType;
 
 			bool usesGravity;
-			int isStatic;
+			bool isStatic;
 		};
 	}
 }
