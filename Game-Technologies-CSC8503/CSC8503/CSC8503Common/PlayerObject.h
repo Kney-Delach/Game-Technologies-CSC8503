@@ -25,6 +25,7 @@ namespace NCL
 			PlayerObject(const std::string name = "Player Object");
 			virtual ~PlayerObject();
 
+			virtual void UpdateCooldown(float dt);
 			virtual void OnCollisionBegin(GameObject* other) override;
 			virtual void OnCollisionEnd(GameObject* other) override;
 			
@@ -43,10 +44,18 @@ namespace NCL
 			void UpdateInventoryTransformations(const float dt) const;
 
 			void DropItems();
-			void DrawInventoryToUI() const;
 			void SetBonusItemStatus(bool val) { isCarryingBonusItem = false; }
 			bool GetBonusItemStatus() const { return isCarryingBonusItem; }
 
+			void SetFartRadius(const float radius) { fartRadius = radius; }
+			float GetFartRadius() const { return fartRadius; }
+			
+			bool CanFart()
+			{
+				if (canFart)
+					fartCD = 10.f;
+				return canFart;
+			}
 			bool IsGrounded() const { return isGrounded; }
 		protected:
 			std::vector<GameObject*> collectedApples;
@@ -54,6 +63,9 @@ namespace NCL
 			std::vector<GameObject*> collectedHats;
 			bool isCarryingBonusItem;
 			bool isGrounded;
+			float fartCD;
+			bool canFart;
+			float fartRadius;
 		};
 	}
 }

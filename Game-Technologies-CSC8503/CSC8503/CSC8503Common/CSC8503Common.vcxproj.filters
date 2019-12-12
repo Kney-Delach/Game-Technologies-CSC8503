@@ -168,6 +168,9 @@
     <ClInclude Include="HingeConstraint.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="FloatToString.h">
+      <Filter>Other</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionDetection.cpp">

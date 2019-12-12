@@ -33,18 +33,8 @@
 #include "../CSC8503Common/HeightConstraint.h"
 #include "../CSC8503Common/HingeConstraint.h"
 
-#include <sstream>
 #include <algorithm>
-
-//todo: move this function
-template <typename T>
-std::string TimeToString(const T a_value, const int n = 2)
-{
-	std::ostringstream out;
-	out.precision(n);
-	out << std::fixed << a_value;
-	return out.str();
-}
+#include "../CSC8503Common/FloatToString.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -354,8 +344,7 @@ void GooseGame::UpdateGame(float dt)
 	}
 	for (unsigned i = 0; i < playerCollection.size(); i++)
 	{
-		//todo: make the following functions be called in an update function
-		playerCollection[i]->DrawInventoryToUI();
+		playerCollection[i]->UpdateCooldown(dt);
 		playerCollection[i]->UpdateInventoryTransformations(dt);
 	}
 
@@ -494,7 +483,7 @@ int GooseGame::GameStatusUpdate(float dt) //todo: clean this up
 	gameTimer -= dt;
 	static const Vector4 green(1, 0, 0, 1);
 	static const Vector2 pos(5, 175);
-	const std::string sc = "Time: " + TimeToString<float>(gameTimer, 2);
+	const std::string sc = "Time: " + FloatToString<float>(gameTimer, 2);
 	Debug::Print(sc, pos, green);
 	return 0; // 0 is GAME NOT OVER
 }
@@ -504,7 +493,7 @@ float GooseGame::VictoryScreenUpdate(float dt, int gameResult)
 	gameTimer -= dt;
 	static const Vector4 green(1, 0, 1, 1);
 	static const Vector2 pos(5, 1000);
-	const std::string sc = "Back To Lobby In: " + TimeToString<float>(gameTimer, 2);
+	const std::string sc = "Back To Lobby In: " + FloatToString<float>(gameTimer, 2);
 	Debug::Print(sc, pos, green);
 
 	// game has ended, 1 is lost, 2 is won, create a timer to go to the menu in X seconds and update leaderboard files
@@ -1071,7 +1060,6 @@ void GooseGame::SimpleGJKTest()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//todo: add yaw and roll
 void GooseGame::TPPlayerUpdate(float dt)
 {
 	//renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
@@ -1086,6 +1074,29 @@ void GooseGame::TPPlayerUpdate(float dt)
 
 	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
 
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q) && playerCollection[thisPlayerIndex]->CanFart())
+	{
+		// fart
+		const float radius = playerCollection[thisPlayerIndex]->GetFartRadius();
+		//todo: add a fart sound effect 
+		//todo: iterate for keepers as well as farmers
+		for (BasicAIObject* farmer : farmerCollection)
+		{
+			Vector3 direction = playerCollection[thisPlayerIndex]->GetConstTransform().GetWorldPosition() - farmer->GetConstTransform().GetWorldPosition();
+			if (direction.Length() < radius)
+			{
+				direction.Normalise();
+
+				Ray ray(playerCollection[thisPlayerIndex]->GetConstTransform().GetWorldPosition(), direction);
+				RayCollision collision;
+				if (world->Raycast(ray, collision, true))
+				{
+					farmer->GetPhysicsObject()->AddForceAtPosition(-direction * 1500.f, collision.collidedAt);
+				}
+			}
+		}
+	}
+	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
 	{
 		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, 1) * forceMagnitude);

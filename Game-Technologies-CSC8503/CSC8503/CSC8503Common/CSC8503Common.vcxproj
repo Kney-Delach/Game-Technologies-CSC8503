@@ -140,6 +140,7 @@
     <ClInclude Include="BoundingVolume.h" />
     <ClInclude Include="CollectableObject.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="FloatToString.h" />
     <ClInclude Include="HeightConstraint.h" />
     <ClInclude Include="HingeConstraint.h" />
     <ClInclude Include="Layer.h" />
