@@ -49,7 +49,8 @@ bool CollisionDetection::RayIntersection(const Ray& r, GameObject& object, RayCo
 		case VolumeType::OBB:		return RayOBBIntersection(r, transform, (const OBBVolume&)* volume, collision);
 		case VolumeType::Sphere:	return RaySphereIntersection(r, transform, (const SphereVolume&)* volume, collision);
 		default:					return false;
-	}}
+	}
+}
 
 // Uses reduced plane case that only checks the 3 closest planes rather than all 6 planes that make up the box.
 // check direction of ray, if going left we check only right side of box, if up check bottom, if going forward, check back side of box.
@@ -87,7 +88,8 @@ bool CollisionDetection::RayBoxIntersection(const Ray& r, const Vector3& boxPos,
 	}
 	collision.collidedAt = intersection;
 	collision.rayDistance = bestT;
-	return true;
+	return true;
+
 }
 
 // pass through function to RayBoxIntersection function above, as is axis aligned
@@ -177,7 +179,8 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 		return AABBIntersection((AABBVolume&)*volA, transformA,(AABBVolume&)*volB, transformB, collisionInfo);
 		
 	if (pairType == VolumeType::Sphere) 
-		return SphereIntersection((SphereVolume&)*volA, transformA,(SphereVolume&)*volB, transformB, collisionInfo);
+		return SphereIntersection((SphereVolume&)*volA, transformA,(SphereVolume&)*volB, transformB, collisionInfo);
+
 	// objects not the same type (can perform bit shifting above to differentiate between these cases)
 	if (volA->type == VolumeType::AABB && volB->type == VolumeType::Sphere)
 		return AABBSphereIntersection((AABBVolume&)*volA, transformA, (SphereVolume&)*volB, transformB, collisionInfo);
@@ -188,6 +191,16 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 		collisionInfo.a = b;
 		collisionInfo.b = a;
 		return AABBSphereIntersection((AABBVolume&)*volB, transformB, (SphereVolume&)*volA, transformA, collisionInfo);
+	}
+	if (volA->type == VolumeType::OBB && volB->type == VolumeType::Sphere)
+	{
+		return OBBSphereIntersection((OBBVolume&)* volA, transformA, (SphereVolume&)* volB, transformB, collisionInfo);
+	}
+	if (volA->type == VolumeType::Sphere && volB->type == VolumeType::OBB)
+	{
+		collisionInfo.a = b;
+		collisionInfo.b = a;
+		return OBBSphereIntersection((OBBVolume&)* volB, transformB, (SphereVolume&)* volA, transformA, collisionInfo);
 	}
 	return false;
 }
@@ -299,6 +312,26 @@ bool CollisionDetection::AABBIntersection(const AABBVolume& volumeA, const Trans
 		 return true; // colliding
 	}
 	return false; // not colliding
+}
+
+bool CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo)
+{
+	AABBVolume aabbVolume(volumeA.GetHalfDimensions());
+	Transform transform1;
+	Transform transform2;
+
+	Vector3 delta = worldTransformB.GetWorldPosition() - worldTransformA.GetWorldPosition();
+
+	transform2.SetWorldPosition(worldTransformA.GetLocalOrientation().Conjugate() * delta);
+
+	if (AABBSphereIntersection(aabbVolume, transform1, volumeB, transform2, collisionInfo))
+	{
+		collisionInfo.point.normal = worldTransformA.GetLocalOrientation() * collisionInfo.point.normal;
+		collisionInfo.point.localA = worldTransformA.GetLocalOrientation() * collisionInfo.point.localA;
+		collisionInfo.point.localB = worldTransformA.GetLocalOrientation() * collisionInfo.point.localB;
+		return true;
+	}
+	return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

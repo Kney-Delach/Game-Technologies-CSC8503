@@ -94,6 +94,10 @@ namespace NCL
 		static bool	AABBTest(const Vector3& posA, const Vector3& posB, const Vector3& halfSizeA, const Vector3& halfSizeB);
 		static bool AABBIntersection(const AABBVolume& volumeA, const Transform& worldTransformA, const AABBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
 
+		// 12.12.2010
+		// OBB & Sphere collisions
+		static bool OBBSphereIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
+		
 		// tbd...
 		static bool RayPlaneIntersection(const Ray&r, const Plane&p, RayCollision& collisions);
 		static bool OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA, const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);

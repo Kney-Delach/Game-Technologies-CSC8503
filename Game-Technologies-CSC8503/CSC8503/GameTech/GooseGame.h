@@ -74,7 +74,8 @@ namespace NCL
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f);
 			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, bool isWall = false, float elasticity = 0.01f, float stiffness = 8.f);
-
+			GameObject* AddStaticOBBCubeToWorld(const Vector3& position, const Vector3& scale, const Vector3& rotation, const Vector4& color);
+			
 			// 6.12.2019 - adds a player to the world 
 			PlayerObject* AddGooseToWorld(const Vector3& position);
 			// 6.12.2019 - adds a collectable objects to the world

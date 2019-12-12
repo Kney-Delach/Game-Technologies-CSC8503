@@ -97,7 +97,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	}
 	
 	int playerIslandCount = 0;
-	for (int z = 0; z < gridHeight; ++z)
+	for (int z = 0; z < gridHeight; ++z) //todo: add trampoline addition
 	{
 		for (int x = 0; x < gridWidth; ++x)
 		{
@@ -117,8 +117,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			}
 			if (terrainMap[x + z * gridWidth] == 'l') //todo: move this to encompass entire world
 			{
-				//position = Vector3(x * 2 * cubeDims.x, 0.25f, z * 2 * cubeDims.z);
-				//GameObject* cube = AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 1.f, ((float)nodeSize) / 2.f), 0.f);
 				GameObject* cube = AddStaticCubeToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize , -4.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, Vector3(static_cast<float>(gridWidth) * nodeSize, 1.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, 0.f);
 				cube->GetRenderObject()->SetColour(Vector4(0.f, 0.5f, 0.5f, 0.f));
 			}
@@ -126,6 +124,11 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			{
 				position = Vector3(x * 2 * cubeDims.x, 0.f, z * 2 * cubeDims.z);
 				AddFloorToWorld(position, ObjectCollisionType::SPRING, Vector3(((float)nodeSize) / 2.f, 2.f, ((float)nodeSize) / 2.f), Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
+			}
+			if (terrainMap[x + z * gridWidth] == 'q') // water ramp
+			{
+				position = Vector3(x * 2 * cubeDims.x, -0.25f, z * 2 * cubeDims.z-0.1f);
+				AddStaticOBBCubeToWorld(position,Vector3(((float)nodeSize) / 2.f, 0.25f, ((float)nodeSize) / 2.f), Vector3(20, 0, 0),Vector4(0.f, 0.f, 1.f, 0.f));
 			}
 			if (terrainMap[x + z * gridWidth] == 's')
 			{
@@ -793,6 +796,27 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 
 	world->AddGameObject(cube);
 
+	return cube;
+}
+
+GameObject* GooseGame::AddStaticOBBCubeToWorld(const Vector3& position, const Vector3& scale, const Vector3& rotation, const Vector4& color)
+{
+	GameObject* cube = new GameObject();
+	OBBVolume* volume = new OBBVolume(scale);
+	cube->SetBoundingVolume((CollisionVolume*)volume);
+	cube->GetTransform().SetWorldScale(scale);
+	cube->GetTransform().SetWorldPosition(position);
+	cube->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(rotation.x, rotation.y, rotation.z));
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+	cube->GetPhysicsObject()->SetElasticity(0.0f);
+	cube->GetPhysicsObject()->SetStiffness(0.0f);
+	cube->GetPhysicsObject()->SetGravityUsage(false);
+	cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE);
+	cube->GetPhysicsObject()->SetInverseMass(0);
+	cube->GetPhysicsObject()->InitCubeInertia();
+	cube->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+	world->AddGameObject(cube);
 	return cube;
 }
 

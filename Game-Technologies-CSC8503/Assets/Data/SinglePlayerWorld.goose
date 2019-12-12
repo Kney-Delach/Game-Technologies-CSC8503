@@ -6,7 +6,7 @@
 mmmmmmmmmmmmmmmmmmmmmmmm
 m..wwwwwwwwwwwwwwwwwwwwm
 m.swwwwwwwwwwwwwwwwwwwwm
-mmmmmm..mm.mm.mm.mm.mm.m
+mmmmmmqqmmqmmqmmqmmqmmqm
 m......................m
 m..xxxx................m
 mx......x..............m
