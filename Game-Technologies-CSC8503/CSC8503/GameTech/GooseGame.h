@@ -136,7 +136,6 @@ namespace NCL
 			int appleCollectableCount;
 			int cornCollectableCount;
 			int hatCollectableCount;
-			bool gameComplete = false;
 		public:
 			int GameStatusUpdate(float dt);
 			float VictoryScreenUpdate(float dt, int gameResult);

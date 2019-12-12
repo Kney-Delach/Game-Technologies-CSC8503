@@ -56,7 +56,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	appleCollectableCount = 0;
 	cornCollectableCount = 0;
 	hatCollectableCount = 0;
-	gameComplete = false;
 	
 	if (filePath.empty())
 	{
