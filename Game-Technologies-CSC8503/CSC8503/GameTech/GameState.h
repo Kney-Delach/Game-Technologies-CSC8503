@@ -64,7 +64,7 @@ namespace NCL
 		class MultiPlayerState : public GameState
 		{
 		public:
-			MultiPlayerState(int id = 2, int maximumChoices = 3) : GameState(id, "Multi-Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) {}
+			MultiPlayerState(int id = 2, int maximumChoices = 2) : GameState(id, "Multi-Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) {}
 			virtual ~MultiPlayerState() = default;
 			virtual int Update(float dt) override;
 		private:
