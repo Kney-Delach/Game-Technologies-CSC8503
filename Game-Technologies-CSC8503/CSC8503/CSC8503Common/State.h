@@ -54,10 +54,10 @@ namespace NCL
 			virtual void DebugDraw() override
 			{
 				const std::string msg = "Current FSM State: " + name;
-				Debug::Print(msg, Vector2(5, 600), Vector4(0, 0, 0, 1));
+				Debug::Print(msg, Vector2(5, 450), Vector4(0, 0, 0, 1));
 
 				const std::string desc = "State Description: " + description;
-				Debug::Print(desc, Vector2(5, 550), Vector4(0, 0, 0, 1));
+				Debug::Print(desc, Vector2(5, 400), Vector4(0, 0, 0, 1));
 			}
 		protected:
 			StateFunction func;

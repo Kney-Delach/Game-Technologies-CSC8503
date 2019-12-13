@@ -47,7 +47,6 @@ namespace NCL
 			//todo: remove the following function
 			void AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions);
 
-			void InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing);
 			void BridgeConstraintTest();
 			void SimpleGJKTest();
 
@@ -55,7 +54,7 @@ namespace NCL
 			void TPPlayerUpdate(float dt);
 			void TPCameraUpdate();
 			
-			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f);
+			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f, const std::string& name = "Ground");
 			PlayerIsland* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f, const Vector4& color = Vector4(1,1,1,1));

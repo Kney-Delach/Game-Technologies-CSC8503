@@ -77,9 +77,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		playerCollection.push_back(AddGooseToWorld(Vector3(posX * (float) nodeSize, posY, posZ * (float)nodeSize)));
 	}
 	
-	// adds the water to the entire world 
-	//AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -2.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 2.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
-
 	const Vector3 cubeDims = Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2);
 	Vector3 position;
 
@@ -131,7 +128,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if(terrainMap[x + z * gridWidth] == 'w')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 0.f, z * 2 * cubeDims.z);
-				AddFloorToWorld(position, ObjectCollisionType::SPRING, Vector3(((float)nodeSize) / 2.f, 2.f, ((float)nodeSize) / 2.f), Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
+				AddFloorToWorld(position, ObjectCollisionType::SPRING, Vector3(((float)nodeSize) / 2.f, 2.f, ((float)nodeSize) / 2.f), Vector4(0.f, 0.f, 1.f, 0.f), 300.f, "Water");
 			}
 			if (terrainMap[x + z * gridWidth] == 'q') // water ramp
 			{
@@ -583,9 +580,9 @@ void GooseGame::AddJumpPadToWorld(const Vector3& position, const Vector3& dimens
 
 
 // A single function to add a large immoveable cube to the bottom of our world
-GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness)
+GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness, const std::string& name)
 {
-	GameObject* floor = new GameObject("Ground");
+	GameObject* floor = new GameObject(name);
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
@@ -605,7 +602,7 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	
 	floor->GetRenderObject()->SetColour(colour);
 	
-	floor->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	floor->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 	
 	world->AddGameObject(floor);
 
@@ -682,7 +679,7 @@ GameObject* GooseGame::AddSphereToWorld(const Vector3& position, float radius, b
 
 GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass, const Vector4& color)
 {
-	GameObject* cube = new GameObject("Cube");
+	GameObject* cube = new GameObject("Constrained OBB Gate");
 
 	if(isAABB)
 	{
@@ -753,7 +750,7 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 
 GameObject* GooseGame::AddStaticOBBCubeToWorld(const Vector3& position, const Vector3& scale, const Vector3& rotation, const Vector4& color)
 {
-	GameObject* cube = new GameObject();
+	GameObject* cube = new GameObject("Ramp");
 	OBBVolume* volume = new OBBVolume(scale);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 	cube->GetTransform().SetWorldScale(scale);
@@ -943,7 +940,7 @@ GameObject* GooseGame::AddCornToWorld(const Vector3& position)
 
 GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 {
-	CollectableObject* hat = new CollectableObject(CollectableType::HAT, "Hat"); //todo: insert static id (use the final value of this to dictate victory checks, also reset when world respawns
+	CollectableObject* hat = new CollectableObject(CollectableType::HAT, "Hat");
 
 	float size = 0.7f;
 
@@ -960,7 +957,7 @@ GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 	hat->GetPhysicsObject()->SetInverseMass(1.0f);
 	hat->GetPhysicsObject()->InitSphereInertia();
 	hat->GetPhysicsObject()->SetElasticity(0.8f);
-	hat->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
+	hat->GetPhysicsObject()->SetStiffness(300.f);
 
 	hat->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	hat->GetPhysicsObject()->SetGravityUsage(false);
@@ -971,34 +968,6 @@ GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 	return hat;
 }
 
-
-void GooseGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
-{
-	const float sphereRadius = 1.f;
-	const Vector3 cubeDims = Vector3(1,1,1);
-	for (int x = 0; x < numRows; ++x) 
-	{
-		for (int z = 0; z < numCols; ++z) 
-		{
-			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
-			if (x % 2)
-			{
-				if(x % 3)
-					AddCubeToWorld(position, cubeDims, true);
-				else
-					AddCubeToWorld(position, cubeDims, false);
-			}
-			else
-			{
-				if(x % 3)
-					AddSphereToWorld(position, sphereRadius, false);
-				else 
-					AddSphereToWorld(position, sphereRadius, true);
-
-			}
-		}
-	}
-}
 
 
 void GooseGame::AddMultiDirectionalGate(const Vector3& startPosition, const Vector3& dimensions, const Vector4& color, int numberOfLinks, int nodeSize)

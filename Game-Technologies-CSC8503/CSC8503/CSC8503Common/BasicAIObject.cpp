@@ -25,6 +25,7 @@
 #include "StateTransition.h"
 #include "GameWorld.h"
 #include <random>
+#include "FloatToString.h"
 
 namespace NCL
 {
@@ -162,6 +163,45 @@ namespace NCL
 			const std::string val = GetPhysicsObject()->IsStatic() ? "True" : "false";
 			const std::string staticMsg = "Is Static: " + val;
 			Debug::Print(staticMsg, Vector2(5, 650), Vector4(0, 0, 0, 1));
+
+			std::string physicsMSG = "Physics Volume: ";
+			if (!boundingVolume)
+			{
+				physicsMSG += "No Volume;";
+			}
+			else
+			{
+				switch (boundingVolume->type)
+				{
+				case VolumeType::AABB:
+				{
+					physicsMSG += "AABB";
+					break;
+				}
+				case VolumeType::OBB:
+				{
+					physicsMSG += "OBB";
+					break;
+				}
+				case VolumeType::Sphere:
+				{
+					physicsMSG += "SPHERE";
+					break;
+				}
+				}
+			}
+			Debug::Print(physicsMSG, Vector2(5, 600), Vector4(0, 0, 0, 1));
+
+			
+			// world position
+			const Vector3 pos = GetConstTransform().GetWorldPosition();
+			const std::string worldPos = "World Position: (" +  FloatToString(pos.x, 2) + ", " + FloatToString(pos.y, 2) + ", " + FloatToString(pos.z, 2) + ")";
+			Debug::Print(worldPos, Vector2(5, 550), Vector4(0, 0, 0, 1));
+
+			// rotation
+			const Quaternion rot = GetConstTransform().GetWorldOrientation();
+			const std::string worldOrientation = "World Orientation: (" + FloatToString(rot.x, 2) + ", " + FloatToString(rot.y, 2) + ", " + FloatToString(rot.z, 2) + ")";
+			Debug::Print(worldOrientation, Vector2(5, 500), Vector4(0, 0, 0, 1));
 			
 			const float halfSize = ((AABBVolume*)boundingVolume)->GetHalfDimensions().y / 2.f;
 			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(0, 0, 1), true);
