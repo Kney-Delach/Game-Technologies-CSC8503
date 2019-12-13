@@ -37,6 +37,11 @@
 #include <algorithm>
 #include "../CSC8503Common/FloatToString.h"
 
+
+//#include "../CSC8503Common/GameServer.h"
+//#include "../CSC8503Common/GameClient.h"
+#include "TestPacketReceiver.h"
+
 using namespace NCL;
 using namespace CSC8503;
 
@@ -250,7 +255,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 
 #pragma region INITIALIZATION
 
-GooseGame::GooseGame()
+GooseGame::GooseGame() : playerNetworkPacket("")
 {
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
@@ -265,7 +270,7 @@ GooseGame::GooseGame()
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
 	inSelectionMode = false;
-
+	
 	// debug toggles
 	displayBoundingVolumes = false;
 	
@@ -340,8 +345,19 @@ GooseGame::~GooseGame()
 
 #pragma region UPDATE
 
-void GooseGame::UpdateGame(float dt)
-{	
+StringPacket* GooseGame::UpdateGame(float dt)
+{
+	const std::string msg = "\n - Game Time Left: " + FloatToString(gameTimer, 2) + 
+		"\n - Player Position: "
+	+ FloatToString(playerCollection[0]->GetConstTransform().GetWorldPosition().x, 2)
+	+ " , "
+	+ FloatToString(playerCollection[0]->GetConstTransform().GetWorldPosition().y, 2)
+	+ " , "
+	+ FloatToString(playerCollection[0]->GetConstTransform().GetWorldPosition().z, 2)
+	+ "\n - Player Score: " + FloatToString(islandCollection[0]->GetScore())
+	;
+	playerNetworkPacket = StringPacket(msg);
+	
 	if (playerControlMode)
 	{
 		TPCameraUpdate();
@@ -448,7 +464,9 @@ void GooseGame::UpdateGame(float dt)
 	else
 	{
 		renderer->Render();
-	}	
+	}
+
+	return &playerNetworkPacket;
 }
 
 void GooseGame::UpdateDebugKeys()
@@ -591,6 +609,11 @@ float GooseGame::VictoryScreenUpdate(float dt, int gameResult)
 	renderer->Render();
 
 	return gameTimer;
+}
+
+int GooseGame::GetScore()
+{
+	return islandCollection[0]->GetScore();
 }
 
 #pragma endregion UPDATE

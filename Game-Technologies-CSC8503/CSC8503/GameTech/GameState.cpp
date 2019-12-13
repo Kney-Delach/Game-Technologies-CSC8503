@@ -257,12 +257,12 @@ namespace NCL
 		{
 			if (serverGame)
 			{
-				server->SendGlobalPacket(StringPacket(" Server says hello ! " + std::to_string(dt)));
-				server->UpdateServer();
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				if (gameResult == 0)
 				{
-					serverGame->UpdateGame(dt);
+					StringPacket* serverGameData = serverGame->UpdateGame(dt);
+					server->SendGlobalPacket(*serverGameData);
+					server->UpdateServer();
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
 					RenderMenu();
 					gameResult = serverGame->GameStatusUpdate(dt);
 					if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE))
@@ -270,12 +270,11 @@ namespace NCL
 						return -2;
 					}
 				}
-
 				if (gameResult != 0)
 				{
 					if (serverGame->VictoryScreenUpdate(dt, gameResult) <= 0)
 					{
-						// update leaderboards data here
+						//*(LeaderboardsState::instance)->UpdateScore(serverGame->GetScore());
 						return -2;
 					}
 				}
@@ -290,7 +289,7 @@ namespace NCL
 			NetworkBase::Initialise();
 			//serverReceiver = TestPacketReceiver(" Server ");
 			int port = NetworkBase::GetDefaultPort();
-			server = new GameServer(port, 1);
+			server = new GameServer(port, 2);
 			server->RegisterPacketHandler(String_Message, &serverReceiver);
 
 			gameResult = 0;
@@ -321,12 +320,12 @@ namespace NCL
 		{
 			if (clientGame)
 			{
-				
-				client->SendPacket(StringPacket(" Client says hello ! " + std::to_string(dt)));
-				client->UpdateClient();
-
 				if (gameResult == 0)
 				{
+					StringPacket* clientGameData = clientGame->UpdateGame(dt);
+					client->SendPacket(*clientGameData);
+					client->UpdateClient();
+					
 					clientGame->UpdateGame(dt);
 					RenderMenu();
 					gameResult = clientGame->GameStatusUpdate(dt);

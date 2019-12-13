@@ -15,7 +15,7 @@ namespace NCL {
 			void StartAsServer();
 			void StartAsClient(char a, char b, char c, char d);
 
-			void UpdateGame(float dt) override;
+			//void UpdateGame(float dt);
 
 			void SpawnPlayer();
 

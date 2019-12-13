@@ -4,6 +4,7 @@
 #include <vector>
 #include "Leaderboard.h"
 #include "TestPacketReceiver.h"
+#include <algorithm>
 
 namespace NCL
 {
@@ -82,12 +83,18 @@ namespace NCL
 			virtual ~LeaderboardsState() = default;
 			virtual int Update(float dt) override;
 		public:
-			static Leaderboard s_Leaderboard;
+			//static LeaderboardsState* instance;
+			void UpdateScore(int score) // update and sort scores
+			{
+				scores.emplace_back(score);
+				sort(scores.begin(), scores.end(), greater<int>());
+			}
 		private:
 			void RenderMenu();
 		private:
 			int selectedChoice;
 			int maxChoices;
+			std::vector<int> scores;
 		};
 
 		class ServerState : public GameState
