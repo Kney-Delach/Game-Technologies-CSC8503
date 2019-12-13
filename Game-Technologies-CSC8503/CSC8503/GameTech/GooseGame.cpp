@@ -1024,7 +1024,6 @@ void GooseGame::AddMultiDirectionalGate(const Vector3& startPosition, const Vect
 
 	PositionConstraint* constraintRightAndLeft = new PositionConstraint(leftBlock, rightBlock, 2* nodeSize * 1.4f);
 	world->AddConstraint(constraintRightAndLeft);
-
 }
 
 #pragma endregion ADD_OBJECTS
@@ -1139,7 +1138,7 @@ void GooseGame::TPPlayerUpdate(float dt)
 		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
 	}	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
-	{
+	{	
 		pitchYawRoll.y -= rotationSpeed * dt;
 		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
 		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));

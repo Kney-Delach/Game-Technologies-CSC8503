@@ -24,6 +24,6 @@ void HingeConstraint::UpdateConstraint(float dt)
 	relativePosition.y = 0;
 	const Vector3 direction = relativePosition.Normalised();
 
-	objectA->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(0, Maths::RadiansToDegrees(atan2f(-direction.z, direction.x)), 0));
-	objectB->GetTransform().SetLocalOrientation(objectA->GetTransform().GetLocalOrientation());//Quaternion::EulerAnglesToQuaternion(0, Maths::RadiansToDegrees(atan2f(-direction.z, direction.x)), 0));
+	objectA->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(0, RadiansToDegrees(atan2f(-direction.z, direction.x)), 0)); // atan2 gives angle between x and z axis in radians
+	objectB->GetTransform().SetLocalOrientation(objectA->GetTransform().GetLocalOrientation());
 }

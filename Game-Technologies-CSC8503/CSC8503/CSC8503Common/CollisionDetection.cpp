@@ -319,9 +319,7 @@ bool CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const T
 	AABBVolume aabbVolume(volumeA.GetHalfDimensions());
 	Transform transform1;
 	Transform transform2;
-
-	Vector3 delta = worldTransformB.GetWorldPosition() - worldTransformA.GetWorldPosition();
-
+	const Vector3 delta = worldTransformB.GetWorldPosition() - worldTransformA.GetWorldPosition();
 	transform2.SetWorldPosition(worldTransformA.GetLocalOrientation().Conjugate() * delta);
 
 	if (AABBSphereIntersection(aabbVolume, transform1, volumeB, transform2, collisionInfo))
@@ -329,9 +327,9 @@ bool CollisionDetection::OBBSphereIntersection(const OBBVolume& volumeA, const T
 		collisionInfo.point.normal = worldTransformA.GetLocalOrientation() * collisionInfo.point.normal;
 		collisionInfo.point.localA = worldTransformA.GetLocalOrientation() * collisionInfo.point.localA;
 		collisionInfo.point.localB = worldTransformA.GetLocalOrientation() * collisionInfo.point.localB;
-		return true;
+		return true; // colliding
 	}
-	return false;
+	return false; // not colliding
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
