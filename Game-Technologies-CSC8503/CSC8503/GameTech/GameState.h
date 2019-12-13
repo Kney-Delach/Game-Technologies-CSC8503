@@ -3,12 +3,15 @@
 #include <string>
 #include <vector>
 #include "Leaderboard.h"
+#include "TestPacketReceiver.h"
 
 namespace NCL
 {
 	namespace CSC8503
 	{
 		class GooseGame;
+		class GameServer;
+		class GameClient;
 		
 		class GameState
 		{
@@ -90,7 +93,7 @@ namespace NCL
 		class ServerState : public GameState
 		{
 		public:
-			ServerState(int id = 1) : GameState(id, "Server Game"), selectedChoice(0), gameResult(0), gameOverTimer(20.f) { serverGame = nullptr; }
+			ServerState(int id = 1) : GameState(id, "Server Game"), gameResult(0), gameOverTimer(20.f), serverReceiver("Server"), server(nullptr), serverGame(nullptr) {}
 			virtual ~ServerState() = default;
 			virtual int Update(float dt) override;
 			virtual void OnAwake();
@@ -98,9 +101,9 @@ namespace NCL
 		private:
 			void RenderMenu();
 		private:
-			int selectedChoice;
-			int maxChoices;
 			GooseGame* serverGame;
+			GameServer* server;
+			TestPacketReceiver serverReceiver;
 			int gameResult;
 			float gameOverTimer;
 		};
@@ -108,7 +111,7 @@ namespace NCL
 		class ClientState : public GameState
 		{
 		public:
-			ClientState(int id = 1) : GameState(id, "Client Game"), selectedChoice(0), gameResult(0), gameOverTimer(20.f) { clientGame = nullptr; }
+			ClientState(int id = 1) : GameState(id, "Client Game"), gameResult(0), gameOverTimer(20.f), clientReceiver("Client"), client(nullptr), clientGame(nullptr) { }
 			virtual ~ClientState() = default;
 			virtual int Update(float dt) override;
 			virtual void OnAwake();
@@ -116,9 +119,9 @@ namespace NCL
 		private:
 			void RenderMenu();
 		private:
-			int selectedChoice;
-			int maxChoices;
 			GooseGame* clientGame;
+			GameClient* client;
+			TestPacketReceiver clientReceiver;
 			int gameResult;
 			float gameOverTimer;
 		};

@@ -5,6 +5,9 @@
 #include "../CSC8503Common/Debug.h"
 
 #include "GooseGame.h"
+#include "TestPacketReceiver.h"
+#include "../CSC8503Common/GameServer.h"
+#include "../CSC8503Common/GameClient.h"
 
 namespace NCL
 {
@@ -254,6 +257,9 @@ namespace NCL
 		{
 			if (serverGame)
 			{
+				server->SendGlobalPacket(StringPacket(" Server says hello ! " + std::to_string(dt)));
+				server->UpdateServer();
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				if (gameResult == 0)
 				{
 					serverGame->UpdateGame(dt);
@@ -281,12 +287,19 @@ namespace NCL
 
 		void ServerState::OnAwake()
 		{
+			NetworkBase::Initialise();
+			//serverReceiver = TestPacketReceiver(" Server ");
+			int port = NetworkBase::GetDefaultPort();
+			server = new GameServer(port, 1);
+			server->RegisterPacketHandler(String_Message, &serverReceiver);
+
 			gameResult = 0;
 			serverGame = new GooseGame();
 		}
 
 		void ServerState::OnSleep()
 		{
+			NetworkBase::Destroy();
 			delete serverGame;
 			serverGame = nullptr;
 		}
@@ -308,6 +321,10 @@ namespace NCL
 		{
 			if (clientGame)
 			{
+				
+				client->SendPacket(StringPacket(" Client says hello ! " + std::to_string(dt)));
+				client->UpdateClient();
+
 				if (gameResult == 0)
 				{
 					clientGame->UpdateGame(dt);
@@ -335,12 +352,23 @@ namespace NCL
 
 		void ClientState::OnAwake()
 		{
-			gameResult = 0;
-			clientGame = new GooseGame();
+			//clientReceiver = TestPacketReceiver("Client");
+			NetworkBase::Initialise();
+			client = new GameClient();
+			client->RegisterPacketHandler(String_Message, &clientReceiver);
+			int port = NetworkBase::GetDefaultPort();
+
+			bool canConnect = client->Connect(127, 0, 0, 1, port);
+			if(canConnect)
+			{
+				gameResult = 0;
+				clientGame = new GooseGame();
+			}
 		}
 
 		void ClientState::OnSleep()
 		{
+			NetworkBase::Destroy();
 			delete clientGame;
 			clientGame = nullptr;
 		}

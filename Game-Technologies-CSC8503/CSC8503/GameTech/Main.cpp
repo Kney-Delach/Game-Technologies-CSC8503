@@ -47,7 +47,7 @@ OGLRenderer* renderer;
 //todo: abstract renderer
 int main()
 {
-	TestNetworking();
+	//TestNetworking();
 	// window stuff
 	Window*w = Window::CreateGameWindow("CSC8503 Game technology!", 1920, 1080);
 	if (!w->HasInitialised()) 
