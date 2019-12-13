@@ -36,6 +36,8 @@ namespace NCL
 			world = nullptr;
 			moveTowardsTarget = false;
 			InitStateMachine();
+			debugStartNodeIndex = -1;
+			debugEndNodeIndex = -1;
 		} 
 
 		BasicAIObject::~BasicAIObject()
@@ -78,8 +80,8 @@ namespace NCL
 				obj->Move();
 			};
 
-			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(this));
-			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(this));
+			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(this), "AI Idle", "No movement!");
+			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(this), "AI Moving", "Moving towards goose or Homing.");
 
 			stateMachine->AddState(stateIdle);
 			stateMachine->AddState(stateMoving);
@@ -103,10 +105,10 @@ namespace NCL
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(0, 0, -1));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0));
 				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 0));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0.99));
-				FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, 1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(1, 0, -1));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, 0.99));
+				//FindTarget(Vector3(0.f,-halfSize,0.f),Vector3(-1, 0, -1));
 				//todo: The following function should successfully hit the sphere of the goose when in direct line of sight, but doesn't for known reasons
 				//for (PlayerObject* g : *playerObjectCollection)
 				//{
@@ -121,15 +123,19 @@ namespace NCL
 			stateMachine->Update();
 		}
 
-		bool BasicAIObject::FindTarget(const Vector3& offset, const Vector3& direction)
+		bool BasicAIObject::FindTarget(const Vector3& offset, const Vector3& direction, bool drawLines)
 		{
 			Ray objectForwardRay = BuildRayFromDirectionOffset(offset, direction);
 			RayCollision closestObjectCollision;
 			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
 			{
 				GameObject* obj = (GameObject*)closestObjectCollision.node;
-				GameObject::DrawLineInDirection(this, direction * 5.f, offset);
-				GameObject::DrawLineBetweenObjectsOffset(offset, this, obj);
+				
+				if(drawLines)
+				{
+					GameObject::DrawLineInDirection(this, direction * 5.f, offset);
+					GameObject::DrawLineBetweenObjectsOffset(offset, this, obj);
+				}
 
 				if(obj->GetName() == "Goose")
 				{
@@ -145,51 +151,33 @@ namespace NCL
 			return false;
 		}
 
-		void BasicAIObject::ReturnHome()
-		{
-		}
-
 		void BasicAIObject::DebugDraw()
 		{
-			if(target && navigationTable)
+			stateMachine->DebugDraw();
+			DrawDebugVolume();
+			
+			const std::string msg = "Selected GameObject: " + name;
+			Debug::Print(msg, Vector2(5, 700), Vector4(0, 0, 0, 1));
+
+			const std::string val = GetPhysicsObject()->IsStatic() ? "True" : "false";
+			const std::string staticMsg = "Is Static: " + val;
+			Debug::Print(staticMsg, Vector2(5, 650), Vector4(0, 0, 0, 1));
+			
+			const float halfSize = ((AABBVolume*)boundingVolume)->GetHalfDimensions().y / 2.f;
+			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(0, 0, 1), true);
+			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(0, 0, -1), true);
+			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(-1, 0, 0), true);
+			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(1, 0, 0), true);
+
+			if(debugStartNodeIndex != -1 && debugEndNodeIndex != -1)
 			{
-				NavTableNode** table = navigationTable->GetNavTable();
-
-				const Vector3 startPos = GetConstTransform().GetWorldPosition();
-				const Vector3 targetPos = target->GetConstTransform().GetWorldPosition();
-
-				const int targetX = (targetPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
-				const int targetZ = (targetPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
-
-				const int startX = (startPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
-				const int startZ = (startPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
-
-				if (startX < 0 || startX > navigationGrid->GetWidth() - 1 || startZ < 0 || startZ > navigationGrid->GetHeight() - 1)
-				{
-					return;
-				}
-
-				if (targetX < 0 || targetX > navigationGrid->GetWidth() - 1 || targetZ < 0 || targetZ > navigationGrid->GetHeight() - 1)
-				{
-					return;
-				}
-				
+				// display navigation table positions
 				GridNode* allNodes = navigationGrid->GetNodes();
-				GridNode* startNode = &allNodes[(startZ * navigationGrid->GetWidth()) + startX];
-				GridNode* endNode = &allNodes[(targetZ * navigationGrid->GetWidth()) + targetX];
-				
-				const int startIndex = startNode->nodeID;
-				const int endIndex = endNode->nodeID;				
-				const int nextNodeIndex = table[startIndex][endIndex].nearestNodeID;
-				
-				if(nextNodeIndex != -1)
-				{
-					GridNode* nextNode = &allNodes[nextNodeIndex];
-
-					Debug::DrawCircle(startNode->position, 1.f, Vector4(1.f, 0.f, 0.f, 1.f));
-					Debug::DrawCircle(nextNode->position, 1.f, Vector4(1.f, 1.f, 1.f, 1.f));
-					Debug::DrawLine(startPos, nextNode->position, Vector4(1, 1, 0, 1));
-				}
+				GridNode* startNode = &allNodes[debugStartNodeIndex];
+				GridNode* endNode = &allNodes[debugEndNodeIndex];
+				Debug::DrawCircle(startNode->position, 1.f, Vector4(0.f, 0.f, 0.f, 1.f)); // start at black
+				Debug::DrawCircle(endNode->position, 1.f, Vector4(1.f, 1.f, 1.f, 1.f)); // finish at white 
+				Debug::DrawLine(startNode->position, endNode->position, Vector4(1, 1, 1, 1)); // white line 
 			}
 		}
 
@@ -296,6 +284,8 @@ namespace NCL
 						Vector3 direction = nextNode->position - GetConstTransform().GetWorldPosition();
 						direction.Normalise();
 						physicsObject->AddForce(direction * 150.f);
+						debugStartNodeIndex = startIndex;
+						debugEndNodeIndex = endIndex;
 					}
 				}
 			}

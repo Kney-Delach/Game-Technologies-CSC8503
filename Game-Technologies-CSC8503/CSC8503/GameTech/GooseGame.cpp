@@ -321,7 +321,7 @@ void GooseGame::UpdateGame(float dt)
 	{
 		TPCameraUpdate();
 		TPPlayerUpdate(dt);
-		Debug::Print("[R] -> Free Camera!", Vector2(5, 900), Vector4(0,0,0,1));
+		Debug::Print("[R] -> Free Camera!", Vector2(5, 875), Vector4(0,0,0,1));
 		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
 		{
 			playerControlMode = false;
@@ -338,11 +338,16 @@ void GooseGame::UpdateGame(float dt)
 			Window::GetWindow()->LockMouseToWindow(true);
 			inSelectionMode = false;
 			displayBoundingVolumes = false;
+			if (selectionObject)
+			{	
+				selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
+				selectionObject = nullptr;
+			}
 		}
 		
 		UpdateDebugKeys();
 		
-		Debug::Print("[R] -> Player Control!", Vector2(5, 900), Vector4(1, 1, 0, 1));
+		Debug::Print("[R] -> Player Control!", Vector2(5, 875), Vector4(0, 1, 1, 1));
 		Debug::Print("[P] -> display physics volumes!", Vector2(5, 850), Vector4(0, 1, 0, 1));
 		if(inSelectionMode)
 		{
@@ -354,7 +359,13 @@ void GooseGame::UpdateGame(float dt)
 				inSelectionMode = false;
 				Window::GetWindow()->ShowOSPointer(false);
 				Window::GetWindow()->LockMouseToWindow(true);
+				if (selectionObject)
+				{
+					selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
+					selectionObject = nullptr;
+				}
 			}
+			SelectObject();
 		}
 		else
 		{
@@ -381,7 +392,7 @@ void GooseGame::UpdateGame(float dt)
 
 	for (int i = 0; i < farmerCollection.size(); ++i)
 	{
-		//farmerCollection[i]->DebugDraw();
+		//farmerCollection[i]->DebugDraw(); // this displays all the target lines for an AI
 		farmerCollection[i]->Update();
 	}
 	
@@ -1181,102 +1192,71 @@ void GooseGame::DebugObjectMovement()
 	}
 }
 
-bool GooseGame::SelectObject()
+void GooseGame::SelectObject()
 {
-	//if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
-	//{
-	//	inSelectionMode = !inSelectionMode;
-	//	if (inSelectionMode)
-	//	{
-	//		Window::GetWindow()->ShowOSPointer(true);
-	//		Window::GetWindow()->LockMouseToWindow(false);
-	//	}
-	//	else
-	//	{
-	//		Window::GetWindow()->ShowOSPointer(false);
-	//		Window::GetWindow()->LockMouseToWindow(true);
-	//	}
-	//}
-	if (inSelectionMode)
+	if (selectionObject)
 	{
-		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
+		selectionObject->DebugDraw();
+		
+		//if (selectionObjectFront)
+		//{
+		//	selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+		//	selectionObjectFront = nullptr;
+		//}
+		//if (SelectionObjectBack)
+		//{
+		//	SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+		//	SelectionObjectBack = nullptr;
+		//}
 
+		//// getting object IN-FRONT of selected object
+		//Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
+		//RayCollision closestObjectCollision;
+		//if (world->Raycast(objectForwardRay, closestObjectCollision, true))
+		//{
+		//	selectionObjectFront = (GameObject*)closestObjectCollision.node;
+		//	selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
+		//	GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
+		//}
+		//
+		//// getting object BEHIND selected object
+		//Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
+		//RayCollision closestBehindCollision;
+		//if (world->Raycast(objectDownRay, closestBehindCollision, true))
+		//{
+		//	SelectionObjectBack = (GameObject*)closestBehindCollision.node;
+		//	SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
+		//	GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
+		//}
+	}
+
+	if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT))
+	{
 		if (selectionObject)
-		{
-			if (selectionObjectFront)
-			{
-				selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				selectionObjectFront = nullptr;
-			}
-			if (SelectionObjectBack)
-			{
-				SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				SelectionObjectBack = nullptr;
-			}
-
-			// getting object IN-FRONT of selected object
-			Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
-			RayCollision closestObjectCollision;
-			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
-			{
-				selectionObjectFront = (GameObject*)closestObjectCollision.node;
-				selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
-				GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
-			}
-
-			// getting object BEHIND selected object
-			Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
-			RayCollision closestBehindCollision;
-			if (world->Raycast(objectDownRay, closestBehindCollision, true))
-			{
-				SelectionObjectBack = (GameObject*)closestBehindCollision.node;
-				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
-				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
-			}
+		{	//set colour to deselected;
+			selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
+			selectionObject = nullptr;
+			//if (selectionObjectFront)
+			//{
+			//	selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+			//	selectionObjectFront = nullptr;
+			//}
+			//if (SelectionObjectBack)
+			//{
+			//	SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+			//	SelectionObjectBack = nullptr;
+			//}
 		}
 
-		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT))
+		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
+		RayCollision closestCollision;
+		if (world->Raycast(ray, closestCollision, true))
 		{
-			if (selectionObject)
-			{	//set colour to deselected;
-				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				selectionObject = nullptr;
-				if (selectionObjectFront)
-				{
-					selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-					selectionObjectFront = nullptr;
-				}
-				if (SelectionObjectBack)
-				{
-					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-					SelectionObjectBack = nullptr;
-				}
-			}
-
-			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
-			RayCollision closestCollision;
-			if (world->Raycast(ray, closestCollision, true))  // object has been selected 
-			{
-				selectionObject = (GameObject*)closestCollision.node;
-				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
-				return true;
-			}
-			return false;
-		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L))
-		{
-			if (selectionObject)
-			{
-				if (lockedObject == selectionObject)
-					lockedObject = nullptr;
-				else
-					lockedObject = selectionObject;
-			}
+			selectionObject = (GameObject*)closestCollision.node;
+			previousSelectedColor = selectionObject->GetRenderObject()->GetColour();
+			selectionObject->GetRenderObject()->SetColour(Vector4(0, 0, 0, 1));
 		}
 	}
-	else
-		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));
-	return false;
 }
 
 //todo: Add keys to modify position of selected object using forces

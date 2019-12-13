@@ -117,8 +117,9 @@ namespace NCL
 			//// DEBUG MODE DATA 
 			////////////////////////////////////////
 			bool displayBoundingVolumes;
+			Vector4 previousSelectedColor;
 			void UpdateDebugKeys();
-			bool SelectObject();
+			void SelectObject();
 			void MoveSelectedObject();
 			void DebugObjectMovement();
 			void GameObjectMovement();

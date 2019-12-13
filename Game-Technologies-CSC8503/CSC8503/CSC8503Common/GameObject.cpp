@@ -19,6 +19,19 @@
 
 using namespace NCL::CSC8503;
 
+//todo: implement this
+void GameObject::DebugDraw()
+{
+	DrawDebugVolume(); 
+	
+	const std::string msg = "Selected GameObject: " + name;
+	Debug::Print(msg, Vector2(5, 700), Vector4(0,0,0,1));
+
+	const std::string val = GetPhysicsObject()->IsStatic() ? "True" : "false";
+	const std::string staticMsg = "Is Static: " + val;
+	Debug::Print(staticMsg, Vector2(5, 650), Vector4(0, 0, 0, 1));
+}
+
 GameObject::GameObject(string objectName)
 {
 	name = objectName;
@@ -86,12 +99,6 @@ void GameObject::UpdateObjectPosition(float dt, const Vector3& parentPosition, c
 void GameObject::UpdateIslandStoredObjectPosition(const Vector3& parentPosition, const unsigned row, const unsigned index)
 {
 	this->GetTransform().SetWorldPosition(parentPosition + Vector3(3.f * row - 6.f, 2.f, index * 2.5f - 6.f));
-}
-
-// 28.11.2019 
-void GameObject::DrawDebug(const Vector4& color)
-{
-	//renderObject->SetColour(color);
 }
 
 void GameObject::DrawDebugVolume()

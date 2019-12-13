@@ -39,8 +39,7 @@ namespace NCL
 			void SetWorld(GameWorld* gameWorld) { world = gameWorld; }
 			void Update();
 			void Move();
-			void ReturnHome();
-			void DebugDraw();
+			virtual void DebugDraw() override;
 			int GetAIType() const { return aiType; }			
 			int GetObjectID() const { return objectID; }
 			void SetObjectID(const unsigned int id) { objectID = id; }			
@@ -55,7 +54,7 @@ namespace NCL
 			
 			void ClearTarget() { target = nullptr; }
 		private:
-			bool FindTarget(const Vector3& offset, const Vector3& direction);
+			bool FindTarget(const Vector3& offset, const Vector3& direction, bool drawLines = false);
 		protected:
 			GameObject* target;
 			unsigned int objectID;
@@ -67,6 +66,8 @@ namespace NCL
 			bool moveTowardsTarget;
 			GameWorld* world;
 			std::vector<PlayerObject*>* playerObjectCollection = nullptr;
+			int debugStartNodeIndex;
+			int debugEndNodeIndex;
 		};
 	}
 }
