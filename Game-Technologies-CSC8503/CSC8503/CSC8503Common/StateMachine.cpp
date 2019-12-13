@@ -68,11 +68,11 @@ namespace NCL
 			}
 		}
 
-		void StateMachine::DebugDraw()
+		void StateMachine::DebugDraw(int index)
 		{
 			if(activeState)
 			{
-				activeState->DebugDraw();
+				activeState->DebugDraw(index);
 			}
 		}
 	}

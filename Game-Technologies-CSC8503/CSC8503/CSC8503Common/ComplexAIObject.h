@@ -35,7 +35,7 @@ namespace NCL
 			virtual void OnCollisionBegin(GameObject* other) override;
 			void InitStateMachine();
 			void SetWorld(GameWorld* gameWorld) { world = gameWorld; }
-			void Update();
+			void Update(float dt);
 			void Move();
 			virtual void DebugDraw() override;
 			int GetAIType() const { return aiType; }
@@ -43,6 +43,7 @@ namespace NCL
 			void SetObjectID(const unsigned int id) { objectID = id; }
 			void SetNavigationGrid(NavigationGrid* grid) { navigationGrid = grid; }
 			void SetNavigationTable(NavigationTable* table) { navigationTable = table; }
+			void InitCombatStateMachine();
 			void SetTarget(GameObject* other)
 			{
 				target = other;
@@ -50,6 +51,16 @@ namespace NCL
 			}
 			void SetPlayerIslandCollection(std::vector<PlayerIsland*>* collection) { playerIslandCollection = collection; }
 			void ClearTarget() { target = nullptr; }
+			void SetStunUse(bool val) { useStun = val; }
+			void SetThrowUse(bool val) { useThrow = val; }
+			void SetBurpUse(bool val) { useBurp = val; }
+			void SetYellUse(bool val) { useYell = val; }
+			float GetCooldownTimer() const { return cooldownTimer; }
+			void SetCooldownTimer(float val) {cooldownTimer = val; }
+			void StunTarget();
+			void ThrowTowardsTarget();
+			void BurpAtTarget();
+			void YellAtTarget();
 		protected:
 			GameObject* target;
 			unsigned int objectID;
@@ -58,11 +69,18 @@ namespace NCL
 			NavigationGrid* navigationGrid;
 			NavigationTable* navigationTable;
 			StateMachine* stateMachine;
+			StateMachine* combatStateMachine;
 			bool moveTowardsTarget;
 			GameWorld* world;
 			std::vector<PlayerIsland*>* playerIslandCollection = nullptr;
 			int debugStartNodeIndex;
 			int debugEndNodeIndex;
+			bool attackTarget;
+			bool useStun;
+			bool useThrow;
+			bool useBurp;
+			bool useYell;
+			float cooldownTimer;
 		};
 	}
 }

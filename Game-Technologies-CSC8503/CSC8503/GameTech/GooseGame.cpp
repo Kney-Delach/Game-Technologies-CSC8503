@@ -420,7 +420,7 @@ void GooseGame::UpdateGame(float dt)
 
 	for (int i = 0; i < keeperCollection.size(); ++i)
 	{
-		keeperCollection[i]->Update();
+		keeperCollection[i]->Update(dt);
 	}
 	
 	world->UpdateWorld(dt);

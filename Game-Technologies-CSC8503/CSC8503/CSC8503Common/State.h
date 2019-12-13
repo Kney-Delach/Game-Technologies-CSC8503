@@ -28,7 +28,7 @@ namespace NCL
 			State(const std::string& n = "State") : name(n) {}
 			virtual ~State() = default;
 			virtual void Update() {}
-			virtual void DebugDraw() {}
+			virtual void DebugDraw(int index = 0) {}
 			virtual std::string GetName() { return name; }
 		protected:
 			std::string name;
@@ -51,13 +51,13 @@ namespace NCL
 					func(funcData);
 				}
 			}
-			virtual void DebugDraw() override
+			virtual void DebugDraw(int index = 0) override
 			{
 				const std::string msg = "Current FSM State: " + name;
-				Debug::Print(msg, Vector2(5, 450), Vector4(0, 0, 0, 1));
+				Debug::Print(msg, Vector2(5, 450 - index * 100), Vector4(0, 0, 0, 1));
 
 				const std::string desc = "State Description: " + description;
-				Debug::Print(desc, Vector2(5, 400), Vector4(0, 0, 0, 1));
+				Debug::Print(desc, Vector2(5, 400 - index * 100), Vector4(0, 0, 0, 1));
 			}
 		protected:
 			StateFunction func;

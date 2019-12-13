@@ -35,21 +35,132 @@ namespace NCL
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
 		{
 			world = nullptr;
+			attackTarget = false;
 			moveTowardsTarget = true;
 			InitStateMachine();
 			debugStartNodeIndex = -1;
 			debugEndNodeIndex = -1;
+			cooldownTimer = 10.f;
+			srand(time(NULL)); // Randomize seed initialization
 		}
 
 		ComplexAIObject::~ComplexAIObject()
 		{
 			delete navigationGrid;
 			delete navigationTable;
+			delete combatStateMachine;
 			delete stateMachine;
 		}
 
 		void ComplexAIObject::OnCollisionBegin(GameObject* other)
 		{
+		}
+
+		void ComplexAIObject::InitCombatStateMachine()
+		{
+			combatStateMachine = new StateMachine();
+			
+			void* data = this;
+
+			StateFunction reloadAttack = [](void* data)
+			{
+				ComplexAIObject* obj = (ComplexAIObject*)(data);
+				if(obj->GetCooldownTimer() <= 0)
+				{
+					const int randNum = rand() % 2; // Generate a random number between 0 and 1
+					if(randNum == 0)
+					{
+						obj->SetThrowUse(true);
+					}
+					else
+					{
+						obj->SetStunUse(true);
+					}
+				}
+			};
+			StateFunction stunAttack = [](void* data)
+			{
+				ComplexAIObject* obj = (ComplexAIObject*)(data);
+				obj->StunTarget(); //todo: This should slow the player's speed
+				obj->SetStunUse(false);
+				obj->SetCooldownTimer(10.f);
+			};
+			StateFunction throwAttack = [](void* data)
+			{
+				ComplexAIObject* obj = (ComplexAIObject*)(data);
+				obj->ThrowTowardsTarget(); //todo: add force onto some sphere object in direction of goose, new gameobject (DamagingGameObject)
+				obj->SetThrowUse(false);
+				obj->SetCooldownTimer(10.f);
+			};
+
+			StateFunction burpAttack = [](void* data)
+			{
+				ComplexAIObject* obj = (ComplexAIObject*)(data);
+				obj->BurpAtTarget(); //todo: raycast a force onto the target
+				obj->SetBurpUse(false);
+				obj->SetCooldownTimer(10.f);
+			};
+
+			StateFunction yellAttack = [](void* data)
+			{
+				ComplexAIObject* obj = (ComplexAIObject*)(data);
+				obj->YellAtTarget(); //todo: invert the target's controls for 2 seconds
+				obj->SetYellUse(false);
+				obj->SetCooldownTimer(10.f);
+			};
+
+			GenericState* reloadState = new GenericState(reloadAttack, static_cast<void*>(this), "Smart AI Reloading", "Reloading Ammo!");
+			GenericState* stunState = new GenericState(stunAttack, static_cast<void*>(this), "Smart AI Stun", "Stun the goose!");
+			GenericState* throwState = new GenericState(throwAttack, static_cast<void*>(this), "Smart AI Throw", "Throw ball at goose!");
+			GenericState* burpState = new GenericState(burpAttack, static_cast<void*>(this), "Smart AI Burp", "Burps towards the target!");
+			GenericState* yellState = new GenericState(yellAttack, static_cast<void*>(this), "Smart AI Yell", "Yells at the target!");
+
+			combatStateMachine->AddState(reloadState);
+			combatStateMachine->AddState(stunState);
+			combatStateMachine->AddState(throwState);
+			combatStateMachine->AddState(burpState);
+			combatStateMachine->AddState(yellState);
+
+			GenericTransition<bool&, bool>* transitionReloadStun = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useStun, true, reloadState, stunState);
+			GenericTransition<bool&, bool>* transitionStunReload = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useStun, false, stunState, reloadState);
+			
+			GenericTransition<bool&, bool>* transitionReloadThrow = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useThrow, true, reloadState, throwState);
+			GenericTransition<bool&, bool>* transitionThrowReload = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useThrow, false, throwState, reloadState);
+
+			GenericTransition<bool&, bool>* transitionReloadBurp = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useBurp, true, reloadState, burpState);
+			GenericTransition<bool&, bool>* transitionBurpReload= new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useBurp, false, burpState, reloadState);
+
+			GenericTransition<bool&, bool>* transitionReloadYell = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useYell, true, reloadState, yellState);
+			GenericTransition<bool&, bool>* transitionYellReload = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, useYell, false, yellState, reloadState);
+
+			combatStateMachine->AddTransition(transitionReloadStun);
+			combatStateMachine->AddTransition(transitionStunReload);
+			combatStateMachine->AddTransition(transitionReloadThrow);
+			combatStateMachine->AddTransition(transitionThrowReload);
+			combatStateMachine->AddTransition(transitionReloadBurp);
+			combatStateMachine->AddTransition(transitionBurpReload);
+			combatStateMachine->AddTransition(transitionReloadYell);
+			combatStateMachine->AddTransition(transitionYellReload);
+		}
+
+		void ComplexAIObject::StunTarget()
+		{
+			std::cout << "Stunning target!\n";
+		}
+
+		void ComplexAIObject::ThrowTowardsTarget()
+		{
+			std::cout << "Throwing something at target!\n";
+		}
+
+		void ComplexAIObject::BurpAtTarget()
+		{
+			std::cout << "Burping towards the target!\n";
+		}
+
+		void ComplexAIObject::YellAtTarget()
+		{
+			std::cout << "Yelling at the target!\n";
 		}
 
 		void ComplexAIObject::InitStateMachine()
@@ -70,21 +181,36 @@ namespace NCL
 				obj->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 				obj->Move();
 			};
+			
+			InitCombatStateMachine();
+			StateFunction combatState = [](void* data)
+			{
+				ComplexAIObject* obj = (ComplexAIObject*)(data);
+				obj->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+				obj->combatStateMachine->Update();
+			};
 
 			GenericState* stateIdle = new GenericState(idleState, static_cast<void*>(this), "Smart AI Idle", "No movement!");
 			GenericState* stateMoving = new GenericState(moveState, static_cast<void*>(this), "Smart AI Moving", "Moving towards goose or Homing.");
+			GenericState* stateCombat = new GenericState(combatState, static_cast<void*>(this), "Smart AI Combat", "Using Combat FSM");
 
 			stateMachine->AddState(stateIdle);
 			stateMachine->AddState(stateMoving);
+			stateMachine->AddState(stateCombat);
 
 			GenericTransition<bool&, bool>* transitionA = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, moveTowardsTarget, true, stateIdle, stateMoving);
 			GenericTransition<bool&, bool>* transitionB = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::NotEqualsTransition, moveTowardsTarget, true, stateMoving, stateIdle);
+			
+			GenericTransition<bool&, bool>* transitionMovingToAttacking = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, attackTarget, true, stateMoving, stateCombat);
+			GenericTransition<bool&, bool>* transitionAttackingToMoving = new GenericTransition<bool&, bool>(GenericTransition<bool&, bool>::EqualsTransition, attackTarget, false, stateCombat, stateMoving);
 
 			stateMachine->AddTransition(transitionA);
 			stateMachine->AddTransition(transitionB);
+			stateMachine->AddTransition(transitionMovingToAttacking);
+			stateMachine->AddTransition(transitionAttackingToMoving);
 		}
 
-		void ComplexAIObject::Update()
+		void ComplexAIObject::Update(float dt)
 		{
 			int highScoreIndex = 0;
 			int highscore = 0;
@@ -99,8 +225,20 @@ namespace NCL
 				currentIndex++;
 			}
 			target = (*playerIslandCollection)[highScoreIndex]->GetParent();
-			// moveTowardsTarget = true; // dynamically set 
 
+			const Vector3 startPos = GetConstTransform().GetWorldPosition();
+			const Vector3 targetPos = target->GetConstTransform().GetWorldPosition();
+			const Vector3 distance = startPos - targetPos;
+			if (distance.x < 15.f && distance.x > -15.f && distance.z < 15.f && distance.z > -15.f)
+			{
+				attackTarget = true;
+			}
+			else
+			{
+				attackTarget = false;
+			}
+			
+			cooldownTimer -= dt;
 			stateMachine->Update();
 		}
 
@@ -109,6 +247,7 @@ namespace NCL
 		void ComplexAIObject::DebugDraw()
 		{
 			stateMachine->DebugDraw();
+			combatStateMachine->DebugDraw(1);
 			DrawDebugVolume();
 
 			const std::string msg = "Selected GameObject: " + name;
@@ -170,14 +309,13 @@ namespace NCL
 
 		void ComplexAIObject::Move()
 		{
-			int returnHome = -1;
 			if (target && navigationTable)
 			{
 				NavTableNode** table = navigationTable->GetNavTable();
 
 				const Vector3 startPos = GetConstTransform().GetWorldPosition();
 				const Vector3 targetPos = target->GetConstTransform().GetWorldPosition();
-
+				
 				const int targetX = (targetPos.x + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
 				const int targetZ = (targetPos.z + navigationGrid->GetNodeSize() / 2.f) / navigationGrid->GetNodeSize();
 
@@ -219,7 +357,6 @@ namespace NCL
 					direction.y = 0;
 					physicsObject->AddForce(direction * 250.f);
 				}
-				returnHome = nextNodeIndex;
 			}
 		}
 	}
