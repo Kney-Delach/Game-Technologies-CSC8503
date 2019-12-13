@@ -147,7 +147,7 @@ namespace NCL
 		int MultiPlayerState::Update(float dt)
 		{
 			RenderMenu();
-			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE))
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::RETURN))
 			{
 				return -2;
 			}
@@ -160,7 +160,14 @@ namespace NCL
 			static const Vector4 black(0, 0, 0, 1);
 
 			static const Vector2 pos4(960, 1000);
-			Debug::Print("Multi-Player Game", pos4, green);
+			Debug::Print("Multi-Player Game", pos4, black);
+			static const Vector2 cryPosition(200, 500);
+			static const Vector2 cryPosition2(200, 475);
+			Debug::Print("This is where I would let you choose ", cryPosition, black);
+			Debug::Print("between being a server or a player .... ", cryPosition2, black);
+
+			static const Vector2 pos1(960, 120);
+			Debug::Print("BACK TO MAIN MENU", pos1, green);
 		}
 		
 		////////////////////////////////
@@ -182,7 +189,26 @@ namespace NCL
 		{
 			static const Vector4 green(0, 1, 0, 1);
 			static const Vector4 black(0, 0, 0, 1);
+			static const Vector4 blue(0, 0, 1, 1);
 
+			static const Vector2 pos4(960, 1000);
+			Debug::Print("Leaderboards", pos4, black);
+
+			static const Vector2 leaderboard1(600, 800);
+			static const Vector2 leaderboard2(600, 750);
+			static const Vector2 leaderboard3(600, 700);
+			static const Vector2 leaderboard4(600, 650);
+			static const Vector2 leaderboard5(600, 600);
+			static const Vector2 leaderboard6(600, 550);
+
+			Debug::Print("1 | Rich   | >9000", leaderboard1, blue);
+			Debug::Print("2 | Daniel | 12", leaderboard2, black);
+			Debug::Print("3 | Goose  | 5", leaderboard3, black);
+			Debug::Print("4 | Aaron  | 3", leaderboard4, black);
+			Debug::Print("5 | John   | 2", leaderboard5, black);
+			Debug::Print("6 | Marvel | -3", leaderboard6, black);
+
+			
 			static const Vector2 pos1(960, 120);
 			Debug::Print("BACK TO MAIN MENU", pos1, green);
 		}

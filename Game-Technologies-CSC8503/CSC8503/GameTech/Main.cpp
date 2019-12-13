@@ -65,7 +65,7 @@ int main()
 
 		stateManager->Update(dt);
 
-		if(!(stateManager->currentState == 1 || stateManager->currentState == 2))
+		if(!(stateManager->currentState == 1)) // || stateManager->currentState == 2)
 		{
 			Debug::FlushRenderables();
 			renderer->Update(dt);
