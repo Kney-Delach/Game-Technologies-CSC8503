@@ -34,6 +34,7 @@ namespace NCL
 			void SetMaxCollectables(const int apples, const int corn, const int hats);
 			void DrawFinalScore(int index) const;
 			void SetWinnerStatus(bool result) { hasWon = result; }
+			void UpdateScore(int add) { score += add; }
 		protected:
 			PlayerObject* parentPlayer = nullptr;
 			std::vector<GameObject*> collectedApples;

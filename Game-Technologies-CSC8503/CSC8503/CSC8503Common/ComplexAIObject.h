@@ -75,6 +75,7 @@ namespace NCL
 			bool moveTowardsTarget;
 			GameWorld* world;
 			std::vector<PlayerIsland*>* playerIslandCollection = nullptr;
+			int currentIslandIndex;
 			int debugStartNodeIndex;
 			int debugEndNodeIndex;
 			bool attackTarget;

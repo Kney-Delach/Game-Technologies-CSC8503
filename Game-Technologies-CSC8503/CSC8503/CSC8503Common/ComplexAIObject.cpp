@@ -47,6 +47,7 @@ namespace NCL
 			debugStartNodeIndex = -1;
 			debugEndNodeIndex = -1;
 			recentAttackChoice = -1;
+			currentIslandIndex = 0;
 			cooldownTimer = COOLDOWN;
 			srand(time(NULL)); // Randomize seed initialization
 		}
@@ -77,12 +78,12 @@ namespace NCL
 					const int randNum = rand() % 4; // Generate a random number between 0 and 1
 					if (randNum == 0)
 					{
-						obj->SetThrowUse(true);
+						obj->SetStunUse(true);
 						obj->SetRecentAttackChoice(0);
 					}
 					if (randNum == 1)
 					{
-						obj->SetStunUse(true);
+						obj->SetThrowUse(true);
 						obj->SetRecentAttackChoice(1);
 					}
 					if (randNum == 2)
@@ -188,6 +189,7 @@ namespace NCL
 			std::cout << "Stunning target!\n";
 			//todo: daze the target and make it drop its items
 			((PlayerObject*)target)->DropItems();
+			(*playerIslandCollection)[currentIslandIndex]->UpdateScore(-1);
 		}
 
 		void ComplexAIObject::ThrowTowardsTarget()
@@ -266,6 +268,7 @@ namespace NCL
 				}
 				currentIndex++;
 			}
+			currentIslandIndex = highScoreIndex;
 			target = (*playerIslandCollection)[highScoreIndex]->GetParent();
 
 			const Vector3 startPos = GetConstTransform().GetWorldPosition();
