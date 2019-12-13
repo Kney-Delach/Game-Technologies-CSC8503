@@ -168,6 +168,12 @@
     <ClInclude Include="HingeConstraint.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="FloatToString.h">
+      <Filter>Other</Filter>
+    </ClInclude>
+    <ClInclude Include="ComplexAIObject.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionDetection.cpp">
@@ -274,6 +280,9 @@
     </ClCompile>
     <ClCompile Include="HingeConstraint.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ComplexAIObject.cpp">
+      <Filter>GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

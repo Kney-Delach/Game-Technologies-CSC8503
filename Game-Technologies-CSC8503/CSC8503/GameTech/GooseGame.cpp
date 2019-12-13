@@ -28,17 +28,27 @@
 #include <fstream>
 #include "../CSC8503Common/NavigationTable.h"
 #include "../CSC8503Common/BasicAIObject.h"
+#include "../CSC8503Common/ComplexAIObject.h"
 
 #include "../CSC8503Common/FileManager.h"
 #include "../CSC8503Common/HeightConstraint.h"
 #include "../CSC8503Common/HingeConstraint.h"
 
+#include <algorithm>
+#include "../CSC8503Common/FloatToString.h"
+
 using namespace NCL;
 using namespace CSC8503;
 
-//todo: this function is currently doesn't contain any error checking functionality (due to cw time constraints, fix this eventually)
 void GooseGame::LoadWorldFromFile(const std::string& filePath)
 {
+	SetThisPlayerIndex(0); //todo: move this to multiplayer stuff
+	playerControlMode = true;
+	gameTimer = 180.f;
+	appleCollectableCount = 0;
+	cornCollectableCount = 0;
+	hatCollectableCount = 0;
+	
 	if (filePath.empty())
 	{
 		std::cout << "Cannot load game world with empty path\n";
@@ -68,9 +78,6 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		playerCollection.push_back(AddGooseToWorld(Vector3(posX * (float) nodeSize, posY, posZ * (float)nodeSize)));
 	}
 	
-	// adds the water to the entire world 
-	//AddFloorToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize - nodeSize, -2.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, ObjectCollisionType::SPRING, Vector3(static_cast<float>(gridWidth) * nodeSize, 2.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
-
 	const Vector3 cubeDims = Vector3(nodeSize / 2, nodeSize / 2, nodeSize / 2);
 	Vector3 position;
 
@@ -107,22 +114,22 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			if (terrainMap[x + z * gridWidth] == 'x')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 3.f, z * 2 * cubeDims.z);
-				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 5, ((float)nodeSize) / 2.f), 0.f, true, 1.f, 10000.f);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 5, ((float)nodeSize) / 2.f), 0.f, "Wall", 1.f, 10000.f);
 			}
 			if (terrainMap[x + z * gridWidth] == 'm')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 6.f, z * 2 * cubeDims.z);
-				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 10, ((float)nodeSize) / 2.f), 0.f, true, 1.f, 10000.f);
+				AddStaticCubeToWorld(position, Vector3(((float)nodeSize) / 2.f, 10, ((float)nodeSize) / 2.f), 0.f, "Wall", 1.f, 10000.f);
 			}
-			if (terrainMap[x + z * gridWidth] == 'l') //todo: move this to encompass entire world
+			if (terrainMap[x + z * gridWidth] == 'l') //todo: move this to encompass entire world (MAKE SURE ONLY ONE OF THESE CAN BE ADDED)
 			{
-				GameObject* cube = AddStaticCubeToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize , -4.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, Vector3(static_cast<float>(gridWidth) * nodeSize, 1.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, 0.f);
+				GameObject* cube = AddStaticCubeToWorld(Vector3(static_cast<float>(gridWidth) * nodeSize , -4.f, static_cast<float>(gridHeight) * nodeSize - nodeSize) / 2.f, Vector3(static_cast<float>(gridWidth) * nodeSize, 1.f, static_cast<float>(gridHeight) * nodeSize) / 2.f, 0.f, "Ground");
 				cube->GetRenderObject()->SetColour(Vector4(0.f, 0.5f, 0.5f, 0.f));
 			}
 			if(terrainMap[x + z * gridWidth] == 'w')
 			{
 				position = Vector3(x * 2 * cubeDims.x, 0.f, z * 2 * cubeDims.z);
-				AddFloorToWorld(position, ObjectCollisionType::SPRING, Vector3(((float)nodeSize) / 2.f, 2.f, ((float)nodeSize) / 2.f), Vector4(0.f, 0.f, 1.f, 0.f), 300.f);
+				AddFloorToWorld(position, ObjectCollisionType::SPRING, Vector3(((float)nodeSize) / 2.f, 2.f, ((float)nodeSize) / 2.f), Vector4(0.f, 0.f, 1.f, 0.f), 300.f, "Water");
 			}
 			if (terrainMap[x + z * gridWidth] == 'q') // water ramp
 			{
@@ -150,7 +157,9 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		}
 	}
 	int aiCount = 0;
+	int smartAICount = 0;
 	bool newPathfindingData = false;
+	bool newPathfindingDataComplex = false;
 	for (int j = 0; j < gridHeight; ++j)
 	{
 		for (int k = 0; k < gridWidth; ++k)
@@ -163,18 +172,24 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 			{
 				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddAppleToWorld(position);
+				appleCollectableCount++;
+				continue;
 			}
 
 			if (objectMap[k + j * gridWidth] == 'c')
 			{
 				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddCornToWorld(position);
+				cornCollectableCount++;
+				continue;
 			}
 
 			if (objectMap[k + j * gridWidth] == 'h')
 			{
 				position = Vector3(k * 2 * cubeDims.x, 0.25f, j * 2 * cubeDims.z);
 				AddHatToWorld(position);
+				hatCollectableCount++;
+				continue;
 			}
 
 			if (objectMap[k + j * gridWidth] == 'r')
@@ -199,25 +214,61 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				BasicAIObject* farmer = (BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable);
 				farmer->SetPlayerObjectCollection(&playerCollection);
 				farmerCollection.push_back(farmer);
-				
+			}
+			if (objectMap[k + j * gridWidth] == 'k')
+			{
+				position = Vector3(k * 2 * cubeDims.x, 30.f, j * 2 * cubeDims.z);
+				const std::string gridFile = Assets::DATADIR + "NavigationGridSPKeeper.Pathfinding";
+				NavigationGrid* smartAINavGrid = new NavigationGrid(gridFile);
+				NavigationTable* navTable;
+				const std::string navTableFile = Assets::DATADIR + "NavigationTableSPKeeper.Pathfinding";
+				if (newPathfindingDataComplex)
+				{
+					navTable = new NavigationTable((int)(smartAINavGrid->GetWidth() * smartAINavGrid->GetHeight()), smartAINavGrid, false);
+					FileManager<NavigationTable>::Writer(navTableFile, *navTable);
+				}
+				else
+				{
+					navTable = new NavigationTable((int)(smartAINavGrid->GetWidth() * smartAINavGrid->GetHeight()), smartAINavGrid, true);
+					FileManager<NavigationTable>::Loader(navTableFile, *navTable);
+				}
+				newPathfindingData = false;
+				ComplexAIObject* parkKeeper = (ComplexAIObject*)AddComplexKeeperToWorld(position, smartAINavGrid, navTable, 180.f - (30.f * (float)smartAICount));
+				parkKeeper->SetPlayerIslandCollection(&islandCollection);
+				smartAICount++;
+
+				keeperCollection.push_back(parkKeeper);
 			}
 		}
 	}
+
+	for (PlayerIsland* p : islandCollection)
+	{
+		p->SetMaxCollectables(appleCollectableCount, cornCollectableCount, hatCollectableCount);
+	}
 }
+
+#pragma region INITIALIZATION
 
 GooseGame::GooseGame()
 {
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
+	renderer->SetAsActiveContext();
+
 	physics		= new PhysicsSystem(*world);
-		
+
+	gameTimer = 180.f;
+	appleCollectableCount = 0;
+	cornCollectableCount = 0;
+	hatCollectableCount = 0;
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
 	inSelectionMode = false;
 
 	// debug toggles
 	displayBoundingVolumes = false;
-
+	
 	Debug::SetRenderer(renderer);
 
 	InitialiseAssets();
@@ -245,10 +296,32 @@ void GooseGame::InitialiseAssets()
 	basicShader = new OGLShader("GameTechVert.glsl", "GameTechFrag.glsl");
 
 	InitCamera();
-
-	// this fixes a bug, I don't know why its a bug....
 	InitWorld();
-	//BridgeConstraintTest();
+}
+
+void GooseGame::InitCamera()
+{
+	world->GetMainCamera()->SetNearPlane(0.5f);
+	world->GetMainCamera()->SetFarPlane(2000.0f);
+	world->GetMainCamera()->SetPitch(-15.0f);
+	world->GetMainCamera()->SetYaw(315.0f);
+	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
+	lockedObject = nullptr;
+}
+
+void GooseGame::InitWorld()
+{
+	selectionObject = nullptr;
+	selectionObjectFront = nullptr;
+	SelectionObjectBack = nullptr;
+	lockedObject = nullptr;
+	world->ClearAndErase();
+	physics->Clear();
+	farmerCollection.clear();
+	playerCollection.clear();
+	islandCollection.clear();
+	keeperCollection.clear();
+	LoadWorldFromFile();
 }
 
 GooseGame::~GooseGame()
@@ -263,24 +336,73 @@ GooseGame::~GooseGame()
 	delete world;
 }
 
+#pragma endregion INITIALIZATION
+
+#pragma region UPDATE
+
 void GooseGame::UpdateGame(float dt)
-{
-	if (!inSelectionMode)
-		world->GetMainCamera()->UpdateCamera(dt);
-
-	UpdateKeys(); // check if pressed any keys 
-
-	MoveSelectedObject();
-	
-	if (lockedObject)
+{	
+	if (playerControlMode)
 	{
-		PlayerMovement();
-		PlayerCameraMovement();
-		DebugObjectMovement();
+		TPCameraUpdate();
+		TPPlayerUpdate(dt);
+		Debug::Print("[R] -> Free Camera!", Vector2(5, 875), Vector4(0,0,0,1));
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
+		{
+			playerControlMode = false;
+			Window::GetWindow()->ShowOSPointer(false);
+			Window::GetWindow()->LockMouseToWindow(true);
+		}
 	}
 	else
 	{
-		DebugObjectMovement(); // move selected object 
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
+		{
+			playerControlMode = true;
+			Window::GetWindow()->ShowOSPointer(false);
+			Window::GetWindow()->LockMouseToWindow(true);
+			inSelectionMode = false;
+			displayBoundingVolumes = false;
+			if (selectionObject)
+			{	
+				selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
+				selectionObject = nullptr;
+			}
+		}
+		
+		UpdateDebugKeys();
+		
+		Debug::Print("[R] -> Player Control!", Vector2(5, 875), Vector4(0, 1, 1, 1));
+		Debug::Print("[P] -> display physics volumes!", Vector2(5, 850), Vector4(0, 1, 0, 1));
+		if(inSelectionMode)
+		{
+			Debug::Print("[T] -> Free Camera!", Vector2(5, 800), Vector4(1, 0, 0, 1));
+			Debug::Print("Click on an object for info!", Vector2(5, 750), Vector4(1, 0, 0, 1));
+
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::T))
+			{
+				inSelectionMode = false;
+				Window::GetWindow()->ShowOSPointer(false);
+				Window::GetWindow()->LockMouseToWindow(true);
+				if (selectionObject)
+				{
+					selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
+					selectionObject = nullptr;
+				}
+			}
+			SelectObject();
+		}
+		else
+		{
+			Debug::Print("[T] -> Object selection mode!", Vector2(5, 800), Vector4(1, 0, 0, 1));
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::T))
+			{
+				inSelectionMode = true;
+				Window::GetWindow()->ShowOSPointer(true);
+				Window::GetWindow()->LockMouseToWindow(false);
+			}
+			world->GetMainCamera()->UpdateCamera(dt);
+		}
 	}
 
 	for (int i = 0; i < islandCollection.size(); ++i)
@@ -289,24 +411,28 @@ void GooseGame::UpdateGame(float dt)
 	}
 	for (unsigned i = 0; i < playerCollection.size(); i++)
 	{
-		//todo: make the following functions be called in an update function
-		playerCollection[i]->DrawInventoryToUI();
+		playerCollection[i]->UpdateCooldown(dt);
 		playerCollection[i]->UpdateInventoryTransformations(dt);
 	}
 
 	for (int i = 0; i < farmerCollection.size(); ++i)
 	{
-		farmerCollection[i]->DebugDraw();
 		farmerCollection[i]->Update();
 	}
+
+	for (int i = 0; i < keeperCollection.size(); ++i)
+	{
+		if(keeperCollection[i]->GetAwakeTime() >= gameTimer)
+		{
+			keeperCollection[i]->SetActive(true);
+			keeperCollection[i]->Update(dt);
+		}
+		else
+		{
+			keeperCollection[i]->SetActive(false);
+		}
+	}
 	
-	//if (useGravity)	
-	//	Debug::Print("(G)ravity on", Vector2(10, 40));	
-	//else 	
-	//	Debug::Print("(G)ravity off", Vector2(10, 40));
-
-	SelectObject();
-
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
 	physics->Update(dt);
@@ -325,7 +451,7 @@ void GooseGame::UpdateGame(float dt)
 	}	
 }
 
-void GooseGame::UpdateKeys()
+void GooseGame::UpdateDebugKeys()
 {
 	///////////////////////////////////////////////////////////////////////////////////////
 	//// Debug Toggle Keys ////////////////////////////////////////////////////////////////
@@ -351,10 +477,6 @@ void GooseGame::UpdateKeys()
 		useGravity = !useGravity;
 		physics->UseGravity(useGravity);
 	}
-	//Running certain physics updates in a consistent order might cause some
-	//bias in the calculations - the same objects might keep 'winning' the constraint
-	//allowing the other one to stretch too much etc. Shuffling the order so that it
-	//is random every frame can help reduce such bias.
 
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) // enable object shuffles
 	{
@@ -377,248 +499,104 @@ void GooseGame::UpdateKeys()
 	}
 }
 
-void GooseGame::PlayerMovement()
+//todo: do something with the scores.
+int GooseGame::GameStatusUpdate(float dt) //todo: clean this up
 {
-//	Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
-//	Matrix4 camWorld = view.Inverse();
-//	Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
-//
-//	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(fwdAxis * forceMagnitude);
-//	}
-//	
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) 
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(-rightAxis * forceMagnitude);
-//	}
-//
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(-fwdAxis * forceMagnitude);
-//	}
-//	
-//	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
-//	{
-//		playerGameObject->GetPhysicsObject()->AddForce(rightAxis * forceMagnitude);
-//	}
-}
+	int totalApples = 0;
+	for (PlayerIsland* island : islandCollection)
+	{
+		totalApples += island->GetApplesCount();
+	}
 
-void  GooseGame::PlayerCameraMovement()
-{	
-	//Vector3 objPos = playerGameObject->GetTransform().GetWorldPosition();
-	//Vector3 camPos = objPos + lockedOffset;
+	if(totalApples == appleCollectableCount)
+	{
+		gameTimer = 10.f; // set timer for victory screen
 
-	//Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos, Vector3(0, 1, 0));
+		// somebody won
+		if(islandCollection.size() > 1)
+		{
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(true);
+			// check who won (compare scores)
+			return 2; // 2 is winner
+			return 1; // 1 is lost
+		}
+		else
+		{
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(true);
 
-	//Matrix4 modelMat = temp.Inverse();
-
-	//Quaternion q(modelMat);
-	//Vector3 angles = q.ToEuler(); //nearly there now!
-
-	//world->GetMainCamera()->SetPosition(camPos);
-	//world->GetMainCamera()->SetPitch(angles.x);
-	//world->GetMainCamera()->SetYaw(angles.y);
+			// single player victory royale!
+			return 2;
+		}
+	}
 	
-}
-
-// move selected gameobjects with keyboard presses
-void GooseGame::DebugObjectMovement()
-{
-	if (inSelectionMode && selectionObject) 
+	if(gameTimer <= 0)
 	{
-		GameObjectMovement();
-	}
-}
-
-/*
-
-Every frame, this code will let you perform a raycast, to see if there's an object
-underneath the cursor, and if so 'select it' into a pointer, so that it can be
-manipulated later. Pressing Q will let you toggle between this behaviour and instead
-letting you move the camera around.
-
-*/
-bool GooseGame::SelectObject()
-{
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R)) 
-	{
-		inSelectionMode = !inSelectionMode;
-		if (inSelectionMode) 
+		gameTimer = 10.f; // set timer for victory screen
+		// lost
+		if (islandCollection.size() > 1)
 		{
-			Window::GetWindow()->ShowOSPointer(true);
-			Window::GetWindow()->LockMouseToWindow(false);
+			// see who has the highest score
+			//todo: implement these
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(false);
+			return 1; // 1 is lost
+			return 2; // 2 is winner
 		}
-		else 
+		else
 		{
-			Window::GetWindow()->ShowOSPointer(false);
-			Window::GetWindow()->LockMouseToWindow(true);
+			// single player WASTED
+			islandCollection[thisPlayerIndex]->SetWinnerStatus(false);
+			return 1; // 1 is lost
 		}
 	}
-	if (inSelectionMode) 
-	{
-		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
-
-		if(selectionObject)
-		{
-			if (selectionObjectFront)
-			{
-				selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				selectionObjectFront = nullptr;
-			}
-			if (SelectionObjectBack)
-			{
-				SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				SelectionObjectBack = nullptr;
-			}
-			
-			// getting object IN-FRONT of selected object
-			Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
-			RayCollision closestObjectCollision;
-			if (world->Raycast(objectForwardRay, closestObjectCollision, true))
-			{
-				selectionObjectFront = (GameObject*)closestObjectCollision.node;
-				selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
-				GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
-			}
-
-			// getting object BEHIND selected object
-			Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
-			RayCollision closestBehindCollision;
-			if (world->Raycast(objectDownRay, closestBehindCollision, true))
-			{
-				SelectionObjectBack = (GameObject*)closestBehindCollision.node;
-				SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
-				GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
-			}
-		}
-		
-		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) 
-		{
-			if (selectionObject) 
-			{	//set colour to deselected;
-				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-				selectionObject = nullptr;
-				if(selectionObjectFront)
-				{
-					selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-					selectionObjectFront = nullptr;
-				}
-				if (SelectionObjectBack) 
-				{
-					SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-					SelectionObjectBack = nullptr;
-				}
-			}
-
-			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
-			RayCollision closestCollision;
-			if (world->Raycast(ray, closestCollision, true))  // object has been selected 
-			{
-				selectionObject = (GameObject*)closestCollision.node;
-				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
-				return true;
-			}
-			return false;
-		}
-		if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::L)) 
-		{
-			if (selectionObject) 
-			{
-				if (lockedObject == selectionObject) 
-					lockedObject = nullptr;
-				else 
-					lockedObject = selectionObject;
-			}
-		}
-	}
-	else 	
-		renderer->DrawString("Press R to change to select mode!", Vector2(10, 0));	
-	return false;
+	gameTimer -= dt;
+	static const Vector4 green(1, 0, 0, 1);
+	static const Vector2 pos(5, 175);
+	const std::string sc = "Time: " + FloatToString<float>(gameTimer, 2);
+	Debug::Print(sc, pos, green);
+	return 0; // 0 is GAME NOT OVER
 }
 
-//todo: Add keys to modify position of selected object using forces
-// 28.11.2019 - linear motion
-// If an object has been clicked, it can be pushed with the right mouse button, by an amount determined by the scroll wheel.
-void GooseGame::MoveSelectedObject()
+float GooseGame::VictoryScreenUpdate(float dt, int gameResult)
 {
-	renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
-	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+	gameTimer -= dt;
+	static const Vector4 green(1, 0, 1, 1);
+	static const Vector2 pos(5, 1000);
+	const std::string sc = "Back To Lobby In: " + FloatToString<float>(gameTimer, 2);
+	Debug::Print(sc, pos, green);
+
+	// game has ended, 1 is lost, 2 is won, create a timer to go to the menu in X seconds and update leaderboard files
+	if (gameResult == 1)
+	{
+		// WASTED
+		static const Vector4 green(1, 0, 0, 1);
+		static const Vector2 pos(960, 540);
+		Debug::Print("WASTED", pos, green);
+	}
+	if (gameResult == 2)
+	{
+		// VICTORY ROYALE
+		static const Vector4 green(0, 1, 0, 1);
+		static const Vector2 pos(960, 540);
+		Debug::Print("VICTORY ROYALE!", pos, green);
+	}
+
+	int index = 0;
+	for (PlayerIsland* island : islandCollection)
+	{
+		island->DrawFinalScore(index++);
+	}
 	
-	if (!selectionObject) // No object has been selected!
-		return;
+	renderer->Update(dt);
+	Debug::FlushRenderables();
+	renderer->Render();
 
-	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) 
-	{
-		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());	
-		RayCollision closestCollision;
-		if(world->Raycast(ray, closestCollision, true)) 
-		{
-			if (closestCollision.node == selectionObject)
-				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
-		}
-	}
+	return gameTimer;
 }
 
-void GooseGame::GameObjectMovement()
-{
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) // up
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, forceMagnitude, 0));
-	}
+#pragma endregion UPDATE
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -forceMagnitude, 0));
-	}
 
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(-forceMagnitude, 0, 0));
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(forceMagnitude, 0, 0));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -forceMagnitude));
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, forceMagnitude));
-	}
-}
-
-void GooseGame::InitCamera()
-{
-	world->GetMainCamera()->SetNearPlane(0.5f);
-	world->GetMainCamera()->SetFarPlane(2000.0f);
-	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(315.0f);
-	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
-	lockedObject = nullptr;
-}
-
-void GooseGame::InitWorld()
-{
-	selectionObject = nullptr;
-	selectionObjectFront = nullptr;
-	SelectionObjectBack = nullptr;
-	lockedObject = nullptr;
-	world->ClearAndErase();
-	physics->Clear();
-	farmerCollection.clear();
-	playerCollection.clear();
-	islandCollection.clear();
-	LoadWorldFromFile();
-	
-	//InitGooseGameWorld();
-}
-
+#pragma region ADD_OBJECTS
 
 
 //todo: fix the way collisions are resolved here
@@ -642,9 +620,9 @@ void GooseGame::AddJumpPadToWorld(const Vector3& position, const Vector3& dimens
 
 
 // A single function to add a large immoveable cube to the bottom of our world
-GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness)
+GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions, const Vector4& colour, float stiffness, const std::string& name)
 {
-	GameObject* floor = new GameObject("Ground");
+	GameObject* floor = new GameObject(name);
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 	floor->SetBoundingVolume((CollisionVolume*)volume);
@@ -664,7 +642,7 @@ GameObject* GooseGame::AddFloorToWorld(const Vector3& position, const int collis
 	
 	floor->GetRenderObject()->SetColour(colour);
 	
-	floor->GetLayer().SetLayerID(1); // set layer ID to 1 (not raycastable)
+	floor->GetLayer().SetLayerID(0); // set layer ID to 1 (not raycastable)
 	
 	world->AddGameObject(floor);
 
@@ -741,7 +719,7 @@ GameObject* GooseGame::AddSphereToWorld(const Vector3& position, float radius, b
 
 GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB, float inverseMass, const Vector4& color)
 {
-	GameObject* cube = new GameObject("Cube");
+	GameObject* cube = new GameObject("Constrained OBB Gate");
 
 	if(isAABB)
 	{
@@ -775,19 +753,9 @@ GameObject* GooseGame::AddCubeToWorld(const Vector3& position, Vector3 dimension
 	return cube;
 }
 
-GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, bool isWall, float elasticity, float stiffness)
+GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass, const std::string& name, float elasticity, float stiffness)
 {
-	GameObject* cube;
-
-	if(isWall)
-	{
-		cube = new GameObject("Wall");
-
-	}
-	else
-	{
-		cube = new GameObject("Floor");
-	}
+	GameObject* cube = new GameObject(name);
 
 	AABBVolume* volume = new AABBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
@@ -801,7 +769,7 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->SetElasticity(elasticity);
 	cube->GetPhysicsObject()->SetStiffness(stiffness);
-	if(isWall)
+	if(name == "Wall")
 	{
 		cube->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::SPRING);
 	}
@@ -822,7 +790,7 @@ GameObject* GooseGame::AddStaticCubeToWorld(const Vector3& position, Vector3 dim
 
 GameObject* GooseGame::AddStaticOBBCubeToWorld(const Vector3& position, const Vector3& scale, const Vector3& rotation, const Vector4& color)
 {
-	GameObject* cube = new GameObject();
+	GameObject* cube = new GameObject("Ramp");
 	OBBVolume* volume = new OBBVolume(scale);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 	cube->GetTransform().SetWorldScale(scale);
@@ -877,7 +845,7 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	float meshSize = 4.0f;
 	float inverseMass = 1.f / 4.f;
 
-	BasicAIObject* keeper = new BasicAIObject(position, 1, "AI");
+	BasicAIObject* keeper = new BasicAIObject(position, 1, "Basic AI");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	keeper->SetBoundingVolume((CollisionVolume*)volume);
@@ -907,46 +875,31 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	return keeper;
 }
 
-GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
+ComplexAIObject* GooseGame::AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable, float awakeTime)
 {
 	float meshSize = 4.0f;
-	float inverseMass = 0.5f;
+	float inverseMass = 1.f / 4.f;
 
-	auto pos = keeperMesh->GetPositionData();
-
-	Vector3 minVal = pos[0];
-	Vector3 maxVal = pos[0];
-
-	for (auto& i : pos) {
-		maxVal.y = max(maxVal.y, i.y);
-		minVal.y = min(minVal.y, i.y);
-	}
-
-	GameObject* character = new GameObject("Character");
-
-	float r = rand() / (float)RAND_MAX;
+	ComplexAIObject* complexKeeper = new ComplexAIObject(position, 1, "Complex AI", awakeTime);
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
-	character->SetBoundingVolume((CollisionVolume*)volume);
-
-	character->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
-	character->GetTransform().SetWorldPosition(position);
-
-	character->SetRenderObject(new RenderObject(&character->GetTransform(), r > 0.5f ? charA : charB, nullptr, basicShader));
-	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
-
-	character->GetPhysicsObject()->SetInverseMass(inverseMass);
-	character->GetPhysicsObject()->InitCubeInertia();
-
-	//todo: change this to attacker type
-	character->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
-	
-	// set temporary color (for debugging)
-	character->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
-	
-	world->AddGameObject(character);
-
-	return character;
+	complexKeeper->SetBoundingVolume((CollisionVolume*)volume);
+	complexKeeper->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
+	complexKeeper->GetTransform().SetWorldPosition(position);
+	complexKeeper->SetRenderObject(new RenderObject(&complexKeeper->GetTransform(), charA, nullptr, basicShader));
+	complexKeeper->SetPhysicsObject(new PhysicsObject(&complexKeeper->GetTransform(), complexKeeper->GetBoundingVolume()));
+	complexKeeper->GetPhysicsObject()->SetInverseMass(inverseMass);
+	complexKeeper->GetPhysicsObject()->InitCubeInertia();
+	complexKeeper->GetPhysicsObject()->SetElasticity(0.7f);
+	complexKeeper->GetPhysicsObject()->SetStiffness(200.f);
+	complexKeeper->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING);
+	complexKeeper->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+	world->AddGameObject(complexKeeper);
+	complexKeeper->SetWorld(world);
+	complexKeeper->SetNavigationGrid(navGrid);
+	complexKeeper->SetNavigationTable(navTable);
+	complexKeeper->GetPhysicsObject()->SetGravityUsage(false);
+	return complexKeeper;
 }
 
 GameObject* GooseGame::AddAppleToWorld(const Vector3& position)
@@ -1012,7 +965,7 @@ GameObject* GooseGame::AddCornToWorld(const Vector3& position)
 
 GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 {
-	CollectableObject* hat = new CollectableObject(CollectableType::HAT, "Hat"); //todo: insert static id (use the final value of this to dictate victory checks, also reset when world respawns
+	CollectableObject* hat = new CollectableObject(CollectableType::HAT, "Hat");
 
 	float size = 0.7f;
 
@@ -1029,7 +982,7 @@ GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 	hat->GetPhysicsObject()->SetInverseMass(1.0f);
 	hat->GetPhysicsObject()->InitSphereInertia();
 	hat->GetPhysicsObject()->SetElasticity(0.8f);
-	hat->GetPhysicsObject()->SetStiffness(300.f); //todo: change this with collectable collision 
+	hat->GetPhysicsObject()->SetStiffness(300.f);
 
 	hat->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::COLLECTABLE);
 	hat->GetPhysicsObject()->SetGravityUsage(false);
@@ -1040,34 +993,6 @@ GameObject* GooseGame::AddHatToWorld(const Vector3& position)
 	return hat;
 }
 
-
-void GooseGame::InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing)
-{
-	const float sphereRadius = 1.f;
-	const Vector3 cubeDims = Vector3(1,1,1);
-	for (int x = 0; x < numRows; ++x) 
-	{
-		for (int z = 0; z < numCols; ++z) 
-		{
-			Vector3 position = Vector3(3.f * x * colSpacing, 10.0f, 3.f * z * rowSpacing);
-			if (x % 2)
-			{
-				if(x % 3)
-					AddCubeToWorld(position, cubeDims, true);
-				else
-					AddCubeToWorld(position, cubeDims, false);
-			}
-			else
-			{
-				if(x % 3)
-					AddSphereToWorld(position, sphereRadius, false);
-				else 
-					AddSphereToWorld(position, sphereRadius, true);
-
-			}
-		}
-	}
-}
 
 
 void GooseGame::AddMultiDirectionalGate(const Vector3& startPosition, const Vector3& dimensions, const Vector4& color, int numberOfLinks, int nodeSize)
@@ -1102,6 +1027,9 @@ void GooseGame::AddMultiDirectionalGate(const Vector3& startPosition, const Vect
 
 }
 
+#pragma endregion ADD_OBJECTS
+
+#pragma region UNUSED 
 
 void GooseGame::BridgeConstraintTest()
 {
@@ -1148,3 +1076,123 @@ void GooseGame::SimpleGJKTest()
 
 }
 
+
+#pragma endregion UNUSED
+
+#pragma region MOVEMENT
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// MOVEMENT RELATED STUFF
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void GooseGame::TPPlayerUpdate(float dt)
+{
+	//renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
+	//forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
+	static const float forceMagnitude = 220.f; 
+	static const float rotationSpeed = 90.f;
+	Vector3 pitchYawRoll = playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation().ToEuler();
+	
+	const Matrix4 view = world->GetMainCamera()->BuildViewMatrix();
+	const Matrix4 camWorld = view.Inverse();
+	const Vector3 rightAxis = Vector3(camWorld.GetColumn(0)); 
+
+	Vector3 fwdAxis = Vector3::Cross(Vector3(0, 1, 0), rightAxis);
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::Q) && playerCollection[thisPlayerIndex]->CanFart())
+	{
+		// fart
+		const float radius = playerCollection[thisPlayerIndex]->GetFartRadius();
+		//todo: add a fart sound effect 
+		for (BasicAIObject* farmer : farmerCollection)
+		{
+			Vector3 direction = playerCollection[thisPlayerIndex]->GetConstTransform().GetWorldPosition() - farmer->GetConstTransform().GetWorldPosition();
+			if (direction.Length() < radius)
+			{
+				direction.Normalise();
+
+				Ray ray(playerCollection[thisPlayerIndex]->GetConstTransform().GetWorldPosition(), direction);
+				RayCollision collision;
+				if (world->Raycast(ray, collision, true))
+				{
+					farmer->GetPhysicsObject()->AddForceAtPosition(-direction * 1500.f, collision.collidedAt);
+				}
+			}
+		}
+	}
+	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::SPACE) && playerCollection[thisPlayerIndex]->IsGrounded())
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(Vector3(0, 3, 0) * forceMagnitude);
+	}
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, 1) * forceMagnitude);
+	}
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, -1) * forceMagnitude);
+	}
+	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::A))
+	{
+		pitchYawRoll.y += rotationSpeed * dt;
+		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
+		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
+	}	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
+	{
+		pitchYawRoll.y -= rotationSpeed * dt;
+		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
+		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
+	}
+}
+
+// third person camera update
+void GooseGame::TPCameraUpdate()
+{
+	const Vector3 objPos = playerCollection[thisPlayerIndex]->GetTransform().GetWorldPosition();
+	const Vector3 camPos = objPos + playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * lockedOffset;
+	const Matrix4 temp = Matrix4::BuildViewMatrix(camPos, objPos + Vector3(0, 5, 0), Vector3(0, 1, 0));
+
+	Matrix4 modelMat = temp.Inverse();
+	Quaternion q(modelMat);
+	Vector3 angles = q.ToEuler();
+
+	world->GetMainCamera()->SetPosition(camPos);
+	world->GetMainCamera()->SetPitch(angles.x);
+	world->GetMainCamera()->SetYaw(angles.y);
+
+	//todo: make a nicer camera controller 
+	//float newPitch = world->GetMainCamera()->GetPitch() - Window::GetMouse()->GetRelativePosition().y;
+	////Bounds check the pitch, to be between straight up and straight down ;)
+	//newPitch = min(newPitch, 45.0f);
+	//newPitch = max(newPitch, -45.0f);
+
+	////Update the mouse by how much
+	//world->GetMainCamera()->SetPitch(newPitch);
+}
+
+void GooseGame::SelectObject()
+{
+	if (selectionObject)
+	{
+		selectionObject->DebugDraw();
+	}
+
+	if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT))
+	{
+		if (selectionObject)
+		{	
+			selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
+			selectionObject = nullptr;
+		}
+		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
+		RayCollision closestCollision;
+		if (world->Raycast(ray, closestCollision, true))
+		{
+			selectionObject = (GameObject*)closestCollision.node;
+			previousSelectedColor = selectionObject->GetRenderObject()->GetColour();
+			selectionObject->GetRenderObject()->SetColour(Vector4(0, 0, 0, 1));
+		}
+	}
+}
+#pragma endregion MOVEMENT

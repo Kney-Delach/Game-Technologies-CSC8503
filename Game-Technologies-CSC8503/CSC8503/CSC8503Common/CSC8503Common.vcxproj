@@ -139,7 +139,9 @@
     <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="BoundingVolume.h" />
     <ClInclude Include="CollectableObject.h" />
+    <ClInclude Include="ComplexAIObject.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="FloatToString.h" />
     <ClInclude Include="HeightConstraint.h" />
     <ClInclude Include="HingeConstraint.h" />
     <ClInclude Include="Layer.h" />
@@ -186,6 +188,7 @@
     <ClCompile Include="BoundingVolume.cpp" />
     <ClCompile Include="CollectableObject.cpp" />
     <ClCompile Include="CollisionDetection.cpp" />
+    <ClCompile Include="ComplexAIObject.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="GameClient.cpp" />
     <ClCompile Include="GameObject.cpp" />

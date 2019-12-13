@@ -63,6 +63,7 @@ namespace NCL {
 			farPlane = val;
 		}
 
+
 		//Builds a view matrix for the current camera variables, suitable for sending straight
 		//to a vertex shader (i.e it's already an 'inverse camera matrix').
 		Matrix4 BuildViewMatrix() const;

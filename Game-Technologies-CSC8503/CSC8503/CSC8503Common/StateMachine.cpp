@@ -16,6 +16,7 @@
 #include "State.h"
 #include "StateTransition.h"
 #include <iostream>
+#include "Debug.h"
 
 namespace NCL
 {
@@ -64,6 +65,14 @@ namespace NCL
 						activeState = newState;
 					}
 				}
+			}
+		}
+
+		void StateMachine::DebugDraw(int index)
+		{
+			if(activeState)
+			{
+				activeState->DebugDraw(index);
 			}
 		}
 	}

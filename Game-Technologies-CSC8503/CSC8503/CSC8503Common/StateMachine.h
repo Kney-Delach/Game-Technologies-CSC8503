@@ -34,6 +34,7 @@ namespace NCL
 			void AddState(State* state);
 			void AddTransition(StateTransition* transition);
 			void Update();
+			void DebugDraw(int index = 0);
 		protected:
 			State* activeState;
 			std::vector<State*> allStates;

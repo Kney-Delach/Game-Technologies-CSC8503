@@ -25,6 +25,7 @@ namespace NCL
 		class NavigationTable;
 		class NavigationGrid;
 		class BasicAIObject;
+		class ComplexAIObject;
 		class PlayerIsland;
 		
 		class GooseGame
@@ -38,7 +39,6 @@ namespace NCL
 		protected:
 			void InitialiseAssets();
 			void InitCamera();
-			void UpdateKeys();
 			void InitWorld();
 
 			// 8.12.2019
@@ -48,33 +48,18 @@ namespace NCL
 			//todo: remove the following function
 			void AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions);
 
-			/*
-			These are some of the world/object creation functions I created when testing the functionality
-			in the module. Feel free to mess around with them to see different objects being created in different
-			test scenarios (constraints, collision types, and so on). 
-			*/
-			//void InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius);
-			//void InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims);
-			void InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing);
 			void BridgeConstraintTest();
 			void SimpleGJKTest();
 
-			bool SelectObject();
-			void MoveSelectedObject();
-			void DebugObjectMovement();
-
-			// 8.12.2019 
-			// player movement
-			void PlayerMovement(); // used to move the player goose around
-			void PlayerCameraMovement();
-
-			void GameObjectMovement();
+			// third person camera stuff
+			void TPPlayerUpdate(float dt);
+			void TPCameraUpdate();
 			
-			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f);
+			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f, const std::string& name = "Ground");
 			PlayerIsland* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, bool isHollow, float inverseMass = 10.f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, bool isAABB = true, float inverseMass = 10.f, const Vector4& color = Vector4(1,1,1,1));
-			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, bool isWall = false, float elasticity = 0.01f, float stiffness = 8.f);
+			GameObject* AddStaticCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass = 10.f, const std::string& name = "Cube", float elasticity = 0.01f, float stiffness = 8.f);
 			GameObject* AddStaticOBBCubeToWorld(const Vector3& position, const Vector3& scale, const Vector3& rotation, const Vector4& color);
 			void AddMultiDirectionalGate(const Vector3& startPosition, const Vector3& dimensions, const Vector4& color, int numberOfLinks, int nodeSize);
 			
@@ -86,16 +71,16 @@ namespace NCL
 			GameObject* AddHatToWorld(const Vector3& position);
 
 			GameObject* AddParkKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
-			GameObject* AddCharacterToWorld(const Vector3& position);
+			ComplexAIObject* AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable, float awakeTime);
 			
-			GameTechRenderer*	renderer;
-			PhysicsSystem*		physics;
-			GameWorld*			world;
+			GameTechRenderer* renderer;
+			PhysicsSystem* physics;
+			GameWorld* world;
 
 			bool useGravity;
 			bool inSelectionMode;
 
-			float		forceMagnitude;
+			float forceMagnitude;
 
 			GameObject* selectionObject = nullptr;
 			GameObject* selectionObjectFront = nullptr;
@@ -113,21 +98,31 @@ namespace NCL
 			OGLMesh*	charA		= nullptr;
 			OGLMesh*	charB		= nullptr;
 
-			//Coursework Additional functionality	
+			//Coursework Additional functionality	PlayerMovement
 			GameObject* lockedObject	= nullptr;
-			Vector3 lockedOffset		= Vector3(0, 5, 20);
+			Vector3 lockedOffset		= Vector3(0, 5, -15.f);
 			void LockCameraToObject(GameObject* o) { lockedObject = o; }
+		protected:
+			// 12.12.2019
+			// game completion related data
+			float gameTimer;
+			int appleCollectableCount;
+			int cornCollectableCount;
+			int hatCollectableCount;
 
-			// 1.12.19
-			////////////////////////////////////////////////////////////////////
-			//// Debug functionality a ///////////////////////////////////
-			////////////////////////////////////////////////////////////////////
+			// player movement usage
+			bool playerControlMode;
+
+			////////////////////////////////////////
+			//// DEBUG MODE DATA 
+			////////////////////////////////////////
 			bool displayBoundingVolumes;
-
-			// 6.12.2019
-			// player controllers (currently only 1 but make this 2 in the multiplayer version)
-			//PlayerObject* playerGameObject = nullptr;
-
+			Vector4 previousSelectedColor;
+			void UpdateDebugKeys();
+			void SelectObject();
+		public:
+			int GameStatusUpdate(float dt);
+			float VictoryScreenUpdate(float dt, int gameResult);
 		protected:
 			// 8.12.2019
 			// load from file specific world data
@@ -135,10 +130,13 @@ namespace NCL
 			int gridWidth;
 			int gridHeight;
 
-			// 9.12.2019
-			// pathfinding related variables
-			//BasicAIObject* farmerAIObject = nullptr;
+			// muiltiplayer stuff
+			int thisPlayerIndex;
+		public:
+			void SetThisPlayerIndex(int index = 0) { thisPlayerIndex = index; }
+		protected:
 			std::vector<BasicAIObject*> farmerCollection;
+			std::vector<ComplexAIObject*> keeperCollection;
 			std::vector<PlayerObject*> playerCollection;
 			std::vector<PlayerIsland*> islandCollection;
 		};

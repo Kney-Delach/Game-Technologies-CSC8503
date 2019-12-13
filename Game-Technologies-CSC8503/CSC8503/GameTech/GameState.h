@@ -31,7 +31,7 @@ namespace NCL
 		public:
 			MainMenuState(int id = 0,int maximumChoices = 3) : GameState(id,"Main Menu"), selectedChoice(0), maxChoices(maximumChoices) {}
 			virtual ~MainMenuState() = default;
-			virtual int Update(float dt);
+			virtual int Update(float dt) override;
 		private:
 			void RenderMenu();
 		private:
@@ -42,9 +42,9 @@ namespace NCL
 		class SinglePlayerState : public GameState
 		{
 		public:
-			SinglePlayerState(int id = 1, int maximumChoices = 2) : GameState(id, "Single Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) { singlePlayerGame = nullptr; }
+			SinglePlayerState(int id = 1, int maximumChoices = 2) : GameState(id, "Single Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices), gameResult(0), gameOverTimer(20.f) { singlePlayerGame = nullptr; }
 			virtual ~SinglePlayerState() = default;
-			virtual int Update(float dt);
+			virtual int Update(float dt) override;
 			virtual void OnAwake();
 			virtual void OnSleep();
 		private:
@@ -53,6 +53,8 @@ namespace NCL
 			int selectedChoice;
 			int maxChoices;
 			GooseGame* singlePlayerGame;
+			int gameResult;
+			float gameOverTimer;
 		};
 
 
@@ -61,7 +63,7 @@ namespace NCL
 		public:
 			MultiPlayerState(int id = 2, int maximumChoices = 2) : GameState(id, "Multi-Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) {}
 			virtual ~MultiPlayerState() = default;
-			virtual int Update(float dt);
+			virtual int Update(float dt) override;
 		private:
 			void RenderMenu();
 		private:
@@ -75,7 +77,7 @@ namespace NCL
 		public:
 			LeaderboardsState(int id = 3, int maximumChoices = 1) : GameState(id, "Leaderboard"), selectedChoice(0), maxChoices(maximumChoices) {}
 			virtual ~LeaderboardsState() = default;
-			virtual int Update(float dt);
+			virtual int Update(float dt) override;
 		public:
 			static Leaderboard s_Leaderboard;
 		private:

@@ -57,6 +57,11 @@ namespace NCL
 				return isActive;
 			}
 
+			void SetActive(bool val)
+			{
+				isActive = val;
+			}
+
 			const Transform& GetConstTransform() const
 			{
 				return transform;
@@ -136,9 +141,8 @@ namespace NCL
 			void UpdateObjectPosition(float dt, const Vector3& parentPosition, const unsigned int index);
 			void UpdateIslandStoredObjectPosition(const Vector3& parentPosition, const unsigned row, const unsigned index);
 
-			// 28.11.2019 
-			// used to display debug information and selection of the object 
-			void DrawDebug(const Vector4& color);
+			// draw debug information about a gameobject
+			virtual void DebugDraw();
 
 			// 30.11.2019
 			void DrawDebugVolume();

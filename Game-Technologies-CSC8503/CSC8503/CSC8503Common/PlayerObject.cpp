@@ -15,6 +15,7 @@
 #include "PlayerObject.h"
 #include "CollectableObject.h"
 #include "Debug.h"
+#include "FloatToString.h"
 
 //todo: implement different inventories for different collectables
 namespace NCL
@@ -22,13 +23,46 @@ namespace NCL
 	namespace CSC8503
 	{
 		PlayerObject::PlayerObject(const std::string name)
-			: GameObject(name)
+			: GameObject(name), isCarryingBonusItem(false), isGrounded(false), fartCD(0.f), canFart(true), fartRadius(100.f)
 		{
-			isCarryingBonusItem = false;
 		}
 
 		PlayerObject::~PlayerObject()
 		{
+		}
+
+		void PlayerObject::UpdateCooldown(float dt)
+		{
+			static const Vector4 red = Vector4(1, 0, 0, 1);
+			static const Vector4 green = Vector4(0, 1, 0, 1);
+			
+			if(fartCD <= 0)
+			{
+				const std::string out = std::string("Press Q to Fart!");
+				Debug::Print(out, Vector2(5.f, 250.f), green);
+				fartCD = 0;
+				canFart = true;
+				return;
+			}
+			const std::string out = std::string("Fart CD: ") + FloatToString<float>(fartCD, 2);
+			Debug::Print(out, Vector2(5.f, 250.f), red);
+			fartCD -= dt;
+		}
+
+		void PlayerObject::OnCollisionBegin(GameObject* other)
+		{
+			if (other->GetName() == "Ground")
+			{
+				isGrounded = true;
+			}
+		}
+
+		void PlayerObject::OnCollisionEnd(GameObject* other)
+		{
+			if (other->GetName() == "Ground")
+			{
+				isGrounded = false;
+			}
 		}
 
 		unsigned int PlayerObject::AddObjectToInventory(GameObject* object)
@@ -92,16 +126,6 @@ namespace NCL
 			collectedApples.clear();
 			collectedCorn.clear();
 			collectedHats.clear();
-		}
-
-		void PlayerObject::DrawInventoryToUI() const
-		{
-			const std::string out = std::string("Apples in Bag: ") + std::to_string(collectedApples.size());
-			Debug::Print(out.c_str(), Vector2(10.f,1000.f));
-			const std::string outCorn = std::string("Corn in Bag: ") + std::to_string(collectedCorn.size());
-			Debug::Print(outCorn.c_str(), Vector2(10.f, 950.f));
-			const std::string outHats = std::string("Farmer Hats in Bag: ") + std::to_string(collectedHats.size());
-			Debug::Print(outHats.c_str(), Vector2(10.f, 900.f));
 		}
 	}
 }
