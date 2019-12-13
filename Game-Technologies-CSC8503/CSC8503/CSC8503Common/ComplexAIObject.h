@@ -61,6 +61,8 @@ namespace NCL
 			void ThrowTowardsTarget();
 			void BurpAtTarget();
 			void YellAtTarget();
+			int GetRecentAttackChoice() const { return recentAttackChoice; }
+			void SetRecentAttackChoice(int choice) { recentAttackChoice = choice; }
 		protected:
 			GameObject* target;
 			unsigned int objectID;
@@ -80,6 +82,7 @@ namespace NCL
 			bool useThrow;
 			bool useBurp;
 			bool useYell;
+			int recentAttackChoice;
 			float cooldownTimer;
 		};
 	}

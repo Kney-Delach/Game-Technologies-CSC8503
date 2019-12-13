@@ -20,6 +20,7 @@
 #include "NavigationGrid.h"
 #include "NavigationTable.h"
 #include "PlayerIsland.h"
+#include "PlayerObject.h"
 #include "StateMachine.h"
 #include "State.h"
 #include "StateTransition.h"
@@ -31,16 +32,21 @@ namespace NCL
 {
 	namespace CSC8503
 	{
-		static float COOLDOWN = 0.5f;
+		static float COOLDOWN = 10.f;
 		ComplexAIObject::ComplexAIObject(const Vector3& spawnPos, const int type, const std::string name)
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
 		{
 			world = nullptr;
 			attackTarget = false;
 			moveTowardsTarget = true;
+			useStun = false;
+			useThrow = false;
+			useBurp = false;
+			useYell = false;
 			InitStateMachine();
 			debugStartNodeIndex = -1;
 			debugEndNodeIndex = -1;
+			recentAttackChoice = -1;
 			cooldownTimer = COOLDOWN;
 			srand(time(NULL)); // Randomize seed initialization
 		}
@@ -66,27 +72,52 @@ namespace NCL
 			StateFunction reloadAttack = [](void* data)
 			{
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
-				if(obj->GetCooldownTimer() <= 0)
+				if (obj->GetCooldownTimer() <= 0)
 				{
 					const int randNum = rand() % 4; // Generate a random number between 0 and 1
-					if(randNum == 0)
+					if (randNum == 0)
 					{
 						obj->SetThrowUse(true);
+						obj->SetRecentAttackChoice(0);
 					}
-					if(randNum == 1)
+					if (randNum == 1)
 					{
 						obj->SetStunUse(true);
+						obj->SetRecentAttackChoice(1);
 					}
 					if (randNum == 2)
 					{
 						obj->SetBurpUse(true);
+						obj->SetRecentAttackChoice(2);
 					}
 					if (randNum == 3)
 					{
 						obj->SetYellUse(true);
+						obj->SetRecentAttackChoice(3);
 					}
 				}
+				if (obj->GetRecentAttackChoice() == 0)
+				{
+					const std::string staticMsg = "DROP THOSE ITEMS THIEF!!!";
+					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 0, 1));
+				}
+				if (obj->GetRecentAttackChoice() == 1)
+				{
+					const std::string staticMsg = "LETS SEE YOU CATCH THESE!";
+					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 0, 1));
+				}
+				if (obj->GetRecentAttackChoice() == 2)
+				{
+					const std::string staticMsg = "BUUUUUUUUUUUURRRRRRPPPPPP!";
+					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 1, 1));
+				}
+				if (obj->GetRecentAttackChoice() == 3)
+				{
+					const std::string staticMsg = "WHAT ARE YOU DOING IN MY PARK?!";
+					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 1, 1));
+				}				
 			};
+			
 			StateFunction stunAttack = [](void* data)
 			{
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
@@ -155,6 +186,8 @@ namespace NCL
 		void ComplexAIObject::StunTarget()
 		{
 			std::cout << "Stunning target!\n";
+			//todo: daze the target and make it drop its items
+			((PlayerObject*)target)->DropItems();
 		}
 
 		void ComplexAIObject::ThrowTowardsTarget()
