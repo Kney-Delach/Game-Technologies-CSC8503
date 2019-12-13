@@ -38,7 +38,6 @@ namespace NCL
 		protected:
 			void InitialiseAssets();
 			void InitCamera();
-			void UpdateKeys();
 			void InitWorld();
 
 			// 8.12.2019
@@ -48,27 +47,13 @@ namespace NCL
 			//todo: remove the following function
 			void AddJumpPadToWorld(const Vector3& position, const Vector3& dimensions);
 
-			/*
-			These are some of the world/object creation functions I created when testing the functionality
-			in the module. Feel free to mess around with them to see different objects being created in different
-			test scenarios (constraints, collision types, and so on). 
-			*/
-			//void InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius);
-			//void InitCubeGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, const Vector3& cubeDims);
 			void InitMixedGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing);
 			void BridgeConstraintTest();
 			void SimpleGJKTest();
 
-			//todo: Make these better.... only draw lines on ai when selected etc...
-			bool SelectObject();
-			void MoveSelectedObject();
-			void DebugObjectMovement();
-
 			// third person camera stuff
 			void TPPlayerUpdate(float dt);
 			void TPCameraUpdate();
-
-			void GameObjectMovement();
 			
 			GameObject* AddFloorToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100, 2, 100), const Vector4& colour = Vector4(1, 1, 1, 1), float stiffness = 0.8f);
 			PlayerIsland* AddPlayerIslandToWorld(const Vector3& position, const int collisionType, const Vector3& dimensions = Vector3(100,2,100), const Vector4& colour = Vector4(1,1,1,1), float stiffness = 0.8f, int playerIndex = 0.f);
@@ -117,12 +102,6 @@ namespace NCL
 			GameObject* lockedObject	= nullptr;
 			Vector3 lockedOffset		= Vector3(0, 5, -15.f);
 			void LockCameraToObject(GameObject* o) { lockedObject = o; }
-
-			// 1.12.19
-			////////////////////////////////////////////////////////////////////
-			//// Debug functionality a ///////////////////////////////////
-			////////////////////////////////////////////////////////////////////
-			bool displayBoundingVolumes;
 		protected:
 			// 12.12.2019
 			// game completion related data
@@ -130,6 +109,19 @@ namespace NCL
 			int appleCollectableCount;
 			int cornCollectableCount;
 			int hatCollectableCount;
+
+			// player movement usage
+			bool playerControlMode;
+
+			////////////////////////////////////////
+			//// DEBUG MODE DATA 
+			////////////////////////////////////////
+			bool displayBoundingVolumes;
+			void UpdateDebugKeys();
+			bool SelectObject();
+			void MoveSelectedObject();
+			void DebugObjectMovement();
+			void GameObjectMovement();
 		public:
 			int GameStatusUpdate(float dt);
 			float VictoryScreenUpdate(float dt, int gameResult);

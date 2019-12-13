@@ -42,7 +42,7 @@ using namespace CSC8503;
 void GooseGame::LoadWorldFromFile(const std::string& filePath)
 {
 	SetThisPlayerIndex(0); //todo: move this to multiplayer stuff
-	
+	playerControlMode = true;
 	gameTimer = 180.f;
 	appleCollectableCount = 0;
 	cornCollectableCount = 0;
@@ -317,26 +317,57 @@ GooseGame::~GooseGame()
 
 void GooseGame::UpdateGame(float dt)
 {	
-	if (!inSelectionMode)
-		world->GetMainCamera()->UpdateCamera(dt);
+	if (playerControlMode)
+	{
+		TPCameraUpdate();
+		TPPlayerUpdate(dt);
+		Debug::Print("[R] -> Free Camera!", Vector2(5, 900), Vector4(0,0,0,1));
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
+		{
+			playerControlMode = false;
+			Window::GetWindow()->ShowOSPointer(false);
+			Window::GetWindow()->LockMouseToWindow(true);
+		}
+	}
+	else
+	{
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
+		{
+			playerControlMode = true;
+			Window::GetWindow()->ShowOSPointer(false);
+			Window::GetWindow()->LockMouseToWindow(true);
+			inSelectionMode = false;
+			displayBoundingVolumes = false;
+		}
+		
+		UpdateDebugKeys();
+		
+		Debug::Print("[R] -> Player Control!", Vector2(5, 900), Vector4(1, 1, 0, 1));
+		Debug::Print("[P] -> display physics volumes!", Vector2(5, 850), Vector4(0, 1, 0, 1));
+		if(inSelectionMode)
+		{
+			Debug::Print("[T] -> Free Camera!", Vector2(5, 800), Vector4(1, 0, 0, 1));
+			Debug::Print("Click on an object for info!", Vector2(5, 750), Vector4(1, 0, 0, 1));
 
-	UpdateKeys();
-
-	TPCameraUpdate();
-	TPPlayerUpdate(dt);
-	
-	//MoveSelectedObject();
-	//
-	//if (lockedObject)
-	//{
-	//	//PlayerMovement();
-	//	//PlayerCameraMovement();
-	//	DebugObjectMovement();
-	//}
-	//else
-	//{
-	//	DebugObjectMovement(); // move selected object 
-	//}
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::T))
+			{
+				inSelectionMode = false;
+				Window::GetWindow()->ShowOSPointer(false);
+				Window::GetWindow()->LockMouseToWindow(true);
+			}
+		}
+		else
+		{
+			Debug::Print("[T] -> Object selection mode!", Vector2(5, 800), Vector4(1, 0, 0, 1));
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::T))
+			{
+				inSelectionMode = true;
+				Window::GetWindow()->ShowOSPointer(true);
+				Window::GetWindow()->LockMouseToWindow(false);
+			}
+			world->GetMainCamera()->UpdateCamera(dt);
+		}
+	}
 
 	for (int i = 0; i < islandCollection.size(); ++i)
 	{
@@ -350,17 +381,10 @@ void GooseGame::UpdateGame(float dt)
 
 	for (int i = 0; i < farmerCollection.size(); ++i)
 	{
-		farmerCollection[i]->DebugDraw();
+		//farmerCollection[i]->DebugDraw();
 		farmerCollection[i]->Update();
 	}
 	
-	//if (useGravity)	
-	//	Debug::Print("(G)ravity on", Vector2(10, 40));	
-	//else 	
-	//	Debug::Print("(G)ravity off", Vector2(10, 40));
-
-	SelectObject();
-
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
 	physics->Update(dt);
@@ -379,7 +403,7 @@ void GooseGame::UpdateGame(float dt)
 	}	
 }
 
-void GooseGame::UpdateKeys()
+void GooseGame::UpdateDebugKeys()
 {
 	///////////////////////////////////////////////////////////////////////////////////////
 	//// Debug Toggle Keys ////////////////////////////////////////////////////////////////
@@ -405,10 +429,6 @@ void GooseGame::UpdateKeys()
 		useGravity = !useGravity;
 		physics->UseGravity(useGravity);
 	}
-	//Running certain physics updates in a consistent order might cause some
-	//bias in the calculations - the same objects might keep 'winning' the constraint
-	//allowing the other one to stretch too much etc. Shuffling the order so that it
-	//is random every frame can help reduce such bias.
 
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F7)) // enable object shuffles
 	{
@@ -1163,20 +1183,20 @@ void GooseGame::DebugObjectMovement()
 
 bool GooseGame::SelectObject()
 {
-	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
-	{
-		inSelectionMode = !inSelectionMode;
-		if (inSelectionMode)
-		{
-			Window::GetWindow()->ShowOSPointer(true);
-			Window::GetWindow()->LockMouseToWindow(false);
-		}
-		else
-		{
-			Window::GetWindow()->ShowOSPointer(false);
-			Window::GetWindow()->LockMouseToWindow(true);
-		}
-	}
+	//if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::R))
+	//{
+	//	inSelectionMode = !inSelectionMode;
+	//	if (inSelectionMode)
+	//	{
+	//		Window::GetWindow()->ShowOSPointer(true);
+	//		Window::GetWindow()->LockMouseToWindow(false);
+	//	}
+	//	else
+	//	{
+	//		Window::GetWindow()->ShowOSPointer(false);
+	//		Window::GetWindow()->LockMouseToWindow(true);
+	//	}
+	//}
 	if (inSelectionMode)
 	{
 		renderer->DrawString("Press R to change to camera mode!", Vector2(10, 0));
