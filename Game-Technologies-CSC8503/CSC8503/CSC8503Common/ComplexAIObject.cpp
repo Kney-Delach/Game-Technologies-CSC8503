@@ -31,6 +31,7 @@ namespace NCL
 {
 	namespace CSC8503
 	{
+		static float COOLDOWN = 0.5f;
 		ComplexAIObject::ComplexAIObject(const Vector3& spawnPos, const int type, const std::string name)
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
 		{
@@ -40,7 +41,7 @@ namespace NCL
 			InitStateMachine();
 			debugStartNodeIndex = -1;
 			debugEndNodeIndex = -1;
-			cooldownTimer = 10.f;
+			cooldownTimer = COOLDOWN;
 			srand(time(NULL)); // Randomize seed initialization
 		}
 
@@ -67,14 +68,22 @@ namespace NCL
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
 				if(obj->GetCooldownTimer() <= 0)
 				{
-					const int randNum = rand() % 2; // Generate a random number between 0 and 1
+					const int randNum = rand() % 4; // Generate a random number between 0 and 1
 					if(randNum == 0)
 					{
 						obj->SetThrowUse(true);
 					}
-					else
+					if(randNum == 1)
 					{
 						obj->SetStunUse(true);
+					}
+					if (randNum == 2)
+					{
+						obj->SetBurpUse(true);
+					}
+					if (randNum == 3)
+					{
+						obj->SetYellUse(true);
 					}
 				}
 			};
@@ -83,14 +92,14 @@ namespace NCL
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
 				obj->StunTarget(); //todo: This should slow the player's speed
 				obj->SetStunUse(false);
-				obj->SetCooldownTimer(10.f);
+				obj->SetCooldownTimer(COOLDOWN);
 			};
 			StateFunction throwAttack = [](void* data)
 			{
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
 				obj->ThrowTowardsTarget(); //todo: add force onto some sphere object in direction of goose, new gameobject (DamagingGameObject)
 				obj->SetThrowUse(false);
-				obj->SetCooldownTimer(10.f);
+				obj->SetCooldownTimer(COOLDOWN);
 			};
 
 			StateFunction burpAttack = [](void* data)
@@ -98,7 +107,7 @@ namespace NCL
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
 				obj->BurpAtTarget(); //todo: raycast a force onto the target
 				obj->SetBurpUse(false);
-				obj->SetCooldownTimer(10.f);
+				obj->SetCooldownTimer(COOLDOWN);
 			};
 
 			StateFunction yellAttack = [](void* data)
@@ -106,7 +115,7 @@ namespace NCL
 				ComplexAIObject* obj = (ComplexAIObject*)(data);
 				obj->YellAtTarget(); //todo: invert the target's controls for 2 seconds
 				obj->SetYellUse(false);
-				obj->SetCooldownTimer(10.f);
+				obj->SetCooldownTimer(COOLDOWN);
 			};
 
 			GenericState* reloadState = new GenericState(reloadAttack, static_cast<void*>(this), "Smart AI Reloading", "Reloading Ammo!");
