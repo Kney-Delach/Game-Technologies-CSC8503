@@ -57,6 +57,11 @@ namespace NCL
 				return isActive;
 			}
 
+			void SetActive(bool val)
+			{
+				isActive = val;
+			}
+
 			const Transform& GetConstTransform() const
 			{
 				return transform;

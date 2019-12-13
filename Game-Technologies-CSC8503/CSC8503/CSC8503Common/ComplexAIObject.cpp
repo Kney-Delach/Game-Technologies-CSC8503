@@ -33,7 +33,7 @@ namespace NCL
 	namespace CSC8503
 	{
 		static float COOLDOWN = 10.f;
-		ComplexAIObject::ComplexAIObject(const Vector3& spawnPos, const int type, const std::string name)
+		ComplexAIObject::ComplexAIObject(const Vector3& spawnPos, const int type, const std::string name, float awkTime)
 			: GameObject(name), aiType(type), objectID(0), spawnPosition(spawnPos)
 		{
 			world = nullptr;
@@ -49,6 +49,7 @@ namespace NCL
 			recentAttackChoice = -1;
 			currentIslandIndex = 0;
 			cooldownTimer = COOLDOWN;
+			awakeTime = awkTime;
 			srand(time(NULL)); // Randomize seed initialization
 		}
 
@@ -100,12 +101,12 @@ namespace NCL
 				if (obj->GetRecentAttackChoice() == 0)
 				{
 					const std::string staticMsg = "DROP THOSE ITEMS THIEF!!!";
-					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 0, 1));
+					Debug::Print(staticMsg, Vector2(5, 600), Vector4(1, 0, 0, 1));
 				}
 				if (obj->GetRecentAttackChoice() == 1)
 				{
 					const std::string staticMsg = "LETS SEE YOU CATCH THESE!";
-					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 0, 1));
+					Debug::Print(staticMsg, Vector2(250, 550), Vector4(1, 0, 0, 1));
 				}
 				if (obj->GetRecentAttackChoice() == 2)
 				{
@@ -115,7 +116,7 @@ namespace NCL
 				if (obj->GetRecentAttackChoice() == 3)
 				{
 					const std::string staticMsg = "WHAT ARE YOU DOING IN MY PARK?!";
-					Debug::Print(staticMsg, Vector2(250, 500), Vector4(1, 0, 1, 1));
+					Debug::Print(staticMsg, Vector2(250, 450), Vector4(1, 0, 1, 1));
 				}				
 			};
 			

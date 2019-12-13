@@ -157,6 +157,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 		}
 	}
 	int aiCount = 0;
+	int smartAICount = 0;
 	bool newPathfindingData = false;
 	bool newPathfindingDataComplex = false;
 	for (int j = 0; j < gridHeight; ++j)
@@ -231,10 +232,11 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 					navTable = new NavigationTable((int)(smartAINavGrid->GetWidth() * smartAINavGrid->GetHeight()), smartAINavGrid, true);
 					FileManager<NavigationTable>::Loader(navTableFile, *navTable);
 				}
-				aiCount++;
 				newPathfindingData = false;
-				ComplexAIObject* parkKeeper = (ComplexAIObject*)AddComplexKeeperToWorld(position, smartAINavGrid, navTable);
+				ComplexAIObject* parkKeeper = (ComplexAIObject*)AddComplexKeeperToWorld(position, smartAINavGrid, navTable, 180.f - (30.f * (float)smartAICount));
 				parkKeeper->SetPlayerIslandCollection(&islandCollection);
+				smartAICount++;
+
 				keeperCollection.push_back(parkKeeper);
 			}
 		}
@@ -420,7 +422,16 @@ void GooseGame::UpdateGame(float dt)
 
 	for (int i = 0; i < keeperCollection.size(); ++i)
 	{
-		keeperCollection[i]->Update(dt);
+		if(keeperCollection[i]->GetAwakeTime() >= gameTimer)
+		{
+			keeperCollection[i]->SetActive(true);
+			keeperCollection[i]->Update(dt);
+		}
+		else
+		{
+			keeperCollection[i]->SetActive(false);
+		}
+
 	}
 	
 	world->UpdateWorld(dt);
@@ -865,12 +876,12 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	return keeper;
 }
 
-ComplexAIObject* GooseGame::AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable)
+ComplexAIObject* GooseGame::AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable, float awakeTime)
 {
 	float meshSize = 4.0f;
 	float inverseMass = 1.f / 4.f;
 
-	ComplexAIObject* complexKeeper = new ComplexAIObject(position, 1, "Complex AI ");
+	ComplexAIObject* complexKeeper = new ComplexAIObject(position, 1, "Complex AI", awakeTime);
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	complexKeeper->SetBoundingVolume((CollisionVolume*)volume);

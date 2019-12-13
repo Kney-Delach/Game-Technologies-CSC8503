@@ -71,7 +71,7 @@ namespace NCL
 			GameObject* AddHatToWorld(const Vector3& position);
 
 			GameObject* AddParkKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
-			ComplexAIObject* AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
+			ComplexAIObject* AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable, float awakeTime);
 			
 			GameTechRenderer* renderer;
 			PhysicsSystem* physics;

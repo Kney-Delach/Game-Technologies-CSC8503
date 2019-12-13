@@ -30,7 +30,7 @@ namespace NCL
 		class ComplexAIObject : public GameObject
 		{
 		public:
-			ComplexAIObject(const Vector3& spawnPos, const int type = 1, const std::string name = "Complex AI");
+			ComplexAIObject(const Vector3& spawnPos, const int type = 1, const std::string name = "Complex AI", float awkTime = 0.f);
 			virtual ~ComplexAIObject();
 			virtual void OnCollisionBegin(GameObject* other) override;
 			void InitStateMachine();
@@ -63,6 +63,7 @@ namespace NCL
 			void YellAtTarget();
 			int GetRecentAttackChoice() const { return recentAttackChoice; }
 			void SetRecentAttackChoice(int choice) { recentAttackChoice = choice; }
+			float GetAwakeTime() const { return awakeTime; }
 		protected:
 			GameObject* target;
 			unsigned int objectID;
@@ -85,6 +86,7 @@ namespace NCL
 			bool useYell;
 			int recentAttackChoice;
 			float cooldownTimer;
+			float awakeTime;
 		};
 	}
 }
