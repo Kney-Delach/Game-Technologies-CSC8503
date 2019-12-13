@@ -431,7 +431,6 @@ void GooseGame::UpdateGame(float dt)
 		{
 			keeperCollection[i]->SetActive(false);
 		}
-
 	}
 	
 	world->UpdateWorld(dt);
@@ -1105,7 +1104,6 @@ void GooseGame::TPPlayerUpdate(float dt)
 		// fart
 		const float radius = playerCollection[thisPlayerIndex]->GetFartRadius();
 		//todo: add a fart sound effect 
-		//todo: iterate for keepers as well as farmers
 		for (BasicAIObject* farmer : farmerCollection)
 		{
 			Vector3 direction = playerCollection[thisPlayerIndex]->GetConstTransform().GetWorldPosition() - farmer->GetConstTransform().GetWorldPosition();
@@ -1122,34 +1120,29 @@ void GooseGame::TPPlayerUpdate(float dt)
 			}
 		}
 	}
-	
+	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::SPACE) && playerCollection[thisPlayerIndex]->IsGrounded())
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(Vector3(0, 3, 0) * forceMagnitude);
+	}
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W))
 	{
 		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, 1) * forceMagnitude);
 	}
-	
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
+	{
+		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, -1) * forceMagnitude);
+	}
 	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::A))
 	{
 		pitchYawRoll.y += rotationSpeed * dt;
 		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
 		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S))
-	{
-		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(playerCollection[thisPlayerIndex]->GetConstTransform().GetLocalOrientation() * Vector3(0, 0, -1) * forceMagnitude);
-	}
-	
+	}	
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) 
 	{
 		pitchYawRoll.y -= rotationSpeed * dt;
 		pitchYawRoll.y = pitchYawRoll.y >= 0.0f ? pitchYawRoll.y <= 360.0f ? pitchYawRoll.y : pitchYawRoll.y - 360.0f : pitchYawRoll.y + 360.0f;
 		playerCollection[thisPlayerIndex]->GetTransform().SetLocalOrientation(Quaternion::EulerAnglesToQuaternion(pitchYawRoll.x, pitchYawRoll.y, pitchYawRoll.z));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(NCL::KeyboardKeys::SPACE) && playerCollection[thisPlayerIndex]->IsGrounded())
-	{
-		playerCollection[thisPlayerIndex]->GetPhysicsObject()->AddForce(Vector3(0, 3, 0) * forceMagnitude);
 	}
 }
 
@@ -1178,71 +1171,20 @@ void GooseGame::TPCameraUpdate()
 	//world->GetMainCamera()->SetPitch(newPitch);
 }
 
-// move selected gameobjects with keyboard presses
-void GooseGame::DebugObjectMovement()
-{
-	if (inSelectionMode && selectionObject)
-	{
-		GameObjectMovement();
-	}
-}
-
 void GooseGame::SelectObject()
 {
 	if (selectionObject)
 	{
 		selectionObject->DebugDraw();
-		
-		//if (selectionObjectFront)
-		//{
-		//	selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-		//	selectionObjectFront = nullptr;
-		//}
-		//if (SelectionObjectBack)
-		//{
-		//	SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-		//	SelectionObjectBack = nullptr;
-		//}
-
-		//// getting object IN-FRONT of selected object
-		//Ray objectForwardRay = selectionObject->BuildRayFromDirection(Vector3(0, 0, 1)); //(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0,0,1));
-		//RayCollision closestObjectCollision;
-		//if (world->Raycast(objectForwardRay, closestObjectCollision, true))
-		//{
-		//	selectionObjectFront = (GameObject*)closestObjectCollision.node;
-		//	selectionObjectFront->DrawDebug(Vector4(0, 0, 1, 1));
-		//	GameObject::DrawLineBetweenObjects(selectionObject, selectionObjectFront);
-		//}
-		//
-		//// getting object BEHIND selected object
-		//Ray objectDownRay(selectionObject->GetConstTransform().GetWorldPosition(), selectionObject->GetConstTransform().GetWorldOrientation() * Vector3(0, 0, -1));
-		//RayCollision closestBehindCollision;
-		//if (world->Raycast(objectDownRay, closestBehindCollision, true))
-		//{
-		//	SelectionObjectBack = (GameObject*)closestBehindCollision.node;
-		//	SelectionObjectBack->DrawDebug(Vector4(1, 0, 0, 1));
-		//	GameObject::DrawLineBetweenObjects(selectionObject, SelectionObjectBack);
-		//}
 	}
 
 	if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT))
 	{
 		if (selectionObject)
-		{	//set colour to deselected;
+		{	
 			selectionObject->GetRenderObject()->SetColour(previousSelectedColor);
 			selectionObject = nullptr;
-			//if (selectionObjectFront)
-			//{
-			//	selectionObjectFront->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-			//	selectionObjectFront = nullptr;
-			//}
-			//if (SelectionObjectBack)
-			//{
-			//	SelectionObjectBack->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
-			//	SelectionObjectBack = nullptr;
-			//}
 		}
-
 		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
 		RayCollision closestCollision;
 		if (world->Raycast(ray, closestCollision, true))
@@ -1253,59 +1195,4 @@ void GooseGame::SelectObject()
 		}
 	}
 }
-
-//todo: Add keys to modify position of selected object using forces
-// 28.11.2019 - linear motion
-// If an object has been clicked, it can be pushed with the right mouse button, by an amount determined by the scroll wheel.
-void GooseGame::MoveSelectedObject()
-{
-	renderer->DrawString(" Click Force :" + std::to_string(forceMagnitude), Vector2(10, 20)); // Draw debug text at 10 ,20
-	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
-
-	if (!selectionObject) // No object has been selected!
-		return;
-
-	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT))
-	{
-		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
-		RayCollision closestCollision;
-		if (world->Raycast(ray, closestCollision, true))
-		{
-			if (closestCollision.node == selectionObject)
-				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt); // angular calculations included
-		}
-	}
-}
-
-void GooseGame::GameObjectMovement()
-{
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::SPACE)) // up
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, forceMagnitude, 0));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::E)) // down
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -forceMagnitude, 0));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::A)) // x left
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(-forceMagnitude, 0, 0));
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::D)) // x right
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(forceMagnitude, 0, 0));
-	}
-
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) // z left
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, -forceMagnitude));
-	}
-	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::S)) // z right
-	{
-		selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, forceMagnitude));
-	}
-}
-
 #pragma endregion MOVEMENT

@@ -120,9 +120,6 @@ namespace NCL
 			Vector4 previousSelectedColor;
 			void UpdateDebugKeys();
 			void SelectObject();
-			void MoveSelectedObject();
-			void DebugObjectMovement();
-			void GameObjectMovement();
 		public:
 			int GameStatusUpdate(float dt);
 			float VictoryScreenUpdate(float dt, int gameResult);

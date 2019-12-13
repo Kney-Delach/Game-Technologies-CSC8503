@@ -195,17 +195,41 @@ namespace NCL
 
 		void ComplexAIObject::ThrowTowardsTarget()
 		{
-			std::cout << "Throwing something at target!\n";
+			std::cout << "Spitting at target!\n";
+			Vector3 direction = target->GetConstTransform().GetWorldPosition() - GetConstTransform().GetWorldPosition();
+			direction.Normalise();
+			Ray ray(target->GetConstTransform().GetWorldPosition(), direction);
+			RayCollision collision;
+			if (world->Raycast(ray, collision, true))
+			{
+				target->GetPhysicsObject()->AddForceAtPosition(-direction * 3000, collision.collidedAt);
+			}
 		}
 
 		void ComplexAIObject::BurpAtTarget()
 		{
 			std::cout << "Burping towards the target!\n";
+			Vector3 direction = target->GetConstTransform().GetWorldPosition() - GetConstTransform().GetWorldPosition();
+			direction.Normalise();
+			Ray ray(target->GetConstTransform().GetWorldPosition(), direction);
+			RayCollision collision;
+			if (world->Raycast(ray, collision, true))
+			{
+				target->GetPhysicsObject()->AddForceAtPosition(-direction * 1500.f, collision.collidedAt);
+			}
 		}
 
 		void ComplexAIObject::YellAtTarget()
 		{
 			std::cout << "Yelling at the target!\n";
+			Vector3 direction = target->GetConstTransform().GetWorldPosition() - GetConstTransform().GetWorldPosition();
+			direction.Normalise();
+			Ray ray(target->GetConstTransform().GetWorldPosition(), direction);
+			RayCollision collision;
+			if (world->Raycast(ray, collision, true))
+			{
+				target->GetPhysicsObject()->AddForceAtPosition(-direction * 1500.f, collision.collidedAt);
+			}
 		}
 
 		void ComplexAIObject::InitStateMachine()
