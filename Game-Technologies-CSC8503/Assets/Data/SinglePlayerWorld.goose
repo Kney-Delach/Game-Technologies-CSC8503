@@ -32,7 +32,7 @@ xxxxxxxxxxxxxxxxxxxxxxxx
 xx........xxxxxxxxxxxxxx
 xxx.......xxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxx
-x..c.....r.............x
+x..c.....r............kx
 x..xxxx................x
 xxh.....x.......r......x
 xr..xxx.x..............x

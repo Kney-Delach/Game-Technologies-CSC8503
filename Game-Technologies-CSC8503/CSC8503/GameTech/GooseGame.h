@@ -25,6 +25,7 @@ namespace NCL
 		class NavigationTable;
 		class NavigationGrid;
 		class BasicAIObject;
+		class ComplexAIObject;
 		class PlayerIsland;
 		
 		class GooseGame
@@ -70,7 +71,7 @@ namespace NCL
 			GameObject* AddHatToWorld(const Vector3& position);
 
 			GameObject* AddParkKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
-			GameObject* AddCharacterToWorld(const Vector3& position);
+			ComplexAIObject* AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable);
 			
 			GameTechRenderer* renderer;
 			PhysicsSystem* physics;
@@ -138,6 +139,7 @@ namespace NCL
 			void SetThisPlayerIndex(int index = 0) { thisPlayerIndex = index; }
 		protected:
 			std::vector<BasicAIObject*> farmerCollection;
+			std::vector<ComplexAIObject*> keeperCollection;
 			std::vector<PlayerObject*> playerCollection;
 			std::vector<PlayerIsland*> islandCollection;
 		};

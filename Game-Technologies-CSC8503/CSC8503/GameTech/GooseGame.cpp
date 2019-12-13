@@ -28,6 +28,7 @@
 #include <fstream>
 #include "../CSC8503Common/NavigationTable.h"
 #include "../CSC8503Common/BasicAIObject.h"
+#include "../CSC8503Common/ComplexAIObject.h"
 
 #include "../CSC8503Common/FileManager.h"
 #include "../CSC8503Common/HeightConstraint.h"
@@ -157,6 +158,7 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 	}
 	int aiCount = 0;
 	bool newPathfindingData = false;
+	bool newPathfindingDataComplex = false;
 	for (int j = 0; j < gridHeight; ++j)
 	{
 		for (int k = 0; k < gridWidth; ++k)
@@ -211,6 +213,29 @@ void GooseGame::LoadWorldFromFile(const std::string& filePath)
 				BasicAIObject* farmer = (BasicAIObject*)AddParkKeeperToWorld(position, dumbAiNavGrid, navTable);
 				farmer->SetPlayerObjectCollection(&playerCollection);
 				farmerCollection.push_back(farmer);
+			}
+			if (objectMap[k + j * gridWidth] == 'k')
+			{
+				position = Vector3(k * 2 * cubeDims.x, 30.f, j * 2 * cubeDims.z);
+				const std::string gridFile = Assets::DATADIR + "NavigationGridSPKeeper.Pathfinding";
+				NavigationGrid* smartAINavGrid = new NavigationGrid(gridFile);
+				NavigationTable* navTable;
+				const std::string navTableFile = Assets::DATADIR + "NavigationTableSPKeeper.Pathfinding";
+				if (newPathfindingDataComplex)
+				{
+					navTable = new NavigationTable((int)(smartAINavGrid->GetWidth() * smartAINavGrid->GetHeight()), smartAINavGrid, false);
+					FileManager<NavigationTable>::Writer(navTableFile, *navTable);
+				}
+				else
+				{
+					navTable = new NavigationTable((int)(smartAINavGrid->GetWidth() * smartAINavGrid->GetHeight()), smartAINavGrid, true);
+					FileManager<NavigationTable>::Loader(navTableFile, *navTable);
+				}
+				aiCount++;
+				newPathfindingData = false;
+				ComplexAIObject* parkKeeper = (ComplexAIObject*)AddComplexKeeperToWorld(position, smartAINavGrid, navTable);
+				parkKeeper->SetPlayerIslandCollection(&islandCollection);
+				keeperCollection.push_back(parkKeeper);
 			}
 		}
 	}
@@ -293,6 +318,7 @@ void GooseGame::InitWorld()
 	farmerCollection.clear();
 	playerCollection.clear();
 	islandCollection.clear();
+	keeperCollection.clear();
 	LoadWorldFromFile();
 }
 
@@ -389,8 +415,12 @@ void GooseGame::UpdateGame(float dt)
 
 	for (int i = 0; i < farmerCollection.size(); ++i)
 	{
-		//farmerCollection[i]->DebugDraw(); // this displays all the target lines for an AI
 		farmerCollection[i]->Update();
+	}
+
+	for (int i = 0; i < keeperCollection.size(); ++i)
+	{
+		keeperCollection[i]->Update();
 	}
 	
 	world->UpdateWorld(dt);
@@ -805,7 +835,7 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	float meshSize = 4.0f;
 	float inverseMass = 1.f / 4.f;
 
-	BasicAIObject* keeper = new BasicAIObject(position, 1, "AI");
+	BasicAIObject* keeper = new BasicAIObject(position, 1, "Basic AI");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
 	keeper->SetBoundingVolume((CollisionVolume*)volume);
@@ -835,46 +865,31 @@ GameObject* GooseGame::AddParkKeeperToWorld(const Vector3& position, NavigationG
 	return keeper;
 }
 
-GameObject* GooseGame::AddCharacterToWorld(const Vector3& position)
+ComplexAIObject* GooseGame::AddComplexKeeperToWorld(const Vector3& position, NavigationGrid* navGrid, NavigationTable* navTable)
 {
 	float meshSize = 4.0f;
-	float inverseMass = 0.5f;
+	float inverseMass = 1.f / 4.f;
 
-	auto pos = keeperMesh->GetPositionData();
-
-	Vector3 minVal = pos[0];
-	Vector3 maxVal = pos[0];
-
-	for (auto& i : pos) {
-		maxVal.y = max(maxVal.y, i.y);
-		minVal.y = min(minVal.y, i.y);
-	}
-
-	GameObject* character = new GameObject("Character");
-
-	float r = rand() / (float)RAND_MAX;
+	ComplexAIObject* complexKeeper = new ComplexAIObject(position, 1, "Complex AI ");
 
 	AABBVolume* volume = new AABBVolume(Vector3(0.3f, 0.9f, 0.3f) * meshSize);
-	character->SetBoundingVolume((CollisionVolume*)volume);
-
-	character->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
-	character->GetTransform().SetWorldPosition(position);
-
-	character->SetRenderObject(new RenderObject(&character->GetTransform(), r > 0.5f ? charA : charB, nullptr, basicShader));
-	character->SetPhysicsObject(new PhysicsObject(&character->GetTransform(), character->GetBoundingVolume()));
-
-	character->GetPhysicsObject()->SetInverseMass(inverseMass);
-	character->GetPhysicsObject()->InitCubeInertia();
-
-	//todo: change this to attacker type
-	character->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING | ObjectCollisionType::JUMP_PAD);
-	
-	// set temporary color (for debugging)
-	character->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
-	
-	world->AddGameObject(character);
-
-	return character;
+	complexKeeper->SetBoundingVolume((CollisionVolume*)volume);
+	complexKeeper->GetTransform().SetWorldScale(Vector3(meshSize, meshSize, meshSize));
+	complexKeeper->GetTransform().SetWorldPosition(position);
+	complexKeeper->SetRenderObject(new RenderObject(&complexKeeper->GetTransform(), charA, nullptr, basicShader));
+	complexKeeper->SetPhysicsObject(new PhysicsObject(&complexKeeper->GetTransform(), complexKeeper->GetBoundingVolume()));
+	complexKeeper->GetPhysicsObject()->SetInverseMass(inverseMass);
+	complexKeeper->GetPhysicsObject()->InitCubeInertia();
+	complexKeeper->GetPhysicsObject()->SetElasticity(0.7f);
+	complexKeeper->GetPhysicsObject()->SetStiffness(200.f);
+	complexKeeper->GetPhysicsObject()->SetCollisionType(ObjectCollisionType::IMPULSE | ObjectCollisionType::SPRING);
+	complexKeeper->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+	world->AddGameObject(complexKeeper);
+	complexKeeper->SetWorld(world);
+	complexKeeper->SetNavigationGrid(navGrid);
+	complexKeeper->SetNavigationTable(navTable);
+	complexKeeper->GetPhysicsObject()->SetGravityUsage(false);
+	return complexKeeper;
 }
 
 GameObject* GooseGame::AddAppleToWorld(const Vector3& position)

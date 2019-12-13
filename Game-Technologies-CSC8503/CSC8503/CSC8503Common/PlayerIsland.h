@@ -28,6 +28,7 @@ namespace NCL
 			virtual void OnCollisionBegin(GameObject* other) override;
 			void DrawPlayerScore() const;
 			void SetParent(PlayerObject* player) { parentPlayer = player; }
+			PlayerObject* GetParent() const { return parentPlayer; }
 			int GetScore() const { return score; }
 			int GetApplesCount() const { return (int) collectedApples.size(); }
 			void SetMaxCollectables(const int apples, const int corn, const int hats);
