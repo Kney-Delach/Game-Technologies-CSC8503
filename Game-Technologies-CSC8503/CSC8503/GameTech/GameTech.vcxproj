@@ -147,6 +147,7 @@
     <ClCompile Include="NetworkPlayer.cpp" />
     <ClCompile Include="GooseGame.cpp" />
     <ClCompile Include="StateManager.cpp" />
+    <ClCompile Include="TestPacketReceiver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameState.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="NetworkPlayer.h" />
     <ClInclude Include="GooseGame.h" />
     <ClInclude Include="StateManager.h" />
+    <ClInclude Include="TestPacketReceiver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

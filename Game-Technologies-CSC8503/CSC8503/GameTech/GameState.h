@@ -61,7 +61,7 @@ namespace NCL
 		class MultiPlayerState : public GameState
 		{
 		public:
-			MultiPlayerState(int id = 2, int maximumChoices = 2) : GameState(id, "Multi-Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) {}
+			MultiPlayerState(int id = 2, int maximumChoices = 3) : GameState(id, "Multi-Player Goose Game"), selectedChoice(0), maxChoices(maximumChoices) {}
 			virtual ~MultiPlayerState() = default;
 			virtual int Update(float dt) override;
 		private:
@@ -86,5 +86,42 @@ namespace NCL
 			int selectedChoice;
 			int maxChoices;
 		};
+
+		class ServerState : public GameState
+		{
+		public:
+			ServerState(int id = 1) : GameState(id, "Server Game"), selectedChoice(0), gameResult(0), gameOverTimer(20.f) { serverGame = nullptr; }
+			virtual ~ServerState() = default;
+			virtual int Update(float dt) override;
+			virtual void OnAwake();
+			virtual void OnSleep();
+		private:
+			void RenderMenu();
+		private:
+			int selectedChoice;
+			int maxChoices;
+			GooseGame* serverGame;
+			int gameResult;
+			float gameOverTimer;
+		};
+
+		class ClientState : public GameState
+		{
+		public:
+			ClientState(int id = 1) : GameState(id, "Client Game"), selectedChoice(0), gameResult(0), gameOverTimer(20.f) { clientGame = nullptr; }
+			virtual ~ClientState() = default;
+			virtual int Update(float dt) override;
+			virtual void OnAwake();
+			virtual void OnSleep();
+		private:
+			void RenderMenu();
+		private:
+			int selectedChoice;
+			int maxChoices;
+			GooseGame* clientGame;
+			int gameResult;
+			float gameOverTimer;
+		};
+		
 	}
 }

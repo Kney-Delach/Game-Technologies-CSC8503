@@ -146,10 +146,26 @@ namespace NCL
 
 		int MultiPlayerState::Update(float dt)
 		{
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::UP))
+			{
+				if (selectedChoice > 0)
+					selectedChoice--;
+				else
+					selectedChoice = maxChoices;
+			}
+			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::DOWN))
+			{
+				if (selectedChoice < maxChoices)
+					selectedChoice++;
+				else
+					selectedChoice = 0;
+			}
 			RenderMenu();
 			if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::RETURN))
 			{
-				return -2;
+				if (selectedChoice == 2)
+					return -2;
+				return (selectedChoice + 4);
 			}
 			return -1;
 		}
@@ -160,14 +176,31 @@ namespace NCL
 			static const Vector4 black(0, 0, 0, 1);
 
 			static const Vector2 pos4(960, 1000);
-			Debug::Print("Multi-Player Game", pos4, black);
-			static const Vector2 cryPosition(200, 500);
-			static const Vector2 cryPosition2(200, 475);
-			Debug::Print("This is where I would let you choose ", cryPosition, black);
-			Debug::Print("between being a server or a player .... ", cryPosition2, black);
-
+			static const Vector2 serverPosition(200, 500);
+			static const Vector2 clientPosition(200, 475);
 			static const Vector2 pos1(960, 120);
-			Debug::Print("BACK TO MAIN MENU", pos1, green);
+
+			Debug::Print("Multi-Player Game", pos4, black);
+
+			if (selectedChoice == 0)
+			{
+				Debug::Print("Start Server Game", serverPosition, green);
+				Debug::Print("Start Client Game", clientPosition, black);
+				Debug::Print("BACK TO MAIN MENU", pos1, black);
+			}
+			else if (selectedChoice == 1)
+			{
+				Debug::Print("Start Server Game", serverPosition, black);
+				Debug::Print("Start Client Game", clientPosition, green);
+				Debug::Print("BACK TO MAIN MENU", pos1, black);
+			}
+			else if (selectedChoice == 2)
+			{
+				Debug::Print("Start Server Game", serverPosition, black);
+				Debug::Print("Start Client Game", clientPosition, black);
+				Debug::Print("BACK TO MAIN MENU", pos1, green);
+			}
+
 		}
 		
 		////////////////////////////////
@@ -211,6 +244,114 @@ namespace NCL
 			
 			static const Vector2 pos1(960, 120);
 			Debug::Print("BACK TO MAIN MENU", pos1, green);
+		}
+
+		////////////////////////////////
+		//// Server Game
+		////////////////////////////////
+
+		int ServerState::Update(float dt)
+		{
+			if (serverGame)
+			{
+				if (gameResult == 0)
+				{
+					serverGame->UpdateGame(dt);
+					RenderMenu();
+					gameResult = serverGame->GameStatusUpdate(dt);
+					if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE))
+					{
+						return -2;
+					}
+				}
+
+				if (gameResult != 0)
+				{
+					if (serverGame->VictoryScreenUpdate(dt, gameResult) <= 0)
+					{
+						// update leaderboards data here
+						return -2;
+					}
+				}
+				return -1;
+			}
+			else
+				return -2;
+		}
+
+		void ServerState::OnAwake()
+		{
+			gameResult = 0;
+			serverGame = new GooseGame();
+		}
+
+		void ServerState::OnSleep()
+		{
+			delete serverGame;
+			serverGame = nullptr;
+		}
+
+		void ServerState::RenderMenu()
+		{
+			static const Vector4 green(0, 1, 0, 1);
+			static const Vector4 black(0, 0, 0, 1);
+
+			static const Vector2 pos4(960, 1000);
+			Debug::Print("Server Game", pos4, green);
+		}
+		
+		////////////////////////////////
+		//// Client Game
+		////////////////////////////////
+
+		int ClientState::Update(float dt)
+		{
+			if (clientGame)
+			{
+				if (gameResult == 0)
+				{
+					clientGame->UpdateGame(dt);
+					RenderMenu();
+					gameResult = clientGame->GameStatusUpdate(dt);
+					if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE))
+					{
+						return -2;
+					}
+				}
+
+				if (gameResult != 0)
+				{
+					if (clientGame->VictoryScreenUpdate(dt, gameResult) <= 0)
+					{
+						// update leaderboards data here
+						return -2;
+					}
+				}
+				return -1;
+			}
+			else
+				return -2;
+		}
+
+		void ClientState::OnAwake()
+		{
+			gameResult = 0;
+			clientGame = new GooseGame();
+		}
+
+		void ClientState::OnSleep()
+		{
+			delete clientGame;
+			clientGame = nullptr;
+		}
+
+		void ClientState::RenderMenu()
+		{
+			static const Vector4 green(0, 1, 0, 1);
+			static const Vector4 black(0, 0, 0, 1);
+
+			static const Vector2 pos4(960, 1000);
+			Debug::Print("Client Game", pos4, green);
 		}
 	}
 }
