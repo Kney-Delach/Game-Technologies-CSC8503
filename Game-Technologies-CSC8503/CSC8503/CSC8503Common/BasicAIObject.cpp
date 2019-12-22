@@ -155,8 +155,7 @@ namespace NCL
 		void BasicAIObject::DebugDraw()
 		{
 			stateMachine->DebugDraw();
-			DrawDebugVolume();
-			
+			DrawDebugVolume();			
 			const std::string msg = "Selected GameObject: " + name;
 			Debug::Print(msg, Vector2(5, 700), Vector4(0, 0, 0, 1));
 
@@ -208,7 +207,6 @@ namespace NCL
 			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(0, 0, -1), true);
 			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(-1, 0, 0), true);
 			FindTarget(Vector3(0.f, -halfSize, 0.f), Vector3(1, 0, 0), true);
-
 			if(debugStartNodeIndex != -1 && debugEndNodeIndex != -1)
 			{
 				// display navigation table positions

@@ -16,7 +16,7 @@
 #include "GameTechRenderer.h"
 #include "../CSC8503Common/PhysicsSystem.h"
 #include "../CSC8503Common/PlayerObject.h"
-
+#include "../CSC8503Common/NetworkBase.h"
 
 namespace NCL 
 {
@@ -34,7 +34,7 @@ namespace NCL
 			GooseGame();
 			~GooseGame();
 
-			virtual void UpdateGame(float dt);
+			virtual StringPacket* UpdateGame(float dt);
 
 		protected:
 			void InitialiseAssets();
@@ -123,6 +123,7 @@ namespace NCL
 		public:
 			int GameStatusUpdate(float dt);
 			float VictoryScreenUpdate(float dt, int gameResult);
+			int GetScore();
 		protected:
 			// 8.12.2019
 			// load from file specific world data
@@ -132,6 +133,9 @@ namespace NCL
 
 			// muiltiplayer stuff
 			int thisPlayerIndex;
+
+			// networking stuff
+			StringPacket playerNetworkPacket;
 		public:
 			void SetThisPlayerIndex(int index = 0) { thisPlayerIndex = index; }
 		protected:

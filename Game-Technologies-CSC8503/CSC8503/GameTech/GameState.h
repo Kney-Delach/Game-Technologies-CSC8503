@@ -3,12 +3,16 @@
 #include <string>
 #include <vector>
 #include "Leaderboard.h"
+#include "TestPacketReceiver.h"
+#include <algorithm>
 
 namespace NCL
 {
 	namespace CSC8503
 	{
 		class GooseGame;
+		class GameServer;
+		class GameClient;
 		
 		class GameState
 		{
@@ -79,12 +83,55 @@ namespace NCL
 			virtual ~LeaderboardsState() = default;
 			virtual int Update(float dt) override;
 		public:
-			static Leaderboard s_Leaderboard;
+			//static LeaderboardsState* instance;
+			void UpdateScore(int score) // update and sort scores
+			{
+				scores.emplace_back(score);
+				sort(scores.begin(), scores.end(), greater<int>());
+			}
 		private:
 			void RenderMenu();
 		private:
 			int selectedChoice;
 			int maxChoices;
+			std::vector<int> scores;
 		};
+
+		class ServerState : public GameState
+		{
+		public:
+			ServerState(int id = 1) : GameState(id, "Server Game"), gameResult(0), gameOverTimer(20.f), serverReceiver("Server"), server(nullptr), serverGame(nullptr) {}
+			virtual ~ServerState() = default;
+			virtual int Update(float dt) override;
+			virtual void OnAwake();
+			virtual void OnSleep();
+		private:
+			void RenderMenu();
+		private:
+			GooseGame* serverGame;
+			GameServer* server;
+			TestPacketReceiver serverReceiver;
+			int gameResult;
+			float gameOverTimer;
+		};
+
+		class ClientState : public GameState
+		{
+		public:
+			ClientState(int id = 1) : GameState(id, "Client Game"), gameResult(0), gameOverTimer(20.f), clientReceiver("Client"), client(nullptr), clientGame(nullptr) { }
+			virtual ~ClientState() = default;
+			virtual int Update(float dt) override;
+			virtual void OnAwake();
+			virtual void OnSleep();
+		private:
+			void RenderMenu();
+		private:
+			GooseGame* clientGame;
+			GameClient* client;
+			TestPacketReceiver clientReceiver;
+			int gameResult;
+			float gameOverTimer;
+		};
+		
 	}
 }

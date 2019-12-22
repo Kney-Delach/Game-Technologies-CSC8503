@@ -35,6 +35,8 @@ namespace NCL
 			stateStorage.emplace_back(new SinglePlayerState(1));
 			stateStorage.emplace_back(new MultiPlayerState(2));
 			stateStorage.emplace_back(new LeaderboardsState(3));
+			stateStorage.emplace_back(new ServerState(4));
+			stateStorage.emplace_back(new ClientState(5));
 		}
 
 		void StateManager::PushSelectedToStack()
@@ -62,7 +64,7 @@ namespace NCL
 			}
 			nextStateSelected = -1; // will take state machine back to idle
 			activeState->OnSleep();
-			if (currentState == 1 || currentState == 2)
+			if (currentState == 1 || currentState >= 4)
 			{
 				renderer->SetAsActiveContext();
 				Debug::SetRenderer(renderer);
