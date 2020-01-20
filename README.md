@@ -5,7 +5,8 @@
 ![branch-features](https://img.shields.io/badge/Features-8-informational)
 
 ## About
-This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University. 
+This repo contains a series of physics, networking and AI exercises completed for CSC8503 at Newcastle University.
+ 
 [Youtube Demo](https://www.youtube.com/watch?v=SgW1vp6QHAo&feature=youtu.be) 
 
 ## List of Features
